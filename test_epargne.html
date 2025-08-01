@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Épargne - Mon Budget Malin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.danger {
+            background: #dc3545;
+        }
+        .test-button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .iframe-container {
+            margin-top: 20px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de la Page Épargne</h1>
+        
+        <div class="test-section">
+            <h3>📋 Tests Automatisés</h3>
+            <button class="test-button" onclick="runAllTests()">🚀 Lancer Tous les Tests</button>
+            <button class="test-button success" onclick="testCreateObjectif()">➕ Créer Objectif Test</button>
+            <button class="test-button success" onclick="testCreateEpargne()">💰 Créer Épargne Test</button>
+            <button class="test-button warning" onclick="testEditFunctionality()">✏️ Tester Édition</button>
+            <button class="test-button danger" onclick="clearTestData()">🗑️ Nettoyer Données</button>
+            <button class="test-button" onclick="checkLocalStorage()">🔍 Vérifier LocalStorage</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Résultats des Tests</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Console de Débogage</h3>
+            <div class="console-output" id="console-output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Page Épargne (Vue Directe)</h3>
+            <div class="iframe-container">
+                <iframe src="epargne.html" id="epargne-iframe"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Intercepter les console.log pour les afficher dans notre interface
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        function addToConsole(message, type = 'log') {
+            const consoleOutput = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            consoleOutput.innerHTML += `<div style="color: ${color};">[${timestamp}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addToConsole(args.join(' '));
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addToConsole(args.join(' '), 'warn');
+        };
+
+        // Fonctions de test
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        function testCreateObjectif() {
+            console.log('=== TEST CRÉATION OBJECTIF ===');
+            
+            try {
+                // Simuler la création d'un objectif
+                const testObjectif = {
+                    id: Date.now().toString(),
+                    nom: 'Test Objectif',
+                    montantCible: 100000,
+                    montantEpargne: 0,
+                    dateLimite: new Date().toISOString().slice(0, 10),
+                    description: 'Objectif de test pour vérifier l\'édition',
+                    statut: 'actif',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Récupérer les objectifs existants
+                let objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+                objectifs.push(testObjectif);
+                localStorage.setItem('objectifs_epargne', JSON.stringify(objectifs));
+                
+                addTestResult('✅ Objectif de test créé avec succès', 'success');
+                console.log('Objectif de test créé:', testObjectif);
+                
+                // Recharger l'iframe
+                document.getElementById('epargne-iframe').src = 'epargne.html';
+                
+            } catch (error) {
+                addTestResult(`❌ Erreur lors de la création de l'objectif: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function testCreateEpargne() {
+            console.log('=== TEST CRÉATION ÉPARGNE ===');
+            
+            try {
+                // Simuler la création d'une épargne
+                const testEpargne = {
+                    id: Date.now().toString(),
+                    description: 'Épargne de test',
+                    montant: 50000,
+                    date: new Date().toISOString().slice(0, 10),
+                    methode: 'virement',
+                    objectifLie: null,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Récupérer les épargnes existantes
+                let epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
+                epargnes.push(testEpargne);
+                localStorage.setItem('epargnes_regulieres', JSON.stringify(epargnes));
+                
+                addTestResult('✅ Épargne de test créée avec succès', 'success');
+                console.log('Épargne de test créée:', testEpargne);
+                
+                // Recharger l'iframe
+                document.getElementById('epargne-iframe').src = 'epargne.html';
+                
+            } catch (error) {
+                addTestResult(`❌ Erreur lors de la création de l'épargne: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function testEditFunctionality() {
+            console.log('=== TEST FONCTIONNALITÉ D\'ÉDITION ===');
+            
+            try {
+                const objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+                const epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
+                
+                let testMessage = 'Fonctionnalités d\'édition :\n\n';
+                
+                if (objectifs.length > 0) {
+                    testMessage += '✅ Objectifs disponibles pour édition\n';
+                    addTestResult('✅ Objectifs disponibles pour édition', 'success');
+                } else {
+                    testMessage += '❌ Aucun objectif disponible\n';
+                    addTestResult('❌ Aucun objectif disponible', 'error');
+                }
+                
+                if (epargnes.length > 0) {
+                    testMessage += '✅ Épargnes disponibles pour édition\n';
+                    addTestResult('✅ Épargnes disponibles pour édition', 'success');
+                } else {
+                    testMessage += '❌ Aucune épargne disponible\n';
+                    addTestResult('❌ Aucune épargne disponible', 'error');
+                }
+                
+                testMessage += '\nPour tester l\'édition :\n';
+                testMessage += '1. Cliquez sur le bouton "Modifier" (crayon jaune)\n';
+                testMessage += '2. Modifiez les données dans le formulaire\n';
+                testMessage += '3. Cliquez sur "Mettre à jour"\n';
+                testMessage += '4. Vérifiez que les changements sont sauvegardés';
+                
+                console.log(testMessage);
+                addTestResult('ℹ️ Instructions d\'édition affichées', 'info');
+                
+            } catch (error) {
+                addTestResult(`❌ Erreur lors du test d'édition: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function clearTestData() {
+            console.log('=== NETTOYAGE DES DONNÉES DE TEST ===');
+            
+            try {
+                // Nettoyer les données de test
+                let objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+                let epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
+                
+                // Supprimer les éléments de test
+                objectifs = objectifs.filter(obj => !obj.nom.includes('Test'));
+                epargnes = epargnes.filter(ep => !ep.description.includes('Test'));
+                
+                localStorage.setItem('objectifs_epargne', JSON.stringify(objectifs));
+                localStorage.setItem('epargnes_regulieres', JSON.stringify(epargnes));
+                
+                addTestResult('✅ Données de test nettoyées avec succès', 'success');
+                console.log('Données nettoyées');
+                
+                // Recharger l'iframe
+                document.getElementById('epargne-iframe').src = 'epargne.html';
+                
+            } catch (error) {
+                addTestResult(`❌ Erreur lors du nettoyage: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function checkLocalStorage() {
+            console.log('=== VÉRIFICATION LOCALSTORAGE ===');
+            
+            try {
+                const objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+                const epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
+                
+                console.log('Objectifs:', objectifs);
+                console.log('Épargnes:', epargnes);
+                
+                addTestResult(`ℹ️ ${objectifs.length} objectifs, ${epargnes.length} épargnes trouvés`, 'info');
+                
+            } catch (error) {
+                addTestResult(`❌ Erreur lors de la vérification: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function runAllTests() {
+            console.log('=== LANCEMENT DE TOUS LES TESTS ===');
+            addTestResult('🚀 Début des tests automatisés', 'info');
+            
+            // Vider les résultats précédents
+            document.getElementById('test-results').innerHTML = '';
+            
+            // Tests séquentiels
+            setTimeout(() => {
+                testCreateObjectif();
+                setTimeout(() => {
+                    testCreateEpargne();
+                    setTimeout(() => {
+                        testEditFunctionality();
+                        setTimeout(() => {
+                            checkLocalStorage();
+                            addTestResult('✅ Tous les tests terminés', 'success');
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 500);
+        }
+
+        // Initialisation
+        window.onload = function() {
+            console.log('=== PAGE DE TEST ÉPARGNE CHARGÉE ===');
+            addTestResult('📋 Page de test initialisée', 'info');
+        };
+    </script>
+</body>
+</html> 

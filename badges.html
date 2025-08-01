@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badges - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <script src="plotly.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="breadcrumb">
+        <a href="index.html">🏠 Accueil</a> > <span>🏅 Badges</span>
+    </nav>
+
+    <div class="badges-container">
+        <!-- Résumé des badges -->
+        <section class="badges-summary">
+            <h2>🏅 Mes Badges</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">🏆</div>
+                    <h3>Badges Obtenus</h3>
+                    <span id="earned-badges" class="summary-value">0</span>
+                    <small>Sur 15 disponibles</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">⭐</div>
+                    <h3>Points Totaux</h3>
+                    <span id="total-points" class="summary-value">0</span>
+                    <small>Points gagnés</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🎯</div>
+                    <h3>Niveau Actuel</h3>
+                    <span id="current-level" class="summary-value">Débutant</span>
+                    <small>Votre niveau d'expertise</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🔥</div>
+                    <h3>Série Actuelle</h3>
+                    <span id="current-streak" class="summary-value">0 jours</span>
+                    <small>Jours consécutifs</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Défis actifs -->
+        <section class="active-challenges">
+            <h2>🎯 Défis Actifs</h2>
+            <div id="challenges-list" class="challenges-container">
+                <div class="challenge-card">
+                    <div class="challenge-header">
+                        <div class="challenge-icon">💰</div>
+                        <div class="challenge-info">
+                            <h3>Épargnant Débutant</h3>
+                            <p>Épargnez 50,000 FCFA en une semaine</p>
+                        </div>
+                        <div class="challenge-progress">
+                            <span class="progress-text">3/7 jours</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 43%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="challenge-reward">
+                        <span class="reward-icon">🏅</span>
+                        <span class="reward-text">Badge "Épargnant" + 50 points</span>
+                    </div>
+                </div>
+                
+                <div class="challenge-card">
+                    <div class="challenge-header">
+                        <div class="challenge-icon">📊</div>
+                        <div class="challenge-info">
+                            <h3>Budget Maître</h3>
+                            <p>Respectez votre budget pendant 1 mois</p>
+                        </div>
+                        <div class="challenge-progress">
+                            <span class="progress-text">15/30 jours</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="challenge-reward">
+                        <span class="reward-icon">🏅</span>
+                        <span class="reward-text">Badge "Budget Maître" + 100 points</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Badges disponibles -->
+        <section class="available-badges">
+            <h2>🏆 Badges Disponibles</h2>
+            <div class="badges-grid">
+                <!-- Badge Épargnant -->
+                <div class="badge-card earned" onclick="showBadgeDetails('saver')">
+                    <div class="badge-icon">💰</div>
+                    <h3>Épargnant</h3>
+                    <p>Épargnez 50,000 FCFA en une semaine</p>
+                    <div class="badge-status earned">✅ Obtenu</div>
+                    <div class="badge-points">+50 points</div>
+                </div>
+                
+                <!-- Badge Budget Maître -->
+                <div class="badge-card locked" onclick="showBadgeDetails('budget-master')">
+                    <div class="badge-icon">📊</div>
+                    <h3>Budget Maître</h3>
+                    <p>Respectez votre budget pendant 1 mois</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+100 points</div>
+                </div>
+                
+
+                
+                <!-- Badge Tabaski -->
+                <div class="badge-card locked" onclick="showBadgeDetails('tabaski')">
+                    <div class="badge-icon">🐑</div>
+                    <h3>Préparé Tabaski</h3>
+                    <p>Épargnez 300,000 FCFA pour Tabaski</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+150 points</div>
+                </div>
+                
+                <!-- Badge Rentrée -->
+                <div class="badge-card locked" onclick="showBadgeDetails('school')">
+                    <div class="badge-icon">📚</div>
+                    <h3>Rentrée Scolaire</h3>
+                    <p>Préparez le budget rentrée scolaire</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+80 points</div>
+                </div>
+                
+                <!-- Badge Mobile Money -->
+                <div class="badge-card locked" onclick="showBadgeDetails('mobile-money')">
+                    <div class="badge-icon">📱</div>
+                    <h3>Expert Mobile Money</h3>
+                    <p>Utilisez 3 services Mobile Money différents</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+60 points</div>
+                </div>
+                
+                <!-- Badge Série -->
+                <div class="badge-card locked" onclick="showBadgeDetails('streak')">
+                    <div class="badge-icon">🔥</div>
+                    <h3>Série de 7 jours</h3>
+                    <p>Utilisez l'app pendant 7 jours consécutifs</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+40 points</div>
+                </div>
+                
+                <!-- Badge Conseiller -->
+                <div class="badge-card locked" onclick="showBadgeDetails('advisor')">
+                    <div class="badge-icon">💡</div>
+                    <h3>Conseiller Financier</h3>
+                    <p>Lisez 10 conseils financiers</p>
+                    <div class="badge-status locked">🔒 Verrouillé</div>
+                    <div class="badge-points">+30 points</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progression du niveau -->
+        <section class="level-progression">
+            <h2>📈 Progression du Niveau</h2>
+            <div class="level-container">
+                <div class="level-info">
+                    <div class="level-badge">
+                        <span class="level-icon">🥉</span>
+                        <span class="level-text">Débutant</span>
+                    </div>
+                    <div class="level-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 25%"></div>
+                        </div>
+                        <span class="progress-text">25/100 points</span>
+                    </div>
+                </div>
+                <div class="next-level">
+                    <span class="next-level-text">Prochain niveau : Apprenti (100 points)</span>
+                    <div class="next-level-icon">🥈</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistiques -->
+        <section class="badges-stats">
+            <h2>📊 Statistiques</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <h3>Jours d'utilisation</h3>
+                    <span class="stat-value">15 jours</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <h3>Total épargné</h3>
+                    <span class="stat-value">125,000 FCFA</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <h3>Objectifs atteints</h3>
+                    <span class="stat-value">3/8</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <h3>Meilleur badge</h3>
+                    <span class="stat-value">Épargnant</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de détails du badge -->
+    <div id="badge-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="badge-modal-title">Détails du Badge</h3>
+                <button class="modal-close" onclick="closeBadgeModal()">×</button>
+            </div>
+            <div id="badge-modal-body" class="modal-body">
+                <!-- Contenu dynamique -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Charger les données des badges
+        function loadBadgesData() {
+            const badges = JSON.parse(localStorage.getItem('badges') || '[]');
+            const challenges = JSON.parse(localStorage.getItem('challenges') || '[]');
+            
+            const earnedBadges = badges.filter(b => b.earned).length;
+            const totalPoints = badges.reduce((sum, b) => sum + (b.earned ? b.points : 0), 0);
+            const currentLevel = calculateLevel(totalPoints);
+            const currentStreak = calculateStreak();
+            
+            // Mettre à jour l'affichage
+            document.getElementById('earned-badges').textContent = earnedBadges;
+            document.getElementById('total-points').textContent = totalPoints;
+            document.getElementById('current-level').textContent = currentLevel.name;
+            document.getElementById('current-streak').textContent = currentStreak + ' jours';
+            
+            // Mettre à jour la progression du niveau
+            updateLevelProgress(totalPoints, currentLevel);
+        }
+
+        // Calculer le niveau
+        function calculateLevel(points) {
+            const levels = [
+                { name: 'Débutant', min: 0, max: 99, icon: '🥉' },
+                { name: 'Apprenti', min: 100, max: 249, icon: '🥈' },
+                { name: 'Expert', min: 250, max: 499, icon: '🥇' },
+                { name: 'Maître', min: 500, max: 999, icon: '👑' },
+                { name: 'Légende', min: 1000, max: Infinity, icon: '🏆' }
+            ];
+            
+            return levels.find(level => points >= level.min && points <= level.max) || levels[0];
+        }
+
+        // Calculer la série
+        function calculateStreak() {
+            const lastLogin = localStorage.getItem('last_login_date');
+            if (!lastLogin) return 0;
+            
+            const today = new Date();
+            const lastLoginDate = new Date(lastLogin);
+            const diffTime = today - lastLoginDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays <= 1 ? 1 : 0; // Simplifié pour la démo
+        }
+
+        // Mettre à jour la progression du niveau
+        function updateLevelProgress(points, level) {
+            const progress = ((points - level.min) / (level.max - level.min)) * 100;
+            const progressBar = document.querySelector('.level-progression .progress-fill');
+            const progressText = document.querySelector('.level-progression .progress-text');
+            
+            if (progressBar && progressText) {
+                progressBar.style.width = Math.min(progress, 100) + '%';
+                progressText.textContent = `${points}/${level.max} points`;
+            }
+            
+            // Mettre à jour l'icône du niveau
+            const levelIcon = document.querySelector('.level-icon');
+            if (levelIcon) {
+                levelIcon.textContent = level.icon;
+            }
+        }
+
+        // Afficher les détails d'un badge
+        function showBadgeDetails(badgeId) {
+            const badges = {
+                'saver': {
+                    name: 'Épargnant',
+                    icon: '💰',
+                    description: 'Vous avez réussi à épargner 50,000 FCFA en une semaine !',
+                    requirement: 'Épargnez 50,000 FCFA en 7 jours',
+                    points: 50,
+                    earned: true,
+                    earnedDate: '2024-01-15'
+                },
+                'budget-master': {
+                    name: 'Budget Maître',
+                    icon: '📊',
+                    description: 'Vous respectez parfaitement vos budgets !',
+                    requirement: 'Respectez votre budget pendant 30 jours',
+                    points: 100,
+                    earned: false,
+                    progress: '15/30 jours'
+                },
+
+                'tabaski': {
+                    name: 'Préparé Tabaski',
+                    icon: '🐑',
+                    description: 'Vous êtes prêt pour la fête de Tabaski !',
+                    requirement: 'Épargnez 300,000 FCFA pour Tabaski',
+                    points: 150,
+                    earned: false,
+                    progress: '0/300,000 FCFA'
+                },
+                'school': {
+                    name: 'Rentrée Scolaire',
+                    icon: '📚',
+                    description: 'Vous préparez bien la rentrée scolaire !',
+                    requirement: 'Préparez le budget rentrée scolaire',
+                    points: 80,
+                    earned: false,
+                    progress: '0%'
+                },
+                'mobile-money': {
+                    name: 'Expert Mobile Money',
+                    icon: '📱',
+                    description: 'Vous maîtrisez les services Mobile Money !',
+                    requirement: 'Utilisez 3 services Mobile Money différents',
+                    points: 60,
+                    earned: false,
+                    progress: '1/3 services'
+                },
+                'streak': {
+                    name: 'Série de 7 jours',
+                    icon: '🔥',
+                    description: 'Vous utilisez l\'app régulièrement !',
+                    requirement: 'Utilisez l\'app pendant 7 jours consécutifs',
+                    points: 40,
+                    earned: false,
+                    progress: '3/7 jours'
+                },
+                'advisor': {
+                    name: 'Conseiller Financier',
+                    icon: '💡',
+                    description: 'Vous vous informez sur les finances !',
+                    requirement: 'Lisez 10 conseils financiers',
+                    points: 30,
+                    earned: false,
+                    progress: '2/10 conseils'
+                }
+            };
+
+            const badge = badges[badgeId];
+            if (badge) {
+                const modalTitle = document.getElementById('badge-modal-title');
+                const modalBody = document.getElementById('badge-modal-body');
+                
+                modalTitle.textContent = badge.name;
+                modalBody.innerHTML = `
+                    <div class="badge-details">
+                        <div class="badge-header">
+                            <div class="badge-icon-large">${badge.icon}</div>
+                            <div class="badge-info">
+                                <h3>${badge.name}</h3>
+                                <p>${badge.description}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="badge-requirement">
+                            <h4>📋 Exigence :</h4>
+                            <p>${badge.requirement}</p>
+                        </div>
+                        
+                        <div class="badge-reward">
+                            <h4>🏆 Récompense :</h4>
+                            <p>${badge.points} points</p>
+                        </div>
+                        
+                        ${badge.earned ? `
+                            <div class="badge-earned">
+                                <h4>✅ Obtenu le :</h4>
+                                <p>${formatDate(badge.earnedDate)}</p>
+                            </div>
+                        ` : `
+                            <div class="badge-progress">
+                                <h4>📊 Progression :</h4>
+                                <p>${badge.progress}</p>
+                            </div>
+                        `}
+                    </div>
+                `;
+                
+                document.getElementById('badge-modal').classList.add('active');
+            }
+        }
+
+        // Fermer le modal
+        function closeBadgeModal() {
+            document.getElementById('badge-modal').classList.remove('active');
+        }
+
+        // Fonctions utilitaires
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            loadBadgesData();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#009879">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mon Jeton">
+    <title>Dashboard - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="plotly.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="breadcrumb">
+        <a href="index.html">🏠 Accueil</a> > <span>📊 Dashboard</span>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Grille d'icônes 3x3 -->
+        <section class="dashboard-grid">
+            <h2>📊 Tableau de Bord</h2>
+            <div class="grid-container">
+                <!-- Carte 1: Revenus -->
+                <div class="grid-card revenus-card" onclick="showRevenusDetails()">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <h3>Revenus</h3>
+                        <div class="card-value" id="total-revenus">0 FCFA</div>
+                        <div class="card-subtitle">Ce mois</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 2: Dépenses -->
+                <div class="grid-card depenses-card" onclick="showDepensesDetails()">
+                    <div class="card-icon">💸</div>
+                    <div class="card-content">
+                        <h3>Dépenses</h3>
+                        <div class="card-value" id="total-depenses">0 FCFA</div>
+                        <div class="card-subtitle">Ce mois</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 3: Solde -->
+                <div class="grid-card solde-card" onclick="showSoldeDetails()">
+                    <div class="card-icon">💳</div>
+                    <div class="card-content">
+                        <h3>Solde</h3>
+                        <div class="card-value" id="solde-actuel">0 FCFA</div>
+                        <div class="card-subtitle">Balance actuelle</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 4: Épargne -->
+                <div class="grid-card epargne-card" onclick="showEpargneDetails()">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <h3>Épargne</h3>
+                        <div class="card-value" id="taux-epargne">0%</div>
+                        <div class="card-subtitle">Taux d'épargne</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 5: Graphiques -->
+                <div class="grid-card graphiques-card" onclick="showGraphiques()">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <h3>Analyses</h3>
+                        <div class="card-value">Graphiques</div>
+                        <div class="card-subtitle">Évolution & Répartition</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 6: Prédictions -->
+                <div class="grid-card predictions-card" onclick="showPredictions()">
+                    <div class="card-icon">🔮</div>
+                    <div class="card-content">
+                        <h3>Prédictions</h3>
+                        <div class="card-value">IA</div>
+                        <div class="card-subtitle">Analyses prédictives</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 7: Conseils -->
+                <div class="grid-card conseils-card" onclick="showConseils()">
+                    <div class="card-icon">💡</div>
+                    <div class="card-content">
+                        <h3>Conseils</h3>
+                        <div class="card-value">Personnalisés</div>
+                        <div class="card-subtitle">Recommandations</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 8: Transactions -->
+                <div class="grid-card transactions-card" onclick="goToTransactions()">
+                    <div class="card-icon">📋</div>
+                    <div class="card-content">
+                        <h3>Transactions</h3>
+                        <div class="card-value">Gérer</div>
+                        <div class="card-subtitle">Ajouter/Modifier</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+
+                <!-- Carte 9: Paramètres -->
+                <div class="grid-card parametres-card" onclick="showParametres()">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-content">
+                        <h3>Paramètres</h3>
+                        <div class="card-value">Config</div>
+                        <div class="card-subtitle">Préférences</div>
+                    </div>
+                    <div class="card-arrow">→</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal pour les détails -->
+        <div id="details-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modal-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Styles pour la grille d'icônes 3x3 */
+        .dashboard-grid {
+            padding: 20px;
+        }
+
+        .dashboard-grid h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #009879;
+            font-size: 2rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .grid-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .grid-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: #009879;
+        }
+
+        .grid-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #009879, #28a745);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-content {
+            text-align: center;
+        }
+
+        .card-content h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #009879;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .card-arrow {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #009879;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .grid-card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        /* Couleurs spécifiques pour chaque carte */
+        .revenus-card::before { background: linear-gradient(90deg, #28a745, #20c997); }
+        .depenses-card::before { background: linear-gradient(90deg, #dc3545, #fd7e14); }
+        .solde-card::before { background: linear-gradient(90deg, #009879, #17a2b8); }
+        .epargne-card::before { background: linear-gradient(90deg, #ffc107, #fd7e14); }
+        .graphiques-card::before { background: linear-gradient(90deg, #6f42c1, #e83e8c); }
+        .predictions-card::before { background: linear-gradient(90deg, #6610f2, #6f42c1); }
+        .conseils-card::before { background: linear-gradient(90deg, #20c997, #28a745); }
+        .transactions-card::before { background: linear-gradient(90deg, #fd7e14, #dc3545); }
+        .parametres-card::before { background: linear-gradient(90deg, #6c757d, #495057); }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #009879;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .grid-card {
+                padding: 20px;
+            }
+            
+            .card-icon {
+                font-size: 2.5rem;
+            }
+            
+            .card-value {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .dashboard-grid h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animation d'entrée */
+        .grid-card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .grid-card:nth-child(1) { animation-delay: 0.1s; }
+        .grid-card:nth-child(2) { animation-delay: 0.2s; }
+        .grid-card:nth-child(3) { animation-delay: 0.3s; }
+        .grid-card:nth-child(4) { animation-delay: 0.4s; }
+        .grid-card:nth-child(5) { animation-delay: 0.5s; }
+        .grid-card:nth-child(6) { animation-delay: 0.6s; }
+        .grid-card:nth-child(7) { animation-delay: 0.7s; }
+        .grid-card:nth-child(8) { animation-delay: 0.8s; }
+        .grid-card:nth-child(9) { animation-delay: 0.9s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Charger les données du dashboard
+        function loadDashboardData() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            // Filtrer les transactions du mois en cours
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            // Calculer les totaux
+            const totalRevenus = monthTransactions
+                .filter(t => t.type === 'revenu')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalDepenses = monthTransactions
+                .filter(t => t.type === 'depense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const solde = totalRevenus - totalDepenses;
+            const tauxEpargne = totalRevenus > 0 ? Math.round((solde / totalRevenus) * 100) : 0;
+            
+            // Mettre à jour l'affichage
+            document.getElementById('total-revenus').textContent = formatAmount(totalRevenus) + ' FCFA';
+            document.getElementById('total-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
+            document.getElementById('solde-actuel').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
+            document.getElementById('taux-epargne').textContent = tauxEpargne + '%';
+            
+            // Les graphiques seront générés dans les modals si nécessaire
+        }
+
+        // Créer le graphique d'évolution (pour les modals)
+        function createEvolutionChart(transactions) {
+            const monthlyData = {};
+            
+            transactions.forEach(transaction => {
+                const month = transaction.date.slice(0, 7);
+                if (!monthlyData[month]) {
+                    monthlyData[month] = { revenus: 0, depenses: 0 };
+                }
+                
+                if (transaction.type === 'revenu') {
+                    monthlyData[month].revenus += transaction.amount;
+                } else {
+                    monthlyData[month].depenses += transaction.amount;
+                }
+            });
+            
+            const months = Object.keys(monthlyData).sort();
+            const revenus = months.map(month => monthlyData[month].revenus);
+            const depenses = months.map(month => monthlyData[month].depenses);
+            
+            const trace1 = {
+                x: months,
+                y: revenus,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Revenus',
+                line: { color: '#28a745' },
+                marker: { color: '#28a745' }
+            };
+            
+            const trace2 = {
+                x: months,
+                y: depenses,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Dépenses',
+                line: { color: '#dc3545' },
+                marker: { color: '#dc3545' }
+            };
+            
+            const layout = {
+                title: 'Évolution Mensuelle',
+                xaxis: { title: 'Mois' },
+                yaxis: { title: 'Montant (FCFA)' },
+                height: 300
+            };
+            
+            Plotly.newPlot('modal-evolution-chart', [trace1, trace2], layout);
+        }
+
+        // Créer le graphique des catégories (pour les modals)
+        function createCategoriesChart(transactions) {
+            const categories = {};
+            
+            transactions
+                .filter(t => t.type === 'depense')
+                .forEach(transaction => {
+                    if (!categories[transaction.category]) {
+                        categories[transaction.category] = 0;
+                    }
+                    categories[transaction.category] += transaction.amount;
+                });
+            
+            const labels = Object.keys(categories);
+            const values = Object.values(categories);
+            
+            const trace = {
+                values: values,
+                labels: labels,
+                type: 'pie',
+                hole: 0.4,
+                marker: {
+                    colors: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
+                }
+            };
+            
+            const layout = {
+                title: 'Répartition des Dépenses',
+                height: 300
+            };
+            
+            Plotly.newPlot('modal-categories-chart', [trace], layout);
+        }
+
+        // Mettre à jour les analyses prédictives
+        function updatePredictiveAnalytics(transactions) {
+            const monthlyData = getLast3Months();
+            const analysis = analyzeMonthlyData(transactions, monthlyData);
+            const predictions = calculatePredictions(analysis);
+            const expenseCategories = analyzeExpenseCategories(transactions);
+            const optimizationPotential = calculateOptimizationPotential(transactions);
+            const healthScore = calculateFinancialHealthScore(transactions, predictions);
+            
+            updatePredictionDisplay(predictions, expenseCategories, optimizationPotential, healthScore);
+            createPredictionChart(analysis, predictions);
+        }
+
+        // Obtenir les 3 derniers mois
+        function getLast3Months() {
+            const months = [];
+            const today = new Date();
+            
+            for (let i = 2; i >= 0; i--) {
+                const month = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                months.push(month.toISOString().slice(0, 7));
+            }
+            
+            return months;
+        }
+
+        // Analyser les données mensuelles
+        function analyzeMonthlyData(transactions, months) {
+            const data = {};
+            
+            months.forEach(month => {
+                const monthTransactions = transactions.filter(t => t.date.startsWith(month));
+                const revenus = monthTransactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+                const depenses = monthTransactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+                
+                data[month] = {
+                    revenus: revenus,
+                    depenses: depenses,
+                    solde: revenus - depenses
+                };
+            });
+            
+            return data;
+        }
+
+        // Calculer les prédictions
+        function calculatePredictions(monthlyData) {
+            const months = Object.keys(monthlyData);
+            const revenus = months.map(month => monthlyData[month].revenus);
+            const depenses = months.map(month => monthlyData[month].depenses);
+            
+            // Calculer les tendances
+            const revenusTrend = calculateTrend(revenus);
+            const depensesTrend = calculateTrend(depenses);
+            
+            // Prédire le prochain mois
+            const lastRevenus = revenus[revenus.length - 1] || 0;
+            const lastDepenses = depenses[depenses.length - 1] || 0;
+            
+            const predictedRevenus = lastRevenus * (1 + revenusTrend / 100);
+            const predictedDepenses = lastDepenses * (1 + depensesTrend / 100);
+            const predictedBalance = predictedRevenus - predictedDepenses;
+            
+            return {
+                revenus: predictedRevenus,
+                depenses: predictedDepenses,
+                solde: predictedBalance,
+                revenusTrend: revenusTrend,
+                depensesTrend: depensesTrend,
+                balanceTrend: ((predictedBalance - (lastRevenus - lastDepenses)) / (lastRevenus - lastDepenses)) * 100
+            };
+        }
+
+        // Calculer la tendance
+        function calculateTrend(values) {
+            if (values.length < 2) return 0;
+            
+            const recent = values.slice(-2);
+            const change = ((recent[1] - recent[0]) / recent[0]) * 100;
+            return Math.round(change);
+        }
+
+        // Analyser les catégories de dépenses
+        function analyzeExpenseCategories(transactions) {
+            const categories = {};
+            
+            transactions
+                .filter(t => t.type === 'depense')
+                .forEach(transaction => {
+                    if (!categories[transaction.category]) {
+                        categories[transaction.category] = 0;
+                    }
+                    categories[transaction.category] += transaction.amount;
+                });
+            
+            const sortedCategories = Object.entries(categories)
+                .sort(([,a], [,b]) => b - a);
+            
+            return sortedCategories.length > 0 ? sortedCategories[0][0] : 'N/A';
+        }
+
+        // Calculer le potentiel d'optimisation
+        function calculateOptimizationPotential(transactions) {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth) && t.type === 'depense');
+            
+            if (monthTransactions.length === 0) return 0;
+            
+            // Identifier les dépenses non essentielles (exemple simplifié)
+            const nonEssentialCategories = ['Loisirs', 'Vêtements'];
+            const nonEssentialExpenses = monthTransactions
+                .filter(t => nonEssentialCategories.includes(t.category))
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            return Math.round(nonEssentialExpenses * 0.3); // 30% d'optimisation possible
+        }
+
+        // Calculer le score de santé financière
+        function calculateFinancialHealthScore(transactions, predictions) {
+            let score = 100;
+            
+            // Facteurs de score
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            const revenus = monthTransactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+            const depenses = monthTransactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+            const solde = revenus - depenses;
+            
+            // Pénaliser si dépenses > revenus
+            if (depenses > revenus) {
+                score -= 30;
+            }
+            
+            // Pénaliser si taux d'épargne < 10%
+            const tauxEpargne = revenus > 0 ? (solde / revenus) * 100 : 0;
+            if (tauxEpargne < 10) {
+                score -= 20;
+            }
+            
+            // Bonus si taux d'épargne > 20%
+            if (tauxEpargne > 20) {
+                score += 10;
+            }
+            
+            return Math.max(0, Math.min(100, score));
+        }
+
+        // Mettre à jour l'affichage des prédictions
+        function updatePredictionDisplay(predictions, topCategory, optimizationPotential, healthScore) {
+            document.getElementById('predicted-expenses').textContent = formatAmount(predictions.depenses) + ' FCFA';
+            document.getElementById('predicted-revenues').textContent = formatAmount(predictions.revenus) + ' FCFA';
+            document.getElementById('predicted-balance').textContent = formatAmount(Math.abs(predictions.solde)) + ' FCFA';
+            document.getElementById('recommended-savings').textContent = formatAmount(predictions.revenus * 0.2) + ' FCFA';
+            document.getElementById('top-expense-category').textContent = topCategory;
+            document.getElementById('optimization-potential').textContent = formatAmount(optimizationPotential) + ' FCFA';
+            document.getElementById('financial-health-score').textContent = healthScore + '/100';
+            
+            // Tendances
+            document.getElementById('expenses-trend').textContent = `↗️ +${predictions.depensesTrend}%`;
+            document.getElementById('revenues-trend').textContent = `↗️ +${predictions.revenusTrend}%`;
+            document.getElementById('balance-trend').textContent = `↗️ +${predictions.balanceTrend}%`;
+            
+            // Risque de déficit
+            const deficitRisk = predictions.solde < 0 ? '🔴 Élevé' : predictions.solde < 50000 ? '🟡 Modéré' : '🟢 Faible';
+            document.getElementById('deficit-risk').textContent = deficitRisk;
+        }
+
+        // Créer le graphique prédictif
+        function createPredictionChart(monthlyData, predictions) {
+            const months = Object.keys(monthlyData);
+            const revenus = months.map(month => monthlyData[month].revenus);
+            const depenses = months.map(month => monthlyData[month].depenses);
+            
+            // Ajouter la prédiction
+            const nextMonth = getNextMonth(months[months.length - 1]);
+            revenus.push(predictions.revenus);
+            depenses.push(predictions.depenses);
+            months.push(nextMonth);
+            
+            const trace1 = {
+                x: months,
+                y: revenus,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Revenus',
+                line: { color: '#28a745' },
+                marker: { color: '#28a745' }
+            };
+            
+            const trace2 = {
+                x: months,
+                y: depenses,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Dépenses',
+                line: { color: '#dc3545' },
+                marker: { color: '#dc3545' }
+            };
+            
+            const layout = {
+                title: 'Prédictions Financières',
+                xaxis: { title: 'Mois' },
+                yaxis: { title: 'Montant (FCFA)' },
+                height: 300
+            };
+            
+            Plotly.newPlot('prediction-chart', [trace1, trace2], layout);
+        }
+
+        // Obtenir le mois suivant
+        function getNextMonth(monthString) {
+            const [year, month] = monthString.split('-');
+            const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+            date.setMonth(date.getMonth() + 1);
+            return date.toISOString().slice(0, 7);
+        }
+
+        // Formater le label du mois
+        function formatMonthLabel(monthString) {
+            const [year, month] = monthString.split('-');
+            const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+            return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+        }
+
+        // Définir les prédictions par défaut
+        function setDefaultPredictions() {
+            document.getElementById('predicted-expenses').textContent = '0 FCFA';
+            document.getElementById('predicted-revenues').textContent = '0 FCFA';
+            document.getElementById('predicted-balance').textContent = '0 FCFA';
+            document.getElementById('recommended-savings').textContent = '0 FCFA';
+            document.getElementById('top-expense-category').textContent = 'N/A';
+            document.getElementById('optimization-potential').textContent = '0 FCFA';
+            document.getElementById('financial-health-score').textContent = '85/100';
+        }
+
+        // Générer des conseils personnalisés
+        function generatePersonalizedTips(transactions) {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            const revenus = monthTransactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+            const depenses = monthTransactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+            const solde = revenus - depenses;
+            
+            const tips = [];
+            
+            if (depenses > revenus) {
+                tips.push({
+                    icon: '⚠️',
+                    title: 'Attention aux dépenses',
+                    message: 'Vos dépenses dépassent vos revenus ce mois-ci. Pensez à réduire vos dépenses non essentielles.'
+                });
+            }
+            
+            if (solde > 0 && (solde / revenus) < 0.1) {
+                tips.push({
+                    icon: '💰',
+                    title: 'Augmentez votre épargne',
+                    message: 'Votre taux d\'épargne est faible. Essayez d\'épargner au moins 20% de vos revenus.'
+                });
+            }
+            
+            if (monthTransactions.filter(t => t.type === 'depense').length > 20) {
+                tips.push({
+                    icon: '📊',
+                    title: 'Beaucoup de transactions',
+                    message: 'Vous avez fait beaucoup de petites dépenses. Regroupez-les pour mieux contrôler votre budget.'
+                });
+            }
+            
+            // Conseils par défaut si aucun conseil personnalisé
+            if (tips.length === 0) {
+                tips.push({
+                    icon: '🎯',
+                    title: 'Continuez comme ça !',
+                    message: 'Vos finances sont en bonne santé. Gardez cette discipline !'
+                });
+            }
+            
+            displayTips(tips);
+        }
+
+        // Afficher les conseils
+        function displayTips(tips) {
+            const container = document.getElementById('tips-container');
+            
+            container.innerHTML = tips.map(tip => `
+                <div class="tip-card">
+                    <div class="tip-icon">${tip.icon}</div>
+                    <h3>${tip.title}</h3>
+                    <p>${tip.message}</p>
+                </div>
+            `).join('');
+        }
+
+        // Fonctions utilitaires
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('fr-FR').format(amount);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            loadDashboardData();
+            initializeModal();
+        });
+
+        // Initialiser la modal
+        function initializeModal() {
+            const modal = document.getElementById('details-modal');
+            const closeBtn = document.querySelector('.close');
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Fonctions pour les cartes
+        function showRevenusDetails() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>💰 Détails des Revenus</h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">💰</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #28a745; margin-bottom: 10px;">
+                        ${document.getElementById('total-revenus').textContent}
+                    </div>
+                    <p style="color: #666;">Revenus totaux du mois en cours</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>📊 Répartition par Catégorie</h3>
+                    <div id="revenus-categories-chart"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createRevenusCategoriesChart();
+        }
+
+        function showDepensesDetails() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>💸 Détails des Dépenses</h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">💸</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #dc3545; margin-bottom: 10px;">
+                        ${document.getElementById('total-depenses').textContent}
+                    </div>
+                    <p style="color: #666;">Dépenses totales du mois en cours</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>📊 Répartition par Catégorie</h3>
+                    <div id="depenses-categories-chart"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createDepensesCategoriesChart();
+        }
+
+        function showSoldeDetails() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            const solde = document.getElementById('solde-actuel').textContent;
+            const soldeValue = parseFloat(solde.replace(/[^\d.-]/g, ''));
+            
+            modalContent.innerHTML = `
+                <h2>💳 Détails du Solde</h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">💳</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: ${soldeValue >= 0 ? '#28a745' : '#dc3545'}; margin-bottom: 10px;">
+                        ${solde}
+                    </div>
+                    <p style="color: #666;">Balance actuelle</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>📈 Évolution du Solde</h3>
+                    <div id="solde-evolution-chart"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createSoldeEvolutionChart();
+        }
+
+        function showEpargneDetails() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>📈 Détails de l'Épargne</h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">📈</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #ffc107; margin-bottom: 10px;">
+                        ${document.getElementById('taux-epargne').textContent}
+                    </div>
+                    <p style="color: #666;">Taux d'épargne du mois en cours</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>🎯 Objectifs d'Épargne</h3>
+                    <div id="epargne-objectifs"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createEpargneObjectifs();
+        }
+
+        function showGraphiques() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>📊 Analyses Visuelles</h2>
+                <div style="margin: 20px 0;">
+                    <h3>📈 Évolution des Revenus et Dépenses</h3>
+                    <div id="modal-evolution-chart"></div>
+                </div>
+                <div style="margin: 20px 0;">
+                    <h3>🥧 Répartition des Dépenses par Catégorie</h3>
+                    <div id="modal-categories-chart"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createModalCharts();
+        }
+
+        function showPredictions() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>🔮 Analyses Prédictives</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>📊 Prédictions pour le Prochain Mois</h3>
+                    <div id="predictions-content"></div>
+                </div>
+                <div style="margin: 20px 0;">
+                    <h3>📈 Graphique Prédictif</h3>
+                    <div id="modal-prediction-chart"></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            createPredictionsContent();
+        }
+
+        function showConseils() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>💡 Conseils Personnalisés</h2>
+                <div id="conseils-content"></div>
+            `;
+            
+            modal.style.display = 'block';
+            generateConseilsContent();
+        }
+
+        function goToTransactions() {
+            window.location.href = 'transactions.html';
+        }
+
+        function showParametres() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>⚙️ Paramètres</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>👤 Informations Personnelles</h3>
+                    <p><strong>Nom:</strong> ${localStorage.getItem('user_name') || 'Non défini'}</p>
+                    <p><strong>Email:</strong> ${localStorage.getItem('user_email') || 'Non défini'}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>🔧 Options</h3>
+                    <button onclick="exportData()" style="background: #009879; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
+                        📤 Exporter les Données
+                    </button>
+                    <button onclick="clearAllData()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
+                        🗑️ Effacer Toutes les Données
+                    </button>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Fonctions utilitaires pour les modals
+        function createRevenusCategoriesChart() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth) && t.type === 'revenu');
+            
+            const categories = {};
+            monthTransactions.forEach(t => {
+                categories[t.category] = (categories[t.category] || 0) + t.amount;
+            });
+            
+            const trace = {
+                values: Object.values(categories),
+                labels: Object.keys(categories),
+                type: 'pie',
+                hole: 0.4,
+                marker: { colors: ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#fd7e14'] }
+            };
+            
+            const layout = {
+                title: 'Répartition des Revenus',
+                height: 300
+            };
+            
+            Plotly.newPlot('revenus-categories-chart', [trace], layout);
+        }
+
+        function createDepensesCategoriesChart() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth) && t.type === 'depense');
+            
+            const categories = {};
+            monthTransactions.forEach(t => {
+                categories[t.category] = (categories[t.category] || 0) + t.amount;
+            });
+            
+            const trace = {
+                values: Object.values(categories),
+                labels: Object.keys(categories),
+                type: 'pie',
+                hole: 0.4,
+                marker: { colors: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#e83e8c'] }
+            };
+            
+            const layout = {
+                title: 'Répartition des Dépenses',
+                height: 300
+            };
+            
+            Plotly.newPlot('depenses-categories-chart', [trace], layout);
+        }
+
+        function createSoldeEvolutionChart() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const monthlyData = {};
+            
+            transactions.forEach(transaction => {
+                const month = transaction.date.slice(0, 7);
+                if (!monthlyData[month]) {
+                    monthlyData[month] = { revenus: 0, depenses: 0 };
+                }
+                
+                if (transaction.type === 'revenu') {
+                    monthlyData[month].revenus += transaction.amount;
+                } else {
+                    monthlyData[month].depenses += transaction.amount;
+                }
+            });
+            
+            const months = Object.keys(monthlyData).sort();
+            const soldes = months.map(month => monthlyData[month].revenus - monthlyData[month].depenses);
+            
+            const trace = {
+                x: months,
+                y: soldes,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Solde',
+                line: { color: '#009879' },
+                marker: { color: '#009879' }
+            };
+            
+            const layout = {
+                title: 'Évolution du Solde',
+                xaxis: { title: 'Mois' },
+                yaxis: { title: 'Solde (FCFA)' },
+                height: 300
+            };
+            
+            Plotly.newPlot('solde-evolution-chart', [trace], layout);
+        }
+
+        function createEpargneObjectifs() {
+            const objectifsDiv = document.getElementById('epargne-objectifs');
+            const tauxEpargne = parseInt(document.getElementById('taux-epargne').textContent);
+            
+            let objectif = '';
+            if (tauxEpargne < 10) {
+                objectif = 'Objectif: Augmenter le taux d\'épargne à 20%';
+            } else if (tauxEpargne < 30) {
+                objectif = 'Objectif: Maintenir un taux d\'épargne de 30%';
+            } else {
+                objectif = 'Excellent! Maintenez ce taux d\'épargne';
+            }
+            
+            objectifsDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🎯</div>
+                    <p style="font-size: 1.2rem; color: #009879; font-weight: bold;">${objectif}</p>
+                    <div style="background: #e9ecef; border-radius: 10px; height: 20px; margin: 20px 0;">
+                        <div style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: ${tauxEpargne}%; border-radius: 10px;"></div>
+                    </div>
+                    <p style="color: #666;">Progression: ${tauxEpargne}%</p>
+                </div>
+            `;
+        }
+
+        function createModalCharts() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            createEvolutionChart(transactions);
+            createCategoriesChart(transactions.filter(t => t.type === 'depense'));
+        }
+
+        function createPredictionsContent() {
+            const predictionsDiv = document.getElementById('predictions-content');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            
+            // Calculs prédictifs simples
+            const monthlyData = {};
+            transactions.forEach(t => {
+                const month = t.date.slice(0, 7);
+                if (!monthlyData[month]) {
+                    monthlyData[month] = { revenus: 0, depenses: 0 };
+                }
+                if (t.type === 'revenu') {
+                    monthlyData[month].revenus += t.amount;
+                } else {
+                    monthlyData[month].depenses += t.amount;
+                }
+            });
+            
+            const months = Object.keys(monthlyData).sort();
+            const lastMonth = months[months.length - 1];
+            const avgRevenus = monthlyData[lastMonth]?.revenus || 0;
+            const avgDepenses = monthlyData[lastMonth]?.depenses || 0;
+            
+            predictionsDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">📈</div>
+                        <div style="font-weight: bold; color: #28a745;">Revenus Prévus</div>
+                        <div style="font-size: 1.2rem;">${formatAmount(avgRevenus)} FCFA</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">📉</div>
+                        <div style="font-weight: bold; color: #dc3545;">Dépenses Prévues</div>
+                        <div style="font-size: 1.2rem;">${formatAmount(avgDepenses)} FCFA</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">💳</div>
+                        <div style="font-weight: bold; color: #009879;">Solde Prévu</div>
+                        <div style="font-size: 1.2rem;">${formatAmount(avgRevenus - avgDepenses)} FCFA</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">🎯</div>
+                        <div style="font-weight: bold; color: #ffc107;">Taux d'Épargne</div>
+                        <div style="font-size: 1.2rem;">${avgRevenus > 0 ? Math.round(((avgRevenus - avgDepenses) / avgRevenus) * 100) : 0}%</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateConseilsContent() {
+            const conseilsDiv = document.getElementById('conseils-content');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            const totalRevenus = monthTransactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+            const totalDepenses = monthTransactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+            const solde = totalRevenus - totalDepenses;
+            
+            let conseils = [];
+            
+            if (solde < 0) {
+                conseils.push('⚠️ Attention: Votre solde est négatif. Réduisez vos dépenses.');
+            }
+            
+            if (totalDepenses > totalRevenus * 0.8) {
+                conseils.push('💡 Conseil: Vos dépenses représentent plus de 80% de vos revenus. Pensez à épargner.');
+            }
+            
+            if (monthTransactions.length < 5) {
+                conseils.push('📝 Conseil: Enregistrez plus de transactions pour de meilleures analyses.');
+            }
+            
+            if (conseils.length === 0) {
+                conseils.push('✅ Excellent! Votre gestion financière est équilibrée.');
+            }
+            
+            conseilsDiv.innerHTML = conseils.map(conseil => `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <p style="margin: 0; font-size: 1.1rem;">${conseil}</p>
+                </div>
+            `).join('');
+        }
+
+        function exportData() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const dataStr = JSON.stringify(transactions, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'transactions.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (confirm('Êtes-vous sûr de vouloir effacer toutes les données ? Cette action est irréversible.')) {
+                localStorage.removeItem('transactions');
+                alert('Toutes les données ont été effacées.');
+                loadDashboardData();
+            }
+        }
+    </script>
+</body>
+</html> 

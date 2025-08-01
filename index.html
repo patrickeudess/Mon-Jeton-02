@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#009879">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mon Jeton">
+    <title>Mon Jeton - Gestion de Budget Intelligente</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="plotly.js"></script>
+    <script src="optimize_application.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteneur principal -->
+    <div class="main-container">
+        <!-- En-tête avec résumé rapide -->
+        <header class="welcome-header">
+            <div class="welcome-content">
+                <h1>Bonjour, <span id="user-greeting">Utilisateur</span> ! 👋</h1>
+                <p class="welcome-subtitle">Gérez vos jetons intelligemment</p>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">💰</span>
+                    <span class="stat-value" id="total-revenus">0 FCFA</span>
+                    <span class="stat-label">Revenus</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">💸</span>
+                    <span class="stat-value" id="total-depenses">0 FCFA</span>
+                    <span class="stat-label">Dépenses</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">💳</span>
+                    <span class="stat-value" id="solde-actuel">0 FCFA</span>
+                    <span class="stat-label">Solde</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Actions rapides -->
+        <section class="quick-actions">
+            <h2>⚡ Actions Rapides</h2>
+            <div class="action-buttons">
+                <button class="action-btn primary" onclick="quickAddTransaction()">
+                    <span class="action-icon">➕</span>
+                    <span class="action-text">Nouvelle Transaction</span>
+                </button>
+                <button class="action-btn secondary" onclick="quickViewBalance()">
+                    <span class="action-icon">👁️</span>
+                    <span class="action-text">Voir Solde</span>
+                </button>
+                <button class="action-btn secondary" onclick="quickBudgetCheck()">
+                    <span class="action-icon">🔍</span>
+                    <span class="action-text">Vérifier Budget</span>
+                </button>
+                <button class="action-btn secondary" onclick="quickSavings()">
+                    <span class="action-icon">🏦</span>
+                    <span class="action-text">Mon Épargne</span>
+                </button>
+
+            </div>
+        </section>
+
+        <!-- Grille principale 3x3 -->
+        <section class="grid-container">
+            <h2 class="grid-title">📱 Fonctionnalités</h2>
+            
+            <div class="icon-grid">
+                <!-- Transaction -->
+                <a href="transactions.html" class="grid-item transaction-item">
+                    <div class="grid-icon">📝</div>
+                    <h3>Transactions</h3>
+                    <p>Ajouter et gérer vos revenus et dépenses</p>
+                    <div class="grid-badge">Nouveau</div>
+                </a>
+
+                <!-- Dashboard -->
+                <a href="dashboard.html" class="grid-item dashboard-item">
+                    <div class="grid-icon">📊</div>
+                    <h3>Dashboard</h3>
+                    <p>Vue d'ensemble et analyses prédictives</p>
+                </a>
+
+                <!-- Budgets -->
+                <a href="budgets.html" class="grid-item budget-item">
+                    <div class="grid-icon">🎯</div>
+                    <h3>Budgets</h3>
+                    <p>Définir et suivre vos budgets par catégorie</p>
+                </a>
+
+                <!-- Épargne -->
+                <a href="savings.html" class="grid-item savings-item">
+                    <div class="grid-icon">🏦</div>
+                    <h3>Épargne</h3>
+                    <p>Gérer vos objectifs d'épargne et placements</p>
+                </a>
+
+
+
+                <!-- Assistant IA -->
+                <a href="assistant.html" class="grid-item assistant-item">
+                    <div class="grid-icon">🤖</div>
+                    <h3>Assistant IA</h3>
+                    <p>Conseils financiers personnalisés</p>
+                </a>
+
+                <!-- Objectifs -->
+                <a href="goals.html" class="grid-item goals-item">
+                    <div class="grid-icon">🏆</div>
+                    <h3>Objectifs</h3>
+                    <p>Définir et atteindre vos objectifs financiers</p>
+                </a>
+
+                <!-- Conseils -->
+                <a href="tips.html" class="grid-item tips-item">
+                    <div class="grid-icon">💡</div>
+                    <h3>Conseils</h3>
+                    <p>Astuces et conseils pour optimiser vos finances</p>
+                </a>
+
+                <!-- Sécurité -->
+                <a href="security.html" class="grid-item security-item">
+                    <div class="grid-icon">🔒</div>
+                    <h3>Sécurité</h3>
+                    <p>Verrouillage PIN et paramètres de sécurité</p>
+                </a>
+
+                <!-- Badges -->
+                <a href="badges.html" class="grid-item badges-item">
+                    <div class="grid-icon">🏅</div>
+                    <h3>Badges</h3>
+                    <p>Défis et récompenses pour motiver l'épargne</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Dernières transactions -->
+        <section class="recent-transactions">
+            <h2>🕒 Dernières Transactions</h2>
+            <div id="recent-transactions-list" class="recent-list">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <h3>Aucune transaction</h3>
+                    <p>Commencez par ajouter votre première transaction</p>
+                </div>
+            </div>
+            <div class="view-all-container">
+                <a href="transactions.html" class="view-all-btn">Voir toutes les transactions →</a>
+            </div>
+        </section>
+
+        <!-- Conseils contextuels -->
+        <section class="contextual-tips">
+            <h2>💡 Conseil du Jour</h2>
+            <div id="daily-tip" class="tip-card">
+                <div class="tip-icon">💡</div>
+                <h3>Évitez les frais MoMo</h3>
+                <p>Utilisez les transferts gratuits entre comptes Orange Money pour économiser sur les frais de transaction.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal pour actions rapides -->
+    <div id="quick-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Action Rapide</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Contenu dynamique -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding modal -->
+    <div id="onboarding-modal" class="modal-overlay">
+        <div class="modal-content onboarding-content">
+            <div class="onboarding-slide active" id="slide-1">
+                <div class="onboarding-icon">💰</div>
+                <h2>Bienvenue sur Mon Jeton !</h2>
+                <p>Gérez vos finances intelligemment avec des outils adaptés à votre contexte local.</p>
+                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+            </div>
+            <div class="onboarding-slide" id="slide-2">
+                <div class="onboarding-icon">📱</div>
+                <h2>Import Mobile Money</h2>
+                <p>Importez automatiquement vos transactions Orange Money, MTN MoMo et Wave depuis vos SMS.</p>
+                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+            </div>
+            <div class="onboarding-slide" id="slide-3">
+                <div class="onboarding-icon">👥</div>
+                <h2>Épargne & Objectifs</h2>
+                <p>Gérez vos objectifs d'épargne et placements pour atteindre vos objectifs financiers.</p>
+                <button onclick="finishOnboarding()" class="btn-primary">Commencer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+            document.getElementById('user-greeting').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Charger les données de résumé
+        function loadSummaryData() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            
+            const totalRevenus = transactions
+                .filter(t => t.type === 'revenu')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const totalDepenses = transactions
+                .filter(t => t.type === 'depense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const solde = totalRevenus - totalDepenses;
+
+            document.getElementById('total-revenus').textContent = formatAmount(totalRevenus) + ' FCFA';
+            document.getElementById('total-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
+            document.getElementById('solde-actuel').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
+        }
+
+        // Charger les dernières transactions
+        function loadRecentTransactions() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const recentContainer = document.getElementById('recent-transactions-list');
+            
+            if (transactions.length === 0) {
+                recentContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <h3>Aucune transaction</h3>
+                        <p>Commencez par ajouter votre première transaction</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Prendre les 5 dernières transactions
+            const recentTransactions = transactions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            recentContainer.innerHTML = recentTransactions.map(transaction => `
+                <div class="recent-transaction-item ${transaction.type}">
+                    <div class="recent-transaction-icon">
+                        ${transaction.type === 'revenu' ? '💰' : '💸'}
+                    </div>
+                    <div class="recent-transaction-details">
+                        <div class="recent-transaction-category">${transaction.category}</div>
+                        <div class="recent-transaction-date">${formatDate(transaction.date)}</div>
+                    </div>
+                    <div class="recent-transaction-amount ${transaction.type === 'revenu' ? 'positive' : 'negative'}">
+                        ${transaction.type === 'revenu' ? '+' : '-'}${formatAmount(transaction.amount)} FCFA
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Fonctions utilitaires
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('fr-FR').format(amount);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short'
+            });
+        }
+
+        // Actions rapides
+        function quickAddTransaction() {
+            window.location.href = 'transactions.html';
+        }
+
+        function quickViewBalance() {
+            showModal('Solde Actuel', `
+                <div class="balance-summary">
+                    <div class="balance-item">
+                        <span class="balance-label">Revenus totaux:</span>
+                        <span class="balance-value" id="modal-revenus">0 FCFA</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">Dépenses totales:</span>
+                        <span class="balance-value" id="modal-depenses">0 FCFA</span>
+                    </div>
+                    <div class="balance-item total">
+                        <span class="balance-label">Solde actuel:</span>
+                        <span class="balance-value" id="modal-solde">0 FCFA</span>
+                    </div>
+                </div>
+            `);
+            
+            // Mettre à jour les valeurs dans le modal
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const totalRevenus = transactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+            const totalDepenses = transactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+            const solde = totalRevenus - totalDepenses;
+
+            document.getElementById('modal-revenus').textContent = formatAmount(totalRevenus) + ' FCFA';
+            document.getElementById('modal-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
+            document.getElementById('modal-solde').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
+        }
+
+        function quickBudgetCheck() {
+            const budgets = JSON.parse(localStorage.getItem('budgets') || '{}');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            let budgetStatus = '<div class="budget-status">';
+            
+            Object.keys(budgets).forEach(category => {
+                const budget = budgets[category];
+                const spent = monthTransactions
+                    .filter(t => t.category === category && t.type === 'depense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                const percentage = budget > 0 ? (spent / budget) * 100 : 0;
+                const status = percentage > 100 ? 'danger' : percentage > 80 ? 'warning' : 'success';
+                
+                budgetStatus += `
+                    <div class="budget-item ${status}">
+                        <span class="budget-category">${category}</span>
+                        <span class="budget-amount">${formatAmount(spent)} / ${formatAmount(budget)} FCFA</span>
+                        <span class="budget-percentage">${percentage.toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+            
+            budgetStatus += '</div>';
+            
+            showModal('État des Budgets', budgetStatus);
+        }
+
+        function quickSavings() {
+            const savings = JSON.parse(localStorage.getItem('savings') || '[]');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            
+            const totalRevenus = transactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
+            const totalDepenses = transactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
+            const currentSavings = totalRevenus - totalDepenses;
+            
+            let savingsContent = `
+                <div class="savings-summary">
+                    <div class="savings-item">
+                        <span class="savings-label">Épargne actuelle:</span>
+                        <span class="savings-value">${formatAmount(Math.max(0, currentSavings))} FCFA</span>
+                    </div>
+                    <div class="savings-item">
+                        <span class="savings-label">Taux d'épargne:</span>
+                        <span class="savings-value">${totalRevenus > 0 ? Math.round((currentSavings / totalRevenus) * 100) : 0}%</span>
+                    </div>
+                </div>
+            `;
+            
+            if (savings.length > 0) {
+                savingsContent += '<div class="savings-goals"><h4>Objectifs d\'épargne:</h4>';
+                savings.forEach(goal => {
+                    const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
+                    savingsContent += `
+                        <div class="savings-goal">
+                            <div class="goal-info">
+                                <span class="goal-name">${goal.name}</span>
+                                <span class="goal-amount">${formatAmount(goal.current)} / ${formatAmount(goal.target)} FCFA</span>
+                            </div>
+                            <div class="goal-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
+                                </div>
+                                <span class="progress-text">${progress.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                savingsContent += '</div>';
+            } else {
+                savingsContent += '<p>Aucun objectif d\'épargne défini. Créez votre premier objectif !</p>';
+            }
+            
+            showModal('Mon Épargne', savingsContent);
+        }
+
+        
+
+        // Fonctions modales
+        function showModal(title, content) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = content;
+            document.getElementById('quick-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('quick-modal').classList.remove('active');
+        }
+
+        // Fermer le modal en cliquant à l'extérieur
+        document.getElementById('quick-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Onboarding
+        let currentSlide = 1;
+        const totalSlides = 3;
+
+        function nextSlide() {
+            document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+            currentSlide++;
+            if (currentSlide > totalSlides) {
+                currentSlide = 1;
+            }
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+        }
+
+        function finishOnboarding() {
+            localStorage.setItem('onboarding_completed', 'true');
+            document.getElementById('onboarding-modal').classList.remove('active');
+        }
+
+        // Charger les conseils contextuels
+        function loadContextualTips() {
+            const tips = [
+                {
+                    title: "Évitez les frais MoMo",
+                    content: "Utilisez les transferts gratuits entre comptes Orange Money pour économiser sur les frais de transaction."
+                },
+                {
+                    title: "Épargnez pour Tabaski",
+                    content: "Commencez à épargner dès maintenant pour les dépenses de la fête de Tabaski."
+                },
+                {
+                    title: "Budget rentrée scolaire",
+                    content: "Préparez votre budget pour la rentrée scolaire des enfants dès le mois de juillet."
+                },
+                {
+                                    title: "Épargne familiale",
+                content: "Créez un objectif d'épargne familial pour les événements importants comme les mariages."
+                }
+            ];
+
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            const tipElement = document.getElementById('daily-tip');
+            
+            tipElement.innerHTML = `
+                <div class="tip-icon">💡</div>
+                <h3>${randomTip.title}</h3>
+                <p>${randomTip.content}</p>
+            `;
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            loadSummaryData();
+            loadRecentTransactions();
+            loadContextualTips();
+
+            // Vérifier si c'est le premier lancement
+            const onboardingCompleted = localStorage.getItem('onboarding_completed');
+            if (!onboardingCompleted) {
+                setTimeout(() => {
+                    document.getElementById('onboarding-modal').classList.add('active');
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#009879">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mon Jeton">
+    <title>Conseils - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="plotly.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="breadcrumb">
+        <a href="index.html">🏠 Accueil</a> > <span>💡 Conseils</span>
+    </nav>
+
+    <div class="tips-container">
+        <!-- Conseils du jour -->
+        <section class="daily-tips">
+            <h2>💡 Conseil du Jour</h2>
+            <div id="daily-tip" class="tip-card featured">
+                <div class="tip-icon">💡</div>
+                <h3>Évitez les frais MoMo</h3>
+                <p>Utilisez les transferts gratuits entre comptes Orange Money pour économiser sur les frais de transaction. Ces économies peuvent s'accumuler rapidement !</p>
+                <div class="tip-tags">
+                    <span class="tip-tag">Mobile Money</span>
+                    <span class="tip-tag">Économies</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Catégories de conseils -->
+        <section class="tips-categories">
+            <h2>📚 Conseils par Catégorie</h2>
+            <div class="categories-grid">
+                <div class="category-card" onclick="showCategoryTips('mobile-money')">
+                    <div class="category-icon">📱</div>
+                    <h3>Mobile Money</h3>
+                    <p>Optimisez vos transactions Mobile Money</p>
+                    <span class="tips-count">5 conseils</span>
+                </div>
+                
+                <div class="category-card" onclick="showCategoryTips('savings')">
+                    <div class="category-icon">💰</div>
+                    <h3>Épargne</h3>
+                    <p>Stratégies d'épargne efficaces</p>
+                    <span class="tips-count">8 conseils</span>
+                </div>
+                
+                <div class="category-card" onclick="showCategoryTips('budgeting')">
+                    <div class="category-icon">📊</div>
+                    <h3>Budget</h3>
+                    <p>Gestion intelligente du budget</p>
+                    <span class="tips-count">6 conseils</span>
+                </div>
+                
+                <div class="category-card" onclick="showCategoryTips('cultural')">
+                    <div class="category-icon">🎭</div>
+                    <h3>Événements Culturels</h3>
+                    <p>Préparation pour les fêtes traditionnelles</p>
+                    <span class="tips-count">4 conseils</span>
+                </div>
+                
+                <div class="category-card" onclick="showCategoryTips('family')">
+                    <div class="category-icon">👨‍👩‍👧‍👦</div>
+                    <h3>Famille</h3>
+                    <p>Gestion financière familiale</p>
+                    <span class="tips-count">7 conseils</span>
+                </div>
+                
+                <div class="category-card" onclick="showCategoryTips('security')">
+                    <div class="category-icon">🔒</div>
+                    <h3>Sécurité</h3>
+                    <p>Protection de vos finances</p>
+                    <span class="tips-count">5 conseils</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conseils populaires -->
+        <section class="popular-tips">
+            <h2>⭐ Conseils Populaires</h2>
+            <div id="popular-tips-list" class="tips-grid">
+                <!-- Les conseils populaires seront chargés ici -->
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <h2>❓ Questions Fréquentes</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-icon">❓</span>
+                        <h3>Comment optimiser mes frais Mobile Money ?</h3>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Pour optimiser vos frais Mobile Money :</p>
+                        <ul>
+                            <li>Utilisez les transferts gratuits entre comptes Orange Money</li>
+                            <li>Évitez les retraits fréquents en espèces</li>
+                            <li>Regroupez vos paiements pour réduire les frais</li>
+                            <li>Utilisez les promotions et offres spéciales</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-icon">❓</span>
+                        <h3>Comment préparer le budget pour Tabaski ?</h3>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Pour bien préparer Tabaski :</p>
+                        <ul>
+                            <li>Commencez à épargner 6 mois à l'avance</li>
+                            <li>Estimez le coût du mouton (300,000-500,000 FCFA)</li>
+                            <li>Prévoyez les dépenses de nourriture et vêtements</li>
+                            <li>Créez un budget détaillé avec Mon Jeton</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-icon">❓</span>
+                        <h3>Quelle est la meilleure stratégie d'épargne ?</h3>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>La règle des 50/30/20 :</p>
+                        <ul>
+                            <li>50% pour les besoins essentiels</li>
+                            <li>30% pour les envies et loisirs</li>
+                            <li>20% pour l'épargne et les investissements</li>
+                            <li>Adaptez selon vos revenus et objectifs</li>
+                        </ul>
+                    </div>
+                </div>
+                
+
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Charger les conseils populaires
+        function loadPopularTips() {
+            const popularTips = [
+                {
+                    icon: '💰',
+                    title: 'Épargnez 20% de vos revenus',
+                    content: 'La règle d\'or : épargnez au moins 20% de vos revenus chaque mois pour construire votre sécurité financière.',
+                    tags: ['Épargne', 'Règle d\'or']
+                },
+                {
+                    icon: '📱',
+                    title: 'Optimisez vos frais Mobile Money',
+                    content: 'Utilisez les transferts gratuits entre comptes Orange Money et évitez les retraits fréquents.',
+                    tags: ['Mobile Money', 'Économies']
+                },
+                {
+                    icon: '🎯',
+                    title: 'Définissez des objectifs SMART',
+                    content: 'Spécifiques, Mesurables, Atteignables, Réalistes et Temporels pour vos objectifs financiers.',
+                    tags: ['Objectifs', 'Planification']
+                },
+                {
+                    icon: '📊',
+                    title: 'Suivez vos dépenses quotidiennement',
+                    content: 'Enregistrez chaque transaction dans Mon Jeton pour identifier vos habitudes de dépenses.',
+                    tags: ['Suivi', 'Conscience']
+                },
+                {
+                    icon: '🏦',
+                    title: 'Diversifiez vos sources de revenus',
+                    content: 'Ne comptez pas sur une seule source de revenus. Développez des activités complémentaires.',
+                    tags: ['Revenus', 'Diversification']
+                },
+                {
+                    icon: '🔒',
+                    title: 'Protégez vos informations financières',
+                    content: 'Ne partagez jamais vos codes PIN et utilisez l\'authentification à deux facteurs.',
+                    tags: ['Sécurité', 'Protection']
+                }
+            ];
+
+            const container = document.getElementById('popular-tips-list');
+            container.innerHTML = popularTips.map(tip => `
+                <div class="tip-card">
+                    <div class="tip-icon">${tip.icon}</div>
+                    <h3>${tip.title}</h3>
+                    <p>${tip.content}</p>
+                    <div class="tip-tags">
+                        ${tip.tags.map(tag => `<span class="tip-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Afficher les conseils par catégorie
+        function showCategoryTips(category) {
+            const tips = {
+                'mobile-money': [
+                    {
+                        title: 'Utilisez les transferts gratuits',
+                        content: 'Orange Money offre des transferts gratuits entre comptes. Profitez-en !',
+                        icon: '🍊'
+                    },
+                    {
+                        title: 'Évitez les retraits fréquents',
+                        content: 'Les retraits en espèces ont des frais. Payez directement en Mobile Money.',
+                        icon: '💳'
+                    },
+                    {
+                        title: 'Regroupez vos paiements',
+                        content: 'Faites plusieurs paiements en une fois pour réduire les frais.',
+                        icon: '📦'
+                    }
+                ],
+                'savings': [
+                    {
+                        title: 'La règle des 50/30/20',
+                        content: '50% besoins, 30% envies, 20% épargne.',
+                        icon: '📊'
+                    },
+                    {
+                        title: 'Épargnez en premier',
+                        content: 'Payez-vous en premier avant de dépenser.',
+                        icon: '💰'
+                    },
+                    {
+                        title: 'Automatisez votre épargne',
+                        content: 'Configurez des virements automatiques vers votre compte épargne.',
+                        icon: '🤖'
+                    }
+                ],
+                'budgeting': [
+                    {
+                        title: 'Suivez vos dépenses',
+                        content: 'Enregistrez chaque transaction pour identifier vos habitudes.',
+                        icon: '📝'
+                    },
+                    {
+                        title: 'Utilisez la méthode des enveloppes',
+                        content: 'Allouez un montant fixe par catégorie de dépenses.',
+                        icon: '✉️'
+                    },
+                    {
+                        title: 'Réduisez les dépenses non essentielles',
+                        content: 'Identifiez et réduisez les dépenses qui ne sont pas vitales.',
+                        icon: '✂️'
+                    }
+                ],
+                'cultural': [
+                    {
+                        title: 'Préparez Tabaski à l\'avance',
+                        content: 'Commencez à épargner 6 mois avant la fête.',
+                        icon: '🐑'
+                    },
+                    {
+                        title: 'Budget pour les cérémonies',
+                        content: 'Prévoyez les dépenses pour les mariages et baptêmes.',
+                        icon: '💒'
+                    },
+                    {
+                        title: 'Aide familiale planifiée',
+                        content: 'Intégrez l\'aide familiale dans votre budget mensuel.',
+                        icon: '👨‍👩‍👧‍👦'
+                    }
+                ],
+                'family': [
+                    {
+                        title: 'Budget familial transparent',
+                        content: 'Impliquez toute la famille dans la gestion du budget.',
+                        icon: '🏠'
+                    },
+                    {
+                        title: 'Éducation financière des enfants',
+                        content: 'Apprenez à vos enfants à gérer l\'argent dès le plus jeune âge.',
+                        icon: '👶'
+                    },
+                    {
+                        title: 'Plan d\'urgence familial',
+                        content: 'Créez un fonds d\'urgence pour les imprévus familiaux.',
+                        icon: '🚨'
+                    }
+                ],
+                'security': [
+                    {
+                        title: 'Protégez vos codes PIN',
+                        content: 'Ne partagez jamais vos codes PIN avec qui que ce soit.',
+                        icon: '🔐'
+                    },
+                    {
+                        title: 'Vérifiez vos relevés',
+                        content: 'Contrôlez régulièrement vos relevés bancaires et Mobile Money.',
+                        icon: '📋'
+                    },
+                    {
+                        title: 'Sauvegardez vos données',
+                        content: 'Exportez régulièrement vos données financières.',
+                        icon: '💾'
+                    }
+                ]
+            };
+
+            const categoryTips = tips[category] || [];
+            if (categoryTips.length > 0) {
+                showTipsModal(category, categoryTips);
+            }
+        }
+
+        // Afficher le modal des conseils
+        function showTipsModal(category, tips) {
+            const categoryNames = {
+                'mobile-money': 'Mobile Money',
+                'savings': 'Épargne',
+                'budgeting': 'Budget',
+                'cultural': 'Événements Culturels',
+                'family': 'Famille',
+                'security': 'Sécurité'
+            };
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>💡 Conseils - ${categoryNames[category]}</h3>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        ${tips.map(tip => `
+                            <div class="tip-item">
+                                <div class="tip-icon">${tip.icon}</div>
+                                <div class="tip-content">
+                                    <h4>${tip.title}</h4>
+                                    <p>${tip.content}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('active'), 100);
+        }
+
+        // Fermer le modal
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => document.body.removeChild(modal), 300);
+            }
+        }
+
+        // Basculer l'affichage de la FAQ
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            const answer = faqItem.querySelector('.faq-answer');
+            const toggle = element.querySelector('.faq-toggle');
+            
+            if (faqItem.classList.contains('active')) {
+                faqItem.classList.remove('active');
+                answer.style.maxHeight = '0px';
+                toggle.textContent = '+';
+            } else {
+                faqItem.classList.add('active');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+                toggle.textContent = '-';
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            loadPopularTips();
+        });
+    </script>
+</body>
+</html> 

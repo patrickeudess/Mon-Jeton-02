@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #009879 0%, #00b894 100%);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-header {
+            margin-bottom: 30px;
+        }
+
+        .auth-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #009879;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            background: #009879;
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #009879;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: #009879;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #007a63;
+            transform: translateY(-2px);
+        }
+
+        .social-login {
+            margin-top: 30px;
+        }
+
+        .social-login-title {
+            color: #666;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .social-login-title::before,
+        .social-login-title::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .social-login-title::before {
+            left: 0;
+        }
+
+        .social-login-title::after {
+            right: 0;
+        }
+
+        .social-buttons {
+            display: grid;
+            gap: 15px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-social:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-google {
+            border-color: #db4437;
+            color: #db4437;
+        }
+
+        .btn-google:hover {
+            background: #db4437;
+            color: white;
+        }
+
+        .btn-facebook {
+            border-color: #4267B2;
+            color: #4267B2;
+        }
+
+        .btn-facebook:hover {
+            background: #4267B2;
+            color: white;
+        }
+
+        .btn-phone {
+            border-color: #25d366;
+            color: #25d366;
+        }
+
+        .btn-phone:hover {
+            background: #25d366;
+            color: white;
+        }
+
+        .phone-input-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .phone-input-container.show {
+            display: block;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-code {
+            width: 80px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .phone-number {
+            flex: 1;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .forgot-password a {
+            color: #009879;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+
+            .auth-title {
+                font-size: 1.5rem;
+            }
+
+            .social-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">💰</div>
+                <h1 class="auth-title">Mon Jeton</h1>
+                <p class="auth-subtitle">Gérez vos jetons intelligemment</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Connexion</button>
+                <button class="auth-tab" onclick="switchTab('register')">Inscription</button>
+            </div>
+
+            <!-- Formulaire de connexion -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">📧 Email :</label>
+                    <input type="email" id="login-email" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">🔒 Mot de passe :</label>
+                    <input type="password" id="login-password" required placeholder="Votre mot de passe">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span class="btn-icon">🚪</span>
+                    Se connecter
+                </button>
+                <div class="error-message" id="login-error"></div>
+                <div class="success-message" id="login-success"></div>
+            </form>
+
+            <!-- Formulaire d'inscription -->
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-name">👤 Nom complet :</label>
+                    <input type="text" id="register-name" required placeholder="Votre nom complet">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">📧 Email :</label>
+                    <input type="email" id="register-email" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">🔒 Mot de passe :</label>
+                    <input type="password" id="register-password" required placeholder="Créez un mot de passe">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">🔒 Confirmer le mot de passe :</label>
+                    <input type="password" id="register-confirm-password" required placeholder="Confirmez votre mot de passe">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span class="btn-icon">📝</span>
+                    Créer un compte
+                </button>
+                <div class="error-message" id="register-error"></div>
+                <div class="success-message" id="register-success"></div>
+            </form>
+
+            <!-- Connexion sociale -->
+            <div class="social-login">
+                <div class="social-login-title">Ou connectez-vous avec</div>
+                <div class="social-buttons">
+                    <button class="btn-social btn-google" onclick="loginWithGoogle()">
+                        <span class="social-icon">🔍</span>
+                        <span>Google</span>
+                    </button>
+                    <button class="btn-social btn-facebook" onclick="loginWithFacebook()">
+                        <span class="social-icon">📘</span>
+                        <span>Facebook</span>
+                    </button>
+                    <button class="btn-social btn-phone" onclick="showPhoneLogin()">
+                        <span class="social-icon">📱</span>
+                        <span>Téléphone</span>
+                    </button>
+                </div>
+
+                <!-- Connexion par téléphone -->
+                <div class="phone-input-container" id="phone-container">
+                    <div class="form-group">
+                        <label for="phone-number">📱 Numéro de téléphone :</label>
+                        <div class="phone-input-group">
+                            <select class="country-code" id="country-code">
+                                <option value="+225">🇨🇮 +225</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+32">🇧🇪 +32</option>
+                                <option value="+41">🇨🇭 +41</option>
+                                <option value="+212">🇲🇦 +212</option>
+                                <option value="+221">🇸🇳 +221</option>
+                                <option value="+237">🇨🇲 +237</option>
+                                <option value="+234">🇳🇬 +234</option>
+                            </select>
+                            <input type="tel" id="phone-number" class="phone-number" placeholder="Numéro de téléphone">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="sendPhoneCode()">
+                        <span class="btn-icon">📤</span>
+                        Envoyer le code
+                    </button>
+                    <div class="error-message" id="phone-error"></div>
+                    <div class="success-message" id="phone-success"></div>
+                </div>
+            </div>
+
+            <div class="forgot-password">
+                <a href="#" onclick="showForgotPassword()">Mot de passe oublié ?</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script src="auth-manager.js"></script>
+    <script src="optimize_application.js"></script>
+    <script>
+        // Gestion des onglets
+        function switchTab(tab) {
+            // Mettre à jour les onglets
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-form').classList.add('active');
+            
+            // Masquer les messages d'erreur
+            document.querySelectorAll('.error-message, .success-message').forEach(msg => {
+                msg.style.display = 'none';
+            });
+        }
+
+        // Connexion avec Google
+        function loginWithGoogle() {
+            showNotification('Connexion Google en cours de développement...', 'info');
+            // Simulation de connexion Google
+            setTimeout(() => {
+                const mockUser = {
+                    name: 'Utilisateur Google',
+                    email: 'user@gmail.com',
+                    id: 'google_' + Date.now()
+                };
+                handleSocialLogin(mockUser, 'Google');
+            }, 1000);
+        }
+
+        // Connexion avec Facebook
+        function loginWithFacebook() {
+            showNotification('Connexion Facebook en cours de développement...', 'info');
+            // Simulation de connexion Facebook
+            setTimeout(() => {
+                const mockUser = {
+                    name: 'Utilisateur Facebook',
+                    email: 'user@facebook.com',
+                    id: 'facebook_' + Date.now()
+                };
+                handleSocialLogin(mockUser, 'Facebook');
+            }, 1000);
+        }
+
+        // Afficher la connexion par téléphone
+        function showPhoneLogin() {
+            const phoneContainer = document.getElementById('phone-container');
+            phoneContainer.classList.toggle('show');
+        }
+
+        // Envoyer le code par SMS
+        function sendPhoneCode() {
+            const countryCode = document.getElementById('country-code').value;
+            const phoneNumber = document.getElementById('phone-number').value;
+            
+            if (!phoneNumber) {
+                showError('phone-error', 'Veuillez entrer votre numéro de téléphone');
+                return;
+            }
+
+            showSuccess('phone-success', `Code envoyé au ${countryCode}${phoneNumber}`);
+            
+            // Simulation d'envoi de code
+            setTimeout(() => {
+                const code = prompt('Entrez le code reçu par SMS (simulation: 123456)');
+                if (code === '123456') {
+                    const mockUser = {
+                        name: 'Utilisateur Téléphone',
+                        phone: countryCode + phoneNumber,
+                        id: 'phone_' + Date.now()
+                    };
+                    handleSocialLogin(mockUser, 'Téléphone');
+                } else {
+                    showError('phone-error', 'Code incorrect');
+                }
+            }, 1000);
+        }
+
+        // Gérer la connexion sociale
+        function handleSocialLogin(user, provider) {
+            // Sauvegarder les informations utilisateur
+            localStorage.setItem('auth_token', 'social_' + user.id);
+            localStorage.setItem('user_name', user.name);
+            localStorage.setItem('user_email', user.email || user.phone);
+            localStorage.setItem('login_provider', provider);
+            
+            showSuccess('login-success', `Connexion réussie avec ${provider}`);
+            
+            // Rediriger vers l'application
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+
+        // Gestion du formulaire de connexion
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Simulation de connexion
+            if (email && password) {
+                showSuccess('login-success', 'Connexion en cours...');
+                
+                setTimeout(() => {
+                    localStorage.setItem('auth_token', 'local_' + Date.now());
+                    localStorage.setItem('user_name', email.split('@')[0]);
+                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('login_provider', 'Email');
+                    
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                showError('login-error', 'Veuillez remplir tous les champs');
+            }
+        });
+
+        // Gestion du formulaire d'inscription
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                showError('register-error', 'Les mots de passe ne correspondent pas');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('register-error', 'Le mot de passe doit contenir au moins 6 caractères');
+                return;
+            }
+            
+            // Simulation d'inscription
+            showSuccess('register-success', 'Compte créé avec succès !');
+            
+            setTimeout(() => {
+                localStorage.setItem('auth_token', 'local_' + Date.now());
+                localStorage.setItem('user_name', name);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('login_provider', 'Email');
+                
+                window.location.href = 'index.html';
+            }, 1500);
+        });
+
+        // Fonctions utilitaires
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            // Masquer après 5 secondes
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(elementId, message) {
+            const successElement = document.getElementById(elementId);
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            
+            // Masquer après 3 secondes
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 3000);
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">${type === 'success' ? '✅' : 'ℹ️'}</span>
+                <span class="notification-text">${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function showForgotPassword() {
+            const email = prompt('Entrez votre adresse email pour réinitialiser le mot de passe :');
+            if (email) {
+                showNotification('Email de réinitialisation envoyé !', 'success');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si l'utilisateur est déjà connecté
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html> 

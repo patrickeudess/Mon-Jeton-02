@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sécurité - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <script src="plotly.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="breadcrumb">
+        <a href="index.html">🏠 Accueil</a> > <span>🔒 Sécurité</span>
+    </nav>
+
+    <div class="security-container">
+        <!-- Statut de sécurité -->
+        <section class="security-status">
+            <h2>🔒 Statut de Sécurité</h2>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-icon">🔐</div>
+                    <h3>Verrouillage PIN</h3>
+                    <span id="pin-status" class="status-value">Non configuré</span>
+                    <small>Code PIN pour accéder à l'app</small>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">👆</div>
+                    <h3>Biométrie</h3>
+                    <span id="biometric-status" class="status-value">Non disponible</span>
+                    <small>Empreinte digitale ou Face ID</small>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">🔔</div>
+                    <h3>Notifications</h3>
+                    <span id="notification-status" class="status-value">Activées</span>
+                    <small>Alertes de sécurité</small>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon">📱</div>
+                    <h3>Dernière Connexion</h3>
+                    <span id="last-login" class="status-value">Aujourd'hui</span>
+                    <small>Dernière activité</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration du PIN -->
+        <section class="pin-configuration">
+            <h2>🔐 Configuration du PIN</h2>
+            <div class="pin-setup">
+                <div class="pin-instructions">
+                    <h3>Créez votre code PIN</h3>
+                    <p>Choisissez un code PIN à 4 chiffres pour sécuriser l'accès à votre application.</p>
+                </div>
+                
+                <div class="pin-input-container">
+                    <div class="pin-display">
+                        <div class="pin-dot" id="pin-dot-1"></div>
+                        <div class="pin-dot" id="pin-dot-2"></div>
+                        <div class="pin-dot" id="pin-dot-3"></div>
+                        <div class="pin-dot" id="pin-dot-4"></div>
+                    </div>
+                    
+                    <div class="pin-keypad">
+                        <div class="keypad-row">
+                            <button class="pin-key" onclick="addPinDigit('1')">1</button>
+                            <button class="pin-key" onclick="addPinDigit('2')">2</button>
+                            <button class="pin-key" onclick="addPinDigit('3')">3</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="pin-key" onclick="addPinDigit('4')">4</button>
+                            <button class="pin-key" onclick="addPinDigit('5')">5</button>
+                            <button class="pin-key" onclick="addPinDigit('6')">6</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="pin-key" onclick="addPinDigit('7')">7</button>
+                            <button class="pin-key" onclick="addPinDigit('8')">8</button>
+                            <button class="pin-key" onclick="addPinDigit('9')">9</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="pin-key" onclick="clearPin()">C</button>
+                            <button class="pin-key" onclick="addPinDigit('0')">0</button>
+                            <button class="pin-key" onclick="deletePinDigit()">⌫</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pin-actions">
+                    <button id="set-pin-btn" class="btn-primary" onclick="setPin()" disabled>
+                        <span class="btn-icon">🔐</span>
+                        Définir le PIN
+                    </button>
+                    <button id="change-pin-btn" class="btn-secondary" onclick="changePin()" style="display: none;">
+                        <span class="btn-icon">🔄</span>
+                        Changer le PIN
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Paramètres de sécurité -->
+        <section class="security-settings">
+            <h2>⚙️ Paramètres de Sécurité</h2>
+            <div class="settings-list">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-icon">🔔</div>
+                        <div class="setting-details">
+                            <h3>Notifications de Sécurité</h3>
+                            <p>Recevoir des alertes pour les connexions suspectes</p>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="security-notifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-icon">🔍</div>
+                        <div class="setting-details">
+                            <h3>Historique des Connexions</h3>
+                            <p>Garder un historique des connexions récentes</p>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="connection-history" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-icon">⏰</div>
+                        <div class="setting-details">
+                            <h3>Verrouillage Automatique</h3>
+                            <p>Verrouiller l'app après 5 minutes d'inactivité</p>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-lock">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-icon">📱</div>
+                        <div class="setting-details">
+                            <h3>Biométrie (si disponible)</h3>
+                            <p>Utiliser l'empreinte digitale ou Face ID</p>
+                        </div>
+                    </div>
+                    <div class="setting-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="biometric-auth" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historique des connexions -->
+        <section class="connection-history">
+            <h2>📊 Historique des Connexions</h2>
+            <div id="history-list" class="history-container">
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-icon">📱</div>
+                        <div class="history-details">
+                            <h3>Connexion réussie</h3>
+                            <p>Aujourd'hui à 14:30 - Appareil mobile</p>
+                        </div>
+                    </div>
+                    <div class="history-status success">✅</div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-icon">💻</div>
+                        <div class="history-details">
+                            <h3>Connexion réussie</h3>
+                            <p>Hier à 09:15 - Navigateur web</p>
+                        </div>
+                    </div>
+                    <div class="history-status success">✅</div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-icon">⚠️</div>
+                        <div class="history-details">
+                            <h3>Tentative échouée</h3>
+                            <p>Il y a 2 jours - Code PIN incorrect</p>
+                        </div>
+                    </div>
+                    <div class="history-status warning">⚠️</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions de sécurité -->
+        <section class="security-actions">
+            <h2>🛡️ Actions de Sécurité</h2>
+            <div class="actions-grid">
+                <button class="action-btn warning" onclick="exportData()">
+                    <span class="action-icon">📤</span>
+                    <span class="action-text">Exporter mes données</span>
+                </button>
+                <button class="action-btn danger" onclick="clearAllData()">
+                    <span class="action-icon">🗑️</span>
+                    <span class="action-text">Effacer toutes les données</span>
+                </button>
+                <button class="action-btn info" onclick="showSecurityTips()">
+                    <span class="action-icon">💡</span>
+                    <span class="action-text">Conseils de sécurité</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirm-title">Confirmation</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">×</button>
+            </div>
+            <div id="confirm-body" class="modal-body">
+                <!-- Contenu dynamique -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeConfirmModal()">Annuler</button>
+                <button id="confirm-action-btn" class="btn-primary">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentPin = '';
+        let isSettingPin = true;
+        let storedPin = localStorage.getItem('security_pin');
+
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.setItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Gestion du PIN
+        function addPinDigit(digit) {
+            if (currentPin.length < 4) {
+                currentPin += digit;
+                updatePinDisplay();
+                
+                if (currentPin.length === 4) {
+                    if (isSettingPin) {
+                        document.getElementById('set-pin-btn').disabled = false;
+                    } else {
+                        verifyPin();
+                    }
+                }
+            }
+        }
+
+        function deletePinDigit() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updatePinDisplay();
+                document.getElementById('set-pin-btn').disabled = true;
+            }
+        }
+
+        function clearPin() {
+            currentPin = '';
+            updatePinDisplay();
+            document.getElementById('set-pin-btn').disabled = true;
+        }
+
+        function updatePinDisplay() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`pin-dot-${i}`);
+                if (i <= currentPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+
+        function setPin() {
+            if (currentPin.length === 4) {
+                localStorage.setItem('security_pin', currentPin);
+                storedPin = currentPin;
+                updatePinStatus();
+                showNotification('PIN configuré avec succès !', 'success');
+                clearPin();
+                isSettingPin = false;
+            }
+        }
+
+        function changePin() {
+            isSettingPin = true;
+            clearPin();
+            document.getElementById('set-pin-btn').style.display = 'block';
+            document.getElementById('change-pin-btn').style.display = 'none';
+            showNotification('Entrez votre nouveau PIN', 'info');
+        }
+
+        function verifyPin() {
+            if (currentPin === storedPin) {
+                showNotification('PIN correct !', 'success');
+                clearPin();
+            } else {
+                showNotification('PIN incorrect !', 'error');
+                clearPin();
+            }
+        }
+
+        function updatePinStatus() {
+            const statusElement = document.getElementById('pin-status');
+            if (storedPin) {
+                statusElement.textContent = 'Configuré';
+                statusElement.className = 'status-value success';
+                document.getElementById('set-pin-btn').style.display = 'none';
+                document.getElementById('change-pin-btn').style.display = 'block';
+            } else {
+                statusElement.textContent = 'Non configuré';
+                statusElement.className = 'status-value warning';
+                document.getElementById('set-pin-btn').style.display = 'block';
+                document.getElementById('change-pin-btn').style.display = 'none';
+            }
+        }
+
+        // Gestion des paramètres
+        function loadSecuritySettings() {
+            const settings = JSON.parse(localStorage.getItem('security_settings') || '{}');
+            
+            document.getElementById('security-notifications').checked = settings.notifications !== false;
+            document.getElementById('connection-history').checked = settings.history !== false;
+            document.getElementById('auto-lock').checked = settings.autoLock === true;
+            document.getElementById('biometric-auth').checked = settings.biometric === true;
+        }
+
+        function saveSecuritySettings() {
+            const settings = {
+                notifications: document.getElementById('security-notifications').checked,
+                history: document.getElementById('connection-history').checked,
+                autoLock: document.getElementById('auto-lock').checked,
+                biometric: document.getElementById('biometric-auth').checked
+            };
+            
+            localStorage.setItem('security_settings', JSON.stringify(settings));
+            showNotification('Paramètres sauvegardés !', 'success');
+        }
+
+        // Actions de sécurité
+        function exportData() {
+            const data = {
+                transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
+                budgets: JSON.parse(localStorage.getItem('budgets') || '{}'),
+                savings: JSON.parse(localStorage.getItem('savings') || '[]'),
+    
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mon-jeton-data-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('Données exportées avec succès !', 'success');
+        }
+
+        function clearAllData() {
+            showConfirmModal(
+                'Effacer toutes les données',
+                'Êtes-vous sûr de vouloir effacer toutes vos données ? Cette action est irréversible.',
+                'Effacer',
+                () => {
+                    localStorage.clear();
+                    showNotification('Toutes les données ont été effacées', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+            );
+        }
+
+        function showSecurityTips() {
+            showConfirmModal(
+                'Conseils de Sécurité',
+                `
+                <div class="security-tips">
+                    <div class="tip-item">
+                        <h4>🔐 Code PIN fort</h4>
+                        <p>Utilisez un code PIN à 4 chiffres que vous seul connaissez</p>
+                    </div>
+                    <div class="tip-item">
+                        <h4>📱 Verrouillage automatique</h4>
+                        <p>Activez le verrouillage automatique pour protéger vos données</p>
+                    </div>
+                    <div class="tip-item">
+                        <h4>🔔 Notifications</h4>
+                        <p>Gardez les notifications de sécurité activées</p>
+                    </div>
+                    <div class="tip-item">
+                        <h4>📤 Sauvegarde</h4>
+                        <p>Exportez régulièrement vos données pour les sauvegarder</p>
+                    </div>
+                </div>
+                `,
+                'Compris',
+                () => {}
+            );
+        }
+
+        // Fonctions modales
+        function showConfirmModal(title, content, confirmText, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-body').innerHTML = content;
+            document.getElementById('confirm-action-btn').textContent = confirmText;
+            
+            document.getElementById('confirm-modal').classList.add('active');
+            
+            document.getElementById('confirm-action-btn').onclick = () => {
+                onConfirm();
+                closeConfirmModal();
+            };
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.remove('active');
+        }
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span class="notification-text">${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Gestionnaires d'événements pour les paramètres
+        document.querySelectorAll('.setting-toggle input').forEach(toggle => {
+            toggle.addEventListener('change', saveSecuritySettings);
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            updatePinStatus();
+            loadSecuritySettings();
+        });
+    </script>
+</body>
+</html> 

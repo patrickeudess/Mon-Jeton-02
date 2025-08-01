@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#009879">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mon Jeton">
+    <title>Objectifs - Mon Jeton</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="modern-components.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="plotly.js"></script>
+</head>
+<body>
+    <!-- Vérification d'authentification -->
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        function checkAuth() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        // Exécuter la vérification au chargement
+        checkAuth();
+    </script>
+
+    <!-- Barre de navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="icon-192.png" alt="Logo" class="nav-logo">
+                <span class="nav-title">💰 Mon Jeton</span>
+            </div>
+            <div class="nav-user">
+                <div id="connection-status" class="connection-status">
+                    <span class="status-indicator offline">🔴 Hors ligne</span>
+                </div>
+                <div id="user-info" class="user-info">
+                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="breadcrumb">
+        <a href="index.html">🏠 Accueil</a> > <span>🏆 Objectifs</span>
+    </nav>
+
+    <div class="goals-container">
+        <!-- Résumé des objectifs -->
+        <section class="goals-summary">
+            <h2>🏆 Résumé des Objectifs</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">🎯</div>
+                    <h3>Objectifs Actifs</h3>
+                    <span id="active-goals" class="summary-value">0</span>
+                    <small>Nombre d'objectifs</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">💰</div>
+                    <h3>Total Objectif</h3>
+                    <span id="total-target" class="summary-value">0 FCFA</span>
+                    <small>Montant total</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">💸</div>
+                    <h3>Total Épargné</h3>
+                    <span id="total-saved" class="summary-value">0 FCFA</span>
+                    <small>Montant épargné</small>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">📈</div>
+                    <h3>Progression</h3>
+                    <span id="overall-progress" class="summary-value">0%</span>
+                    <small>Moyenne</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nouvel objectif -->
+        <section class="new-goal">
+            <h2>➕ Nouvel Objectif</h2>
+            <form id="goal-form" class="enhanced-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-name">📝 Nom de l'objectif :</label>
+                        <input type="text" id="goal-name" required placeholder="Ex: Achat d'une voiture">
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-category">📂 Catégorie :</label>
+                        <select id="goal-category" required>
+                            <option value="">Sélectionnez une catégorie</option>
+                            <option value="Tabaski">🐑 Tabaski</option>
+                            <option value="Rentrée scolaire">📚 Rentrée scolaire</option>
+                            <option value="Mariage">💒 Mariage</option>
+                            <option value="Voyage">✈️ Voyage</option>
+                            <option value="Achat immobilier">🏠 Achat immobilier</option>
+                            <option value="Véhicule">🚗 Véhicule</option>
+                            <option value="Équipement">⚙️ Équipement</option>
+                            <option value="Formation">🎓 Formation</option>
+                            <option value="Autre">📋 Autre</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-target">💵 Montant cible (FCFA) :</label>
+                        <input type="number" id="goal-target" required placeholder="500000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-deadline">📅 Date limite :</label>
+                        <input type="date" id="goal-deadline" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-priority">⭐ Priorité :</label>
+                        <select id="goal-priority" required>
+                            <option value="">Sélectionnez la priorité</option>
+                            <option value="high">🔴 Haute</option>
+                            <option value="medium">🟡 Moyenne</option>
+                            <option value="low">🟢 Faible</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-monthly-contribution">💰 Contribution mensuelle (FCFA) :</label>
+                        <input type="number" id="goal-monthly-contribution" required placeholder="50000" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-description">📄 Description (optionnel) :</label>
+                        <textarea id="goal-description" placeholder="Décrivez votre objectif"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-reminders">🔔 Rappels :</label>
+                        <select id="goal-reminders" required>
+                            <option value="">Sélectionnez la fréquence</option>
+                            <option value="daily">Quotidien</option>
+                            <option value="weekly">Hebdomadaire</option>
+                            <option value="monthly">Mensuel</option>
+                            <option value="none">Aucun</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-icon">💾</span>
+                        Créer l'objectif
+                    </button>
+                    <button type="reset" class="btn-secondary">
+                        <span class="btn-icon">🔄</span>
+                        Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Mes objectifs -->
+        <section class="my-goals">
+            <h2>🎯 Mes Objectifs</h2>
+            <div id="goals-list" class="goals-container">
+                <!-- Les objectifs seront chargés ici dynamiquement -->
+            </div>
+        </section>
+
+        <!-- Modèles d'objectifs -->
+        <section class="goal-templates">
+            <h2>📋 Modèles d'Objectifs</h2>
+            <div class="templates-grid">
+                <div class="template-card" onclick="useTemplate('tabaski')">
+                    <div class="template-icon">🐑</div>
+                    <h3>Tabaski</h3>
+                    <p>Épargne pour l'achat du mouton et les dépenses de la fête</p>
+                    <div class="template-details">
+                        <span>💰 300,000 FCFA</span>
+                        <span>📅 6 mois</span>
+                    </div>
+                </div>
+                
+                <div class="template-card" onclick="useTemplate('school')">
+                    <div class="template-icon">📚</div>
+                    <h3>Rentrée Scolaire</h3>
+                    <p>Préparation des frais de scolarité et fournitures</p>
+                    <div class="template-details">
+                        <span>💰 150,000 FCFA</span>
+                        <span>📅 3 mois</span>
+                    </div>
+                </div>
+                
+                <div class="template-card" onclick="useTemplate('wedding')">
+                    <div class="template-icon">💒</div>
+                    <h3>Mariage</h3>
+                    <p>Épargne pour les cérémonies de mariage traditionnel</p>
+                    <div class="template-details">
+                        <span>💰 1,000,000 FCFA</span>
+                        <span>📅 12 mois</span>
+                    </div>
+                </div>
+                
+                <div class="template-card" onclick="useTemplate('travel')">
+                    <div class="template-icon">✈️</div>
+                    <h3>Voyage</h3>
+                    <p>Épargne pour un voyage familial ou professionnel</p>
+                    <div class="template-details">
+                        <span>💰 500,000 FCFA</span>
+                        <span>📅 8 mois</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Afficher le nom de l'utilisateur
+        function displayUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            document.getElementById('display-name').textContent = userName;
+        }
+
+        // Gérer la déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_name');
+            window.location.href = 'login.html';
+        });
+
+        // Charger les données des objectifs
+        function loadGoalsData() {
+            const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+            
+            updateGoalsSummary(goals);
+            displayGoals(goals);
+        }
+
+        // Mettre à jour le résumé des objectifs
+        function updateGoalsSummary(goals) {
+            const activeGoals = goals.filter(g => !g.completed).length;
+            const totalTarget = goals.reduce((sum, g) => sum + g.target, 0);
+            const totalSaved = goals.reduce((sum, g) => sum + g.current, 0);
+            const overallProgress = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
+            
+            document.getElementById('active-goals').textContent = activeGoals;
+            document.getElementById('total-target').textContent = formatAmount(totalTarget) + ' FCFA';
+            document.getElementById('total-saved').textContent = formatAmount(totalSaved) + ' FCFA';
+            document.getElementById('overall-progress').textContent = overallProgress + '%';
+        }
+
+        // Afficher les objectifs
+        function displayGoals(goals) {
+            const container = document.getElementById('goals-list');
+            
+            if (goals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <h3>Aucun objectif</h3>
+                        <p>Créez votre premier objectif pour commencer à épargner</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = goals.map(goal => {
+                const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
+                const timeLeft = calculateTimeLeft(goal.deadline);
+                const status = goal.completed ? 'completed' : progress >= 100 ? 'achieved' : 'active';
+                
+                return `
+                    <div class="goal-card ${status}">
+                        <div class="goal-header">
+                            <div class="goal-info">
+                                <h3 class="goal-name">${goal.name}</h3>
+                                <span class="goal-category">${getCategoryIcon(goal.category)} ${goal.category}</span>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="btn-edit" onclick="editGoal('${goal.id}')" title="Modifier">✏️</button>
+                                <button class="btn-delete" onclick="deleteGoal('${goal.id}')" title="Supprimer">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-progress">
+                            <div class="progress-info">
+                                <span class="progress-amount">${formatAmount(goal.current)} / ${formatAmount(goal.target)} FCFA</span>
+                                <span class="progress-percentage">${progress.toFixed(1)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="goal-details">
+                            <div class="goal-deadline">
+                                <span class="detail-label">📅 Échéance:</span>
+                                <span class="detail-value">${formatDate(goal.deadline)} (${timeLeft})</span>
+                            </div>
+                            <div class="goal-priority">
+                                <span class="detail-label">⭐ Priorité:</span>
+                                <span class="detail-value">${getPriorityIcon(goal.priority)} ${getPriorityLabel(goal.priority)}</span>
+                            </div>
+                            <div class="goal-contribution">
+                                <span class="detail-label">💰 Mensuel:</span>
+                                <span class="detail-value">${formatAmount(goal.monthlyContribution)} FCFA</span>
+                            </div>
+                        </div>
+                        
+                        ${goal.description ? `<p class="goal-description">${goal.description}</p>` : ''}
+                        
+                        ${goal.completed ? '<div class="goal-completed">✅ Objectif atteint !</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Obtenir l'icône de catégorie
+        function getCategoryIcon(category) {
+            const icons = {
+                'Tabaski': '🐑',
+                'Rentrée scolaire': '📚',
+                'Mariage': '💒',
+                'Voyage': '✈️',
+                'Achat immobilier': '🏠',
+                'Véhicule': '🚗',
+                'Équipement': '⚙️',
+                'Formation': '🎓',
+                'Autre': '📋'
+            };
+            return icons[category] || '📋';
+        }
+
+        // Obtenir l'icône de priorité
+        function getPriorityIcon(priority) {
+            const icons = {
+                'high': '🔴',
+                'medium': '🟡',
+                'low': '🟢'
+            };
+            return icons[priority] || '⚪';
+        }
+
+        // Obtenir le label de priorité
+        function getPriorityLabel(priority) {
+            const labels = {
+                'high': 'Haute',
+                'medium': 'Moyenne',
+                'low': 'Faible'
+            };
+            return labels[priority] || 'Non définie';
+        }
+
+        // Calculer le temps restant
+        function calculateTimeLeft(deadline) {
+            const today = new Date();
+            const deadlineDate = new Date(deadline);
+            const diffTime = deadlineDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return 'En retard';
+            } else if (diffDays === 0) {
+                return 'Aujourd\'hui';
+            } else if (diffDays === 1) {
+                return 'Demain';
+            } else if (diffDays < 7) {
+                return `${diffDays} jours`;
+            } else if (diffDays < 30) {
+                const weeks = Math.ceil(diffDays / 7);
+                return `${weeks} semaine${weeks > 1 ? 's' : ''}`;
+            } else {
+                const months = Math.ceil(diffDays / 30);
+                return `${months} mois`;
+            }
+        }
+
+        // Utiliser un modèle d'objectif
+        function useTemplate(template) {
+            const templates = {
+                'tabaski': {
+                    name: 'Épargne Tabaski',
+                    category: 'Tabaski',
+                    target: 300000,
+                    deadline: getDateInMonths(6),
+                    priority: 'high',
+                    monthlyContribution: 50000,
+                    description: 'Épargne pour l\'achat du mouton et les dépenses de la fête de Tabaski'
+                },
+                'school': {
+                    name: 'Rentrée Scolaire',
+                    category: 'Rentrée scolaire',
+                    target: 150000,
+                    deadline: getDateInMonths(3),
+                    priority: 'high',
+                    monthlyContribution: 50000,
+                    description: 'Préparation des frais de scolarité et fournitures pour la rentrée'
+                },
+                'wedding': {
+                    name: 'Mariage',
+                    category: 'Mariage',
+                    target: 1000000,
+                    deadline: getDateInMonths(12),
+                    priority: 'medium',
+                    monthlyContribution: 83333,
+                    description: 'Épargne pour les cérémonies de mariage traditionnel'
+                },
+                'travel': {
+                    name: 'Voyage',
+                    category: 'Voyage',
+                    target: 500000,
+                    deadline: getDateInMonths(8),
+                    priority: 'low',
+                    monthlyContribution: 62500,
+                    description: 'Épargne pour un voyage familial ou professionnel'
+                }
+            };
+
+            const templateData = templates[template];
+            if (templateData) {
+                // Remplir le formulaire avec les données du modèle
+                document.getElementById('goal-name').value = templateData.name;
+                document.getElementById('goal-category').value = templateData.category;
+                document.getElementById('goal-target').value = templateData.target;
+                document.getElementById('goal-deadline').value = templateData.deadline;
+                document.getElementById('goal-priority').value = templateData.priority;
+                document.getElementById('goal-monthly-contribution').value = templateData.monthlyContribution;
+                document.getElementById('goal-description').value = templateData.description;
+                
+                showNotification('Modèle chargé avec succès !', 'success');
+            }
+        }
+
+        // Obtenir une date dans X mois
+        function getDateInMonths(months) {
+            const date = new Date();
+            date.setMonth(date.getMonth() + months);
+            return date.toISOString().slice(0, 10);
+        }
+
+        // Gérer le formulaire d'objectif
+        document.getElementById('goal-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const goal = {
+                id: Date.now().toString(),
+                name: formData.get('goal-name'),
+                category: formData.get('goal-category'),
+                target: parseFloat(formData.get('goal-target')),
+                deadline: formData.get('goal-deadline'),
+                priority: formData.get('goal-priority'),
+                monthlyContribution: parseFloat(formData.get('goal-monthly-contribution')),
+                description: formData.get('goal-description'),
+                reminders: formData.get('goal-reminders'),
+                current: 0,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            // Sauvegarder l'objectif
+            const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+            goals.push(goal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+
+            // Recharger l'affichage
+            loadGoalsData();
+
+            // Réinitialiser le formulaire
+            e.target.reset();
+            
+            // Afficher une notification
+            showNotification('Objectif créé avec succès !', 'success');
+        });
+
+        // Fonctions pour éditer/supprimer les objectifs
+        function editGoal(goalId) {
+            showNotification('Fonctionnalité en cours de développement', 'info');
+        }
+
+        function deleteGoal(goalId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) {
+                const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+                const updatedGoals = goals.filter(goal => goal.id !== goalId);
+                localStorage.setItem('goals', JSON.stringify(updatedGoals));
+                loadGoalsData();
+                showNotification('Objectif supprimé avec succès', 'success');
+            }
+        }
+
+        // Fonction de notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">${type === 'success' ? '✅' : 'ℹ️'}</span>
+                <span class="notification-text">${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Fonctions utilitaires
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('fr-FR').format(amount);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        // Définir la date par défaut à 6 mois
+        document.getElementById('goal-deadline').value = getDateInMonths(6);
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            displayUserInfo();
+            loadGoalsData();
+        });
+    </script>
+</body>
+</html> 
