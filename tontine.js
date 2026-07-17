@@ -163,9 +163,88 @@ function createTontine(data) {
     return tontine;
 }
 
+function loadTransactions() {
+    try {
+        return JSON.parse(localStorage.getItem('transactions') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveTransactions(transactions) {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+function linkedTransactionId(tontineId, kind, cycleIndex, memberId = '') {
+    return ['tontine', tontineId, kind, cycleIndex, memberId].filter(Boolean).join(':');
+}
+
+function syncContributionTransaction(tontine, member, cycleIndex, contributed) {
+    if (!member || !member.isMe) return;
+    const id = linkedTransactionId(tontine.id, 'cotisation', cycleIndex, member.id);
+    let transactions = loadTransactions().filter(t => t.id !== id);
+    if (contributed) {
+        const contribution = tontine.contributions.find(
+            c => c.memberId === member.id && c.cycle === cycleIndex
+        );
+        transactions.push({
+            id,
+            type: 'depense',
+            amount: tontine.amount,
+            category: 'Tontine',
+            date: (contribution ? contribution.date : new Date().toISOString()).slice(0, 10),
+            description: `Cotisation - ${tontine.name} (cycle ${cycleIndex + 1})`,
+            paymentMethod: 'autre',
+            createdAt: new Date().toISOString(),
+            source: 'tontine',
+            tontineId: tontine.id,
+            tontineCycle: cycleIndex,
+            tontineKind: 'cotisation'
+        });
+    }
+    saveTransactions(transactions);
+}
+
+function hasRecordedPayout(tontineId, cycleIndex) {
+    const id = linkedTransactionId(tontineId, 'cagnotte', cycleIndex);
+    return loadTransactions().some(t => t.id === id);
+}
+
+function togglePayoutTransaction(tontineId, cycleIndex) {
+    const tontine = loadTontines().find(t => t.id === tontineId);
+    if (!tontine || tontine.type !== 'rotative') return null;
+    const beneficiary = getBeneficiary(tontine, cycleIndex);
+    if (!beneficiary || !beneficiary.isMe) return null;
+
+    const id = linkedTransactionId(tontine.id, 'cagnotte', cycleIndex);
+    let transactions = loadTransactions();
+    const existing = transactions.findIndex(t => t.id === id);
+    if (existing >= 0) {
+        transactions.splice(existing, 1);
+    } else {
+        transactions.push({
+            id,
+            type: 'revenu',
+            amount: tontine.amount * tontine.members.length,
+            category: 'Tontine',
+            date: new Date().toISOString().slice(0, 10),
+            description: `Cagnotte reçue - ${tontine.name} (cycle ${cycleIndex + 1})`,
+            paymentMethod: 'autre',
+            createdAt: new Date().toISOString(),
+            source: 'tontine',
+            tontineId: tontine.id,
+            tontineCycle: cycleIndex,
+            tontineKind: 'cagnotte'
+        });
+    }
+    saveTransactions(transactions);
+    return existing < 0;
+}
+
 function deleteTontine(tontineId) {
     const tontines = loadTontines().filter(t => t.id !== tontineId);
     saveTontines(tontines);
+    saveTransactions(loadTransactions().filter(t => t.tontineId !== tontineId));
 }
 
 // Enregistre ou annule la cotisation d'un membre pour un cycle donné.
@@ -178,8 +257,11 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
         c => c.memberId === memberId && c.cycle === cycleIndex
     );
 
+    const member = tontine.members.find(m => m.id === memberId);
+    let contributed;
     if (existing >= 0) {
         tontine.contributions.splice(existing, 1);
+        contributed = false;
     } else {
         tontine.contributions.push({
             memberId: memberId,
@@ -187,10 +269,102 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
             date: new Date().toISOString(),
             amount: tontine.amount
         });
+        contributed = true;
     }
 
     saveTontines(tontines);
+    syncContributionTransaction(tontine, member, cycleIndex, contributed);
     return tontine;
+}
+
+function setContributionReminder(tontineId, enabled, daysBefore = 2) {
+    const tontines = loadTontines();
+    const tontine = tontines.find(t => t.id === tontineId);
+    if (!tontine) return null;
+    tontine.reminder = {
+        enabled: Boolean(enabled),
+        daysBefore: Math.max(0, Math.min(30, Number(daysBefore) || 0))
+    };
+    saveTontines(tontines);
+    return tontine.reminder;
+}
+
+function getPendingContributionReminders(tontines, now = new Date()) {
+    const reminders = [];
+    tontines.forEach(tontine => {
+        if (!tontine.reminder || !tontine.reminder.enabled) return;
+        const cycle = getCycleIndex(tontine, now);
+        const me = getMyMember(tontine);
+        if (cycle < 0 || !me || hasContributed(tontine, me.id, cycle)) return;
+
+        const due = getNextDueDate(tontine, cycle);
+        const daysUntilDue = Math.ceil((due.getTime() - now.getTime()) / (24 * 3600 * 1000));
+        if (daysUntilDue < 0 || daysUntilDue > tontine.reminder.daysBefore) return;
+
+        reminders.push({
+            id: `${tontine.id}:${cycle}`,
+            tontineId: tontine.id,
+            cycle,
+            title: `Cotisation bientôt due - ${tontine.name}`,
+            body: `${tontine.amount.toLocaleString('fr-FR')} FCFA à verser avant le ${due.toLocaleDateString('fr-FR')}`,
+            dueDate: due
+        });
+    });
+    return reminders;
+}
+
+function toApiPayload(tontine) {
+    return {
+        client_id: tontine.id,
+        name: tontine.name,
+        type: tontine.type,
+        amount: tontine.amount,
+        frequency: tontine.frequency,
+        start_date: new Date(tontine.startDate + 'T00:00:00').toISOString(),
+        target: tontine.target,
+        reminder_enabled: Boolean(tontine.reminder && tontine.reminder.enabled),
+        reminder_days_before: tontine.reminder ? tontine.reminder.daysBefore : 2,
+        created_at: tontine.createdAt,
+        members: tontine.members.map((member, position) => ({
+            client_id: member.id,
+            name: member.name,
+            is_me: member.isMe,
+            position
+        })),
+        contributions: tontine.contributions.map(item => ({
+            member_client_id: item.memberId,
+            cycle: item.cycle,
+            amount: item.amount,
+            date: item.date
+        }))
+    };
+}
+
+function fromApiTontine(item) {
+    return {
+        id: item.client_id,
+        name: item.name,
+        type: item.type,
+        amount: item.amount,
+        frequency: item.frequency,
+        startDate: item.start_date.slice(0, 10),
+        target: item.target,
+        reminder: {
+            enabled: item.reminder_enabled,
+            daysBefore: item.reminder_days_before
+        },
+        members: item.members
+            .slice()
+            .sort((a, b) => a.position - b.position)
+            .map(member => ({ id: member.client_id, name: member.name, isMe: member.is_me })),
+        contributions: item.contributions.map(contribution => ({
+            memberId: contribution.member_client_id,
+            cycle: contribution.cycle,
+            amount: contribution.amount,
+            date: contribution.date
+        })),
+        createdAt: item.created_at
+    };
 }
 
 // --- Résumé global (cartes du haut de page) ---
@@ -238,6 +412,13 @@ if (typeof window !== 'undefined') {
         createTontine,
         deleteTontine,
         toggleContribution,
+        loadTransactions,
+        hasRecordedPayout,
+        togglePayoutTransaction,
+        setContributionReminder,
+        getPendingContributionReminders,
+        toApiPayload,
+        fromApiTontine,
         getTontinesSummary
     };
 }
