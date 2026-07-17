@@ -25,16 +25,23 @@ class AuthManager {
             this.updateUI(false);
         }
 
-        // Vérifier la connexion au serveur
-        this.checkConnection();
-        
-        // Vérifier périodiquement la connexion
-        setInterval(() => this.checkConnection(), 30000); // Toutes les 30 secondes
+        // Vérifier la connexion au serveur, uniquement si un backend est configuré
+        if (this.api.baseURL) {
+            this.checkConnection();
+            setInterval(() => this.checkConnection(), 30000); // Toutes les 30 secondes
+        } else {
+            this.updateConnectionStatus(false);
+        }
     }
 
     async checkConnection() {
+        if (!this.api.baseURL) {
+            this.isOnline = false;
+            this.updateConnectionStatus(false);
+            return;
+        }
         try {
-            const response = await fetch('http://localhost:8000/health');
+            const response = await fetch(`${this.api.baseURL}/health`);
             if (response.ok) {
                 this.isOnline = true;
                 this.updateConnectionStatus(true);
@@ -167,9 +174,15 @@ class AuthManager {
     }
 
     updateBudgetsUI(budgets) {
-        // Mettre à jour l'interface avec les budgets
+        // L'API renvoie une liste d'objets budget ; l'interface attend une
+        // map { catégorie: montant }.
+        let budgetMap = budgets;
+        if (Array.isArray(budgets)) {
+            budgetMap = {};
+            budgets.forEach(b => { budgetMap[b.category] = b.amount; });
+        }
         if (typeof updateBudgetOverview === 'function') {
-            updateBudgetOverview([], budgets);
+            updateBudgetOverview(undefined, budgetMap);
         }
     }
 
@@ -239,13 +252,31 @@ class EnhancedNotificationManager {
     show(message, type = 'info', duration = 5000) {
         const notification = document.createElement('div');
         notification.className = `notification-item ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">${this.getIcon(type)}</span>
-                <span class="notification-message">${message}</span>
-            </div>
-            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
-        `;
+
+        // Construction en DOM avec textContent : le message peut contenir du
+        // texte issu de données utilisateur ou d'erreurs, il ne doit jamais
+        // être interprété comme du HTML.
+        const content = document.createElement('div');
+        content.className = 'notification-content';
+
+        const icon = document.createElement('span');
+        icon.className = 'notification-icon';
+        icon.textContent = this.getIcon(type);
+
+        const text = document.createElement('span');
+        text.className = 'notification-message';
+        text.textContent = message;
+
+        content.appendChild(icon);
+        content.appendChild(text);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'notification-close';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => notification.remove());
+
+        notification.appendChild(content);
+        notification.appendChild(closeBtn);
 
         this.container.appendChild(notification);
 
@@ -283,6 +314,9 @@ class OfflineManager {
     }
 
     init() {
+        // Restaurer les changements en attente sauvegardés lors d'une session précédente
+        this.loadPendingChanges();
+
         // Écouter les événements de connexion
         window.addEventListener('online', () => this.syncWhenOnline());
         window.addEventListener('offline', () => this.handleOffline());

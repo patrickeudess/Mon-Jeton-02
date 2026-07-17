@@ -29,7 +29,7 @@ Que souhaitez-vous savoir ?`);
      * Récupère le nom de l'utilisateur depuis le stockage
      */
     getUserName() {
-        const name = localStorage.getItem('userName');
+        const name = localStorage.getItem('user_name');
         return name || 'utilisateur';
     }
 

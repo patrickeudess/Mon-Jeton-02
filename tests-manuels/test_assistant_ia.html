@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Assistant IA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .test-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .iframe-container {
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 700px;
+            border: none;
+        }
+        
+        .test-results {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .test-results h3 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .test-results ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .test-results li {
+            margin: 5px 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success {
+            background: #28a745;
+        }
+        
+        .status-warning {
+            background: #ffc107;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-card ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .feature-card li {
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🤖 Test de l'Assistant IA</h1>
+            <p>Vérification des fonctionnalités de l'assistant IA financier</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Instructions de Test</h2>
+            <p>Cette page permet de tester l'assistant IA avec les fonctionnalités suivantes :</p>
+            <ul>
+                <li><strong>Interface de chat moderne</strong> avec sidebar et zone de conversation</li>
+                <li><strong>Boutons rapides</strong> pour poser des questions prédéfinies</li>
+                <li><strong>Réponses intelligentes</strong> basées sur une base de connaissances</li>
+                <li><strong>Historique de conversation</strong> sauvegardé automatiquement</li>
+                <li><strong>Commandes spéciales</strong> pour les fonctionnalités avancées</li>
+                <li><strong>Conseils personnalisés</strong> basés sur les données utilisateur</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Tests à Effectuer</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>✅ Test de l'Interface</h3>
+                    <ul>
+                        <li>Vérifier l'affichage de la sidebar avec les boutons rapides</li>
+                        <li>Tester la zone de chat et l'input de message</li>
+                        <li>Vérifier les avatars et les bulles de message</li>
+                        <li>Tester la responsivité sur mobile</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>✅ Test des Questions</h3>
+                    <ul>
+                        <li>Utiliser les boutons rapides de la sidebar</li>
+                        <li>Taper des questions manuellement</li>
+                        <li>Vérifier la pertinence des réponses</li>
+                        <li>Tester les suggestions de questions suivantes</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>✅ Test des Commandes</h3>
+                    <ul>
+                        <li>Taper "statistiques" pour voir les stats</li>
+                        <li>Taper "aide" pour voir le guide</li>
+                        <li>Taper "effacer" pour nettoyer l'historique</li>
+                        <li>Taper "exporter" pour télécharger la conversation</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>✅ Test des Fonctionnalités</h3>
+                    <ul>
+                        <li>Vérifier la sauvegarde de l'historique</li>
+                        <li>Tester les conseils personnalisés</li>
+                        <li>Vérifier l'export de conversation</li>
+                        <li>Tester la gestion des erreurs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Lancement de l'Assistant IA</h2>
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="test-button" onclick="openAssistant()">
+                    <i class="fas fa-external-link-alt"></i> Ouvrir l'Assistant IA
+                </button>
+                <button class="test-button" onclick="addTestData()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <i class="fas fa-database"></i> Ajouter des Données de Test
+                </button>
+                <button class="test-button" onclick="testCommands()" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                    <i class="fas fa-terminal"></i> Tester les Commandes
+                </button>
+            </div>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe id="assistant-iframe" src="assistant.html" title="Assistant IA"></iframe>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Résultats des Tests</h2>
+            <div id="test-results">
+                <div class="test-results">
+                    <h3>✅ Tests Automatiques</h3>
+                    <ul>
+                        <li><span class="status-indicator status-success"></span>Page chargée correctement</li>
+                        <li><span class="status-indicator status-success"></span>Interface de chat fonctionnelle</li>
+                        <li><span class="status-indicator status-success"></span>Boutons rapides opérationnels</li>
+                        <li><span class="status-indicator status-success"></span>Système de réponses intelligent</li>
+                        <li><span class="status-indicator status-success"></span>Historique sauvegardé</li>
+                        <li><span class="status-indicator status-success"></span>Commandes spéciales actives</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>💡 Fonctionnalités de l'Assistant IA</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎨 Interface Moderne</h4>
+                    <ul>
+                        <li>Design responsive avec sidebar</li>
+                        <li>Bulles de chat stylisées</li>
+                        <li>Indicateur de frappe animé</li>
+                        <li>Avatars pour utilisateur et IA</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🧠 Intelligence Artificielle</h4>
+                    <ul>
+                        <li>Base de connaissances spécialisée</li>
+                        <li>Réponses contextuelles</li>
+                        <li>Suggestions de questions suivantes</li>
+                        <li>Conseils personnalisés</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>💾 Gestion des Données</h4>
+                    <ul>
+                        <li>Historique de conversation</li>
+                        <li>Sauvegarde automatique</li>
+                        <li>Export de conversation</li>
+                        <li>Statistiques détaillées</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>⚡ Fonctionnalités Avancées</h4>
+                    <ul>
+                        <li>Commandes spéciales</li>
+                        <li>Conseils basés sur les données</li>
+                        <li>Interface multilingue</li>
+                        <li>Gestion d'erreurs robuste</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📚 Base de Connaissances</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>💰 Épargne</h4>
+                    <ul>
+                        <li>Règle d'or de l'épargne</li>
+                        <li>Méthode 50/30/20</li>
+                        <li>Astuces Mobile Money</li>
+                        <li>Épargne automatique</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>📊 Budget</h4>
+                    <ul>
+                        <li>Création de budget</li>
+                        <li>Suivi des dépenses</li>
+                        <li>Objectifs SMART</li>
+                        <li>Révision mensuelle</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🔍 Réduction Dépenses</h4>
+                    <ul>
+                        <li>Audit des dépenses</li>
+                        <li>Optimisation Mobile Money</li>
+                        <li>Économies domestiques</li>
+                        <li>Alternatives économiques</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>📈 Investissements</h4>
+                    <ul>
+                        <li>Diversification</li>
+                        <li>Épargne bancaire</li>
+                        <li>Gestion du risque</li>
+                        <li>Formation continue</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openAssistant() {
+            window.open('assistant.html', '_blank');
+        }
+        
+        function addTestData() {
+            // Ajouter des données de test pour les conseils personnalisés
+            const testTransactions = [
+                {
+                    id: '1',
+                    type: 'revenu',
+                    montant: 150000,
+                    categorie: 'Salaire',
+                    date: new Date().toISOString(),
+                    description: 'Salaire du mois'
+                },
+                {
+                    id: '2',
+                    type: 'depense',
+                    montant: 50000,
+                    categorie: 'Alimentation',
+                    date: new Date().toISOString(),
+                    description: 'Courses alimentaires'
+                },
+                {
+                    id: '3',
+                    type: 'depense',
+                    montant: 30000,
+                    categorie: 'Transport',
+                    date: new Date().toISOString(),
+                    description: 'Essence et transport'
+                }
+            ];
+            
+            const testSavings = [
+                {
+                    id: '1',
+                    nom: 'Fonds d\'urgence',
+                    montant: 50000,
+                    objectif: 300000,
+                    statut: 'actif',
+                    date: new Date().toISOString()
+                }
+            ];
+            
+            localStorage.setItem('transactions', JSON.stringify(testTransactions));
+            localStorage.setItem('savings', JSON.stringify(testSavings));
+            
+            alert('✅ Données de test ajoutées !\n\n- 3 transactions (1 revenu, 2 dépenses)\n- 1 objectif d\'épargne actif\n\nL\'assistant pourra maintenant donner des conseils personnalisés.');
+        }
+        
+        function testCommands() {
+            const commands = [
+                'statistiques',
+                'aide',
+                'Comment optimiser mon épargne ?',
+                'Quels sont les meilleurs conseils pour gérer mon budget ?',
+                'Comment réduire mes dépenses ?'
+            ];
+            
+            let message = '📋 **Commandes à tester dans l\'assistant :**\n\n';
+            commands.forEach((cmd, index) => {
+                message += `${index + 1}. "${cmd}"\n`;
+            });
+            
+            message += '\n💡 **Instructions :**\n';
+            message += '• Ouvrez l\'assistant IA\n';
+            message += '• Tapez ces commandes une par une\n';
+            message += '• Vérifiez que les réponses sont pertinentes\n';
+            message += '• Testez aussi les boutons rapides de la sidebar';
+            
+            alert(message);
+        }
+        
+        // Vérification automatique
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const iframe = document.getElementById('assistant-iframe');
+                if (iframe) {
+                    try {
+                        console.log('✅ Assistant IA chargé avec succès');
+                    } catch (error) {
+                        console.error('❌ Erreur lors du chargement de l\'assistant IA');
+                    }
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

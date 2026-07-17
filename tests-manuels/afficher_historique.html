@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afficher l'Historique - Épargne</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .success {
+            background: rgba(40, 167, 69, 0.8);
+            color: white;
+        }
+        
+        .info {
+            background: rgba(23, 162, 184, 0.8);
+            color: white;
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 800px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Afficher l'Historique dans Chaque Catégorie</h1>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="createTestData()">
+                📊 Créer Données de Test
+            </button>
+            
+            <button class="action-btn" onclick="refreshSavingsPage()">
+                🔄 Actualiser Page Épargne
+            </button>
+            
+            <button class="action-btn" onclick="showDataPreview()">
+                👁️ Aperçu des Données
+            </button>
+            
+            <button class="action-btn" onclick="clearAllData()">
+                🗑️ Effacer Toutes les Données
+            </button>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe src="savings.html" title="Page Épargne avec Historique"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function createTestData() {
+            // Données de test pour les objectifs d'épargne
+            const testObjectifs = [
+                {
+                    id: '1',
+                    nom: 'Vacances d\'été',
+                    montantCible: 500000,
+                    montantEpargne: 150000,
+                    dateLimite: '2024-08-15',
+                    description: 'Épargne pour les vacances d\'été en famille',
+                    createdAt: '2024-01-01T00:00:00.000Z'
+                },
+                {
+                    id: '2',
+                    nom: 'Nouvelle voiture',
+                    montantCible: 3000000,
+                    montantEpargne: 800000,
+                    dateLimite: '2025-06-30',
+                    description: 'Achat d\'une nouvelle voiture pour remplacer l\'ancienne',
+                    createdAt: '2024-01-15T00:00:00.000Z'
+                },
+                {
+                    id: '3',
+                    nom: 'Formation professionnelle',
+                    montantCible: 250000,
+                    montantEpargne: 75000,
+                    dateLimite: '2024-12-31',
+                    description: 'Formation en développement web et nouvelles technologies',
+                    createdAt: '2024-02-01T00:00:00.000Z'
+                },
+                {
+                    id: '4',
+                    nom: 'Rénovation maison',
+                    montantCible: 1500000,
+                    montantEpargne: 300000,
+                    dateLimite: '2025-12-31',
+                    description: 'Rénovation complète de la cuisine et salle de bain',
+                    createdAt: '2024-02-15T00:00:00.000Z'
+                }
+            ];
+            
+            // Données de test pour les épargnes régulières
+            const testEpargnes = [
+                {
+                    id: '1',
+                    description: 'Épargne mensuelle',
+                    montant: 50000,
+                    date: '2024-01-15',
+                    methode: 'virement',
+                    objectifLie: '1',
+                    createdAt: '2024-01-15T00:00:00.000Z'
+                },
+                {
+                    id: '2',
+                    description: 'Bonus de fin d\'année',
+                    montant: 100000,
+                    date: '2024-01-20',
+                    methode: 'especes',
+                    objectifLie: null,
+                    createdAt: '2024-01-20T00:00:00.000Z'
+                },
+                {
+                    id: '3',
+                    description: 'Épargne hebdomadaire',
+                    montant: 25000,
+                    date: '2024-01-25',
+                    methode: 'virement',
+                    objectifLie: '2',
+                    createdAt: '2024-01-25T00:00:00.000Z'
+                },
+                {
+                    id: '4',
+                    description: 'Épargne exceptionnelle',
+                    montant: 75000,
+                    date: '2024-02-01',
+                    methode: 'carte',
+                    objectifLie: '3',
+                    createdAt: '2024-02-01T00:00:00.000Z'
+                },
+                {
+                    id: '5',
+                    description: 'Épargne mensuelle',
+                    montant: 50000,
+                    date: '2024-02-15',
+                    methode: 'virement',
+                    objectifLie: '1',
+                    createdAt: '2024-02-15T00:00:00.000Z'
+                },
+                {
+                    id: '6',
+                    description: 'Épargne bonus',
+                    montant: 125000,
+                    date: '2024-02-20',
+                    methode: 'especes',
+                    objectifLie: '4',
+                    createdAt: '2024-02-20T00:00:00.000Z'
+                }
+            ];
+            
+            // Sauvegarder les données dans localStorage
+            localStorage.setItem('objectifs_epargne', JSON.stringify(testObjectifs));
+            localStorage.setItem('epargnes_regulieres', JSON.stringify(testEpargnes));
+            
+            // Afficher confirmation
+            alert('✅ Données de test créées avec succès !\n\n' +
+                  '🎯 4 objectifs d\'épargne ajoutés\n' +
+                  '💰 6 épargnes régulières ajoutées\n\n' +
+                  'L\'historique s\'affiche maintenant dans chaque catégorie.');
+            
+            // Actualiser la page dans l'iframe
+            setTimeout(() => {
+                const iframe = document.querySelector('iframe');
+                if (iframe) {
+                    iframe.src = iframe.src;
+                }
+            }, 1000);
+        }
+        
+        function refreshSavingsPage() {
+            const iframe = document.querySelector('iframe');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+            alert('🔄 Page Épargne actualisée !');
+        }
+        
+        function showDataPreview() {
+            const objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+            const epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
+            
+            let message = '📊 APERÇU DES DONNÉES\n\n';
+            
+            if (objectifs.length > 0) {
+                message += '🎯 OBJECTIFS D\'ÉPARGNE (' + objectifs.length + '):\n';
+                objectifs.forEach((obj, index) => {
+                    const progression = obj.montantCible > 0 ? (obj.montantEpargne / obj.montantCible * 100) : 0;
+                    message += `${index + 1}. ${obj.nom} - ${obj.montantEpargne.toLocaleString()} / ${obj.montantCible.toLocaleString()} F CFA (${progression.toFixed(1)}%)\n`;
+                });
+            } else {
+                message += '🎯 Aucun objectif d\'épargne\n';
+            }
+            
+            message += '\n💰 ÉPARGNES RÉGULIÈRES (' + epargnes.length + '):\n';
+            if (epargnes.length > 0) {
+                epargnes.forEach((ep, index) => {
+                    message += `${index + 1}. ${ep.description} - ${ep.montant.toLocaleString()} F CFA (${ep.date})\n`;
+                });
+            } else {
+                message += 'Aucune épargne régulière\n';
+            }
+            
+            alert(message);
+        }
+        
+        function clearAllData() {
+            if (confirm('Êtes-vous sûr de vouloir effacer toutes les données ?')) {
+                localStorage.removeItem('objectifs_epargne');
+                localStorage.removeItem('epargnes_regulieres');
+                alert('✅ Données de test effacées avec succès !');
+                
+                // Actualiser la page dans l'iframe
+                setTimeout(() => {
+                    const iframe = document.querySelector('iframe');
+                    if (iframe) {
+                        iframe.src = iframe.src;
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Initialisation
+        window.onload = function() {
+            console.log('Page d\'affichage de l\'historique chargée');
+            console.log('Utilisez les boutons pour créer des données de test et voir l\'historique');
+        };
+    </script>
+</body>
+</html> 

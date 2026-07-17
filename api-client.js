@@ -4,8 +4,16 @@
  */
 
 class BudgetAPI {
-    constructor(baseURL = 'http://localhost:8000') {
-        this.baseURL = baseURL;
+    constructor(baseURL = null) {
+        // L'URL du backend est configurable via window.API_BASE_URL ou la clé
+        // localStorage 'api_base_url'. En dehors d'un environnement local,
+        // aucune URL par défaut n'est utilisée : l'application fonctionne
+        // alors en mode 100 % localStorage.
+        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        this.baseURL = baseURL
+            || window.API_BASE_URL
+            || localStorage.getItem('api_base_url')
+            || (isLocalhost ? 'http://localhost:8000' : null);
         this.token = localStorage.getItem('auth_token');
     }
 
@@ -220,9 +228,15 @@ class BudgetAPI {
         localStorage.removeItem('auth_token');
     }
 
-    // Vérifier si l'utilisateur est connecté
+    // Vérifier si l'utilisateur est connecté au backend.
+    // Les jetons 'local_*' et 'social_*' créés par le mode hors ligne de
+    // login.html ne sont pas des jetons API : dans ce cas les données
+    // restent gérées par localStorage.
     isAuthenticated() {
-        return !!this.token;
+        return !!this.baseURL
+            && !!this.token
+            && !this.token.startsWith('local_')
+            && !this.token.startsWith('social_');
     }
 }
 

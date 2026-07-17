@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
-    <script src="plotly.js"></script>
+    <link rel="stylesheet" href="theme.css">
+    <script src="common.js"></script>
 </head>
 <body>
     <!-- Vérification d'authentification -->
@@ -284,7 +285,33 @@
         // Variables globales
         let currentPin = '';
         let isSettingPin = true;
-        let storedPin = localStorage.getItem('security_pin');
+        // Le PIN n'est jamais stocké en clair : seul son empreinte SHA-256 est conservée.
+        let storedPinHash = localStorage.getItem('security_pin_hash');
+
+        async function hashPin(pin) {
+            if (window.crypto && crypto.subtle) {
+                const data = new TextEncoder().encode('mon-jeton::' + pin);
+                const digest = await crypto.subtle.digest('SHA-256', data);
+                return Array.from(new Uint8Array(digest))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+            }
+            // crypto.subtle indisponible (contexte non sécurisé) : marquage explicite
+            return 'plain:' + pin;
+        }
+
+        // Migration : remplacer un ancien PIN stocké en clair par son empreinte
+        (async function migrateLegacyPin() {
+            const legacyPin = localStorage.getItem('security_pin');
+            if (legacyPin) {
+                if (!storedPinHash) {
+                    storedPinHash = await hashPin(legacyPin);
+                    localStorage.setItem('security_pin_hash', storedPinHash);
+                }
+                localStorage.removeItem('security_pin');
+                updatePinStatus();
+            }
+        })();
 
         // Afficher le nom de l'utilisateur
         function displayUserInfo() {
@@ -296,7 +323,7 @@
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_email');
-            localStorage.setItem('user_name');
+            localStorage.removeItem('user_name');
             window.location.href = 'login.html';
         });
 
@@ -341,10 +368,11 @@
             }
         }
 
-        function setPin() {
+        async function setPin() {
             if (currentPin.length === 4) {
-                localStorage.setItem('security_pin', currentPin);
-                storedPin = currentPin;
+                storedPinHash = await hashPin(currentPin);
+                localStorage.setItem('security_pin_hash', storedPinHash);
+                localStorage.removeItem('security_pin');
                 updatePinStatus();
                 showNotification('PIN configuré avec succès !', 'success');
                 clearPin();
@@ -360,8 +388,9 @@
             showNotification('Entrez votre nouveau PIN', 'info');
         }
 
-        function verifyPin() {
-            if (currentPin === storedPin) {
+        async function verifyPin() {
+            const attemptHash = await hashPin(currentPin);
+            if (attemptHash === storedPinHash) {
                 showNotification('PIN correct !', 'success');
                 clearPin();
             } else {
@@ -372,7 +401,7 @@
 
         function updatePinStatus() {
             const statusElement = document.getElementById('pin-status');
-            if (storedPin) {
+            if (storedPinHash) {
                 statusElement.textContent = 'Configuré';
                 statusElement.className = 'status-value success';
                 document.getElementById('set-pin-btn').style.display = 'none';

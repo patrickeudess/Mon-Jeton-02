@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
+    <link rel="stylesheet" href="theme.css">
     <style>
         .auth-container {
             min-height: 100vh;
@@ -487,60 +488,93 @@
             }, 1500);
         }
 
+        // Un backend est-il configuré ? (voir api-client.js)
+        function backendAvailable() {
+            return typeof api !== 'undefined' && !!api.baseURL;
+        }
+
+        // Session locale sans backend : les données restent dans localStorage.
+        function createLocalSession(name, email) {
+            localStorage.setItem('auth_token', 'local_' + Date.now());
+            localStorage.setItem('user_name', name);
+            localStorage.setItem('user_email', email);
+            localStorage.setItem('login_provider', 'Local');
+        }
+
         // Gestion du formulaire de connexion
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('login-email').value;
+
+            const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-            
-            // Simulation de connexion
-            if (email && password) {
-                showSuccess('login-success', 'Connexion en cours...');
-                
-                setTimeout(() => {
-                    localStorage.setItem('auth_token', 'local_' + Date.now());
-                    localStorage.setItem('user_name', email.split('@')[0]);
-                    localStorage.setItem('user_email', email);
-                    localStorage.setItem('login_provider', 'Email');
-                    
-                    window.location.href = 'index.html';
-                }, 1000);
-            } else {
+
+            if (!email || !password) {
                 showError('login-error', 'Veuillez remplir tous les champs');
+                return;
             }
+
+            if (backendAvailable()) {
+                // Authentification réelle via l'API (JWT)
+                try {
+                    showSuccess('login-success', 'Connexion en cours...');
+                    await api.login(email, password);
+                    const user = await api.getCurrentUser();
+                    localStorage.setItem('user_name', user.full_name || user.username);
+                    localStorage.setItem('user_email', user.email);
+                    localStorage.setItem('login_provider', 'API');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    showError('login-error', `Connexion impossible : ${error.message}`);
+                }
+                return;
+            }
+
+            // Aucun backend configuré : mode hors ligne assumé
+            showSuccess('login-success', 'Mode hors ligne : session locale créée');
+            createLocalSession(email.split('@')[0], email);
+            setTimeout(() => { window.location.href = 'index.html'; }, 800);
         });
 
         // Gestion du formulaire d'inscription
-        document.getElementById('register-form').addEventListener('submit', function(e) {
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
+
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('register-confirm-password').value;
-            
+
             if (password !== confirmPassword) {
                 showError('register-error', 'Les mots de passe ne correspondent pas');
                 return;
             }
-            
+
             if (password.length < 6) {
                 showError('register-error', 'Le mot de passe doit contenir au moins 6 caractères');
                 return;
             }
-            
-            // Simulation d'inscription
-            showSuccess('register-success', 'Compte créé avec succès !');
-            
-            setTimeout(() => {
-                localStorage.setItem('auth_token', 'local_' + Date.now());
-                localStorage.setItem('user_name', name);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('login_provider', 'Email');
-                
-                window.location.href = 'index.html';
-            }, 1500);
+
+            if (backendAvailable()) {
+                // Inscription réelle via l'API, puis connexion automatique.
+                // L'email sert d'identifiant de connexion (username côté API).
+                try {
+                    await api.register({ email: email, username: email, full_name: name, password: password });
+                    await api.login(email, password);
+                    localStorage.setItem('user_name', name);
+                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('login_provider', 'API');
+                    showSuccess('register-success', 'Compte créé avec succès !');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+                } catch (error) {
+                    showError('register-error', `Inscription impossible : ${error.message}`);
+                }
+                return;
+            }
+
+            // Aucun backend configuré : mode hors ligne assumé
+            showSuccess('register-success', 'Mode hors ligne : compte local créé');
+            createLocalSession(name, email);
+            setTimeout(() => { window.location.href = 'index.html'; }, 800);
         });
 
         // Fonctions utilitaires

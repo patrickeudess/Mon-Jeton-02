@@ -31,7 +31,7 @@ def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
 def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
     db_user = get_user(db, user_id)
     if db_user:
-        for field, value in user_update.dict(exclude_unset=True).items():
+        for field, value in user_update.model_dump(exclude_unset=True).items():
             setattr(db_user, field, value)
         db.commit()
         db.refresh(db_user)
@@ -39,7 +39,10 @@ def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> O
 
 # Fonctions CRUD pour les transactions
 def create_transaction(db: Session, transaction: schemas.TransactionCreate, user_id: int) -> models.Transaction:
-    db_transaction = models.Transaction(**transaction.dict(), user_id=user_id)
+    data = transaction.model_dump()
+    if data.get("date") is None:
+        data["date"] = datetime.utcnow()
+    db_transaction = models.Transaction(**data, user_id=user_id)
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)
@@ -48,22 +51,43 @@ def create_transaction(db: Session, transaction: schemas.TransactionCreate, user
 def get_transactions(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List[models.Transaction]:
     return db.query(models.Transaction).filter(models.Transaction.user_id == user_id).offset(skip).limit(limit).all()
 
-def get_transaction(db: Session, transaction_id: int, user_id: int) -> Optional[models.Transaction]:
-    return db.query(models.Transaction).filter(
-        models.Transaction.id == transaction_id,
-        models.Transaction.user_id == user_id
-    ).first()
+def get_user_transactions(
+    db: Session,
+    user_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    transaction_type: Optional[str] = None,
+    category: Optional[str] = None,
+) -> List[models.Transaction]:
+    query = db.query(models.Transaction).filter(models.Transaction.user_id == user_id)
+    if start_date:
+        query = query.filter(models.Transaction.date >= start_date)
+    if end_date:
+        query = query.filter(models.Transaction.date <= end_date)
+    if transaction_type:
+        query = query.filter(models.Transaction.type == transaction_type)
+    if category:
+        query = query.filter(models.Transaction.category == category)
+    return query.order_by(models.Transaction.date.desc()).offset(skip).limit(limit).all()
 
-def update_transaction(db: Session, transaction_id: int, transaction_update: schemas.TransactionUpdate, user_id: int) -> Optional[models.Transaction]:
+def get_transaction(db: Session, transaction_id: int, user_id: Optional[int] = None) -> Optional[models.Transaction]:
+    query = db.query(models.Transaction).filter(models.Transaction.id == transaction_id)
+    if user_id is not None:
+        query = query.filter(models.Transaction.user_id == user_id)
+    return query.first()
+
+def update_transaction(db: Session, transaction_id: int, transaction_update: schemas.TransactionUpdate, user_id: Optional[int] = None) -> Optional[models.Transaction]:
     db_transaction = get_transaction(db, transaction_id, user_id)
     if db_transaction:
-        for field, value in transaction_update.dict(exclude_unset=True).items():
+        for field, value in transaction_update.model_dump(exclude_unset=True).items():
             setattr(db_transaction, field, value)
         db.commit()
         db.refresh(db_transaction)
     return db_transaction
 
-def delete_transaction(db: Session, transaction_id: int, user_id: int) -> bool:
+def delete_transaction(db: Session, transaction_id: int, user_id: Optional[int] = None) -> bool:
     db_transaction = get_transaction(db, transaction_id, user_id)
     if db_transaction:
         db.delete(db_transaction)
@@ -73,7 +97,7 @@ def delete_transaction(db: Session, transaction_id: int, user_id: int) -> bool:
 
 # Fonctions CRUD pour les budgets
 def create_budget(db: Session, budget: schemas.BudgetCreate, user_id: int) -> models.Budget:
-    db_budget = models.Budget(**budget.dict(), user_id=user_id)
+    db_budget = models.Budget(**budget.model_dump(), user_id=user_id)
     db.add(db_budget)
     db.commit()
     db.refresh(db_budget)
@@ -85,23 +109,26 @@ def get_budgets(db: Session, user_id: int, month: str = None) -> List[models.Bud
         query = query.filter(models.Budget.month == month)
     return query.all()
 
-def update_budget(db: Session, budget_id: int, budget_update: schemas.BudgetUpdate, user_id: int) -> Optional[models.Budget]:
-    db_budget = db.query(models.Budget).filter(
-        models.Budget.id == budget_id,
-        models.Budget.user_id == user_id
-    ).first()
+def get_user_budgets(db: Session, user_id: int, month: str = None) -> List[models.Budget]:
+    return get_budgets(db, user_id, month)
+
+def update_budget(db: Session, budget_id: int, budget_update: schemas.BudgetUpdate, user_id: Optional[int] = None) -> Optional[models.Budget]:
+    query = db.query(models.Budget).filter(models.Budget.id == budget_id)
+    if user_id is not None:
+        query = query.filter(models.Budget.user_id == user_id)
+    db_budget = query.first()
     if db_budget:
-        for field, value in budget_update.dict(exclude_unset=True).items():
+        for field, value in budget_update.model_dump(exclude_unset=True).items():
             setattr(db_budget, field, value)
         db.commit()
         db.refresh(db_budget)
     return db_budget
 
-def delete_budget(db: Session, budget_id: int, user_id: int) -> bool:
-    db_budget = db.query(models.Budget).filter(
-        models.Budget.id == budget_id,
-        models.Budget.user_id == user_id
-    ).first()
+def delete_budget(db: Session, budget_id: int, user_id: Optional[int] = None) -> bool:
+    query = db.query(models.Budget).filter(models.Budget.id == budget_id)
+    if user_id is not None:
+        query = query.filter(models.Budget.user_id == user_id)
+    db_budget = query.first()
     if db_budget:
         db.delete(db_budget)
         db.commit()
@@ -110,7 +137,7 @@ def delete_budget(db: Session, budget_id: int, user_id: int) -> bool:
 
 # Fonctions CRUD pour les objectifs
 def create_goal(db: Session, goal: schemas.GoalCreate, user_id: int) -> models.Goal:
-    db_goal = models.Goal(**goal.dict(), user_id=user_id)
+    db_goal = models.Goal(**goal.model_dump(), user_id=user_id)
     db.add(db_goal)
     db.commit()
     db.refresh(db_goal)
@@ -119,22 +146,28 @@ def create_goal(db: Session, goal: schemas.GoalCreate, user_id: int) -> models.G
 def get_goals(db: Session, user_id: int) -> List[models.Goal]:
     return db.query(models.Goal).filter(models.Goal.user_id == user_id).all()
 
-def get_goal(db: Session, goal_id: int, user_id: int) -> Optional[models.Goal]:
-    return db.query(models.Goal).filter(
-        models.Goal.id == goal_id,
-        models.Goal.user_id == user_id
-    ).first()
+def get_user_goals(db: Session, user_id: int, active_only: bool = True) -> List[models.Goal]:
+    query = db.query(models.Goal).filter(models.Goal.user_id == user_id)
+    if active_only:
+        query = query.filter(models.Goal.is_active == True)
+    return query.all()
 
-def update_goal(db: Session, goal_id: int, goal_update: schemas.GoalUpdate, user_id: int) -> Optional[models.Goal]:
+def get_goal(db: Session, goal_id: int, user_id: Optional[int] = None) -> Optional[models.Goal]:
+    query = db.query(models.Goal).filter(models.Goal.id == goal_id)
+    if user_id is not None:
+        query = query.filter(models.Goal.user_id == user_id)
+    return query.first()
+
+def update_goal(db: Session, goal_id: int, goal_update: schemas.GoalUpdate, user_id: Optional[int] = None) -> Optional[models.Goal]:
     db_goal = get_goal(db, goal_id, user_id)
     if db_goal:
-        for field, value in goal_update.dict(exclude_unset=True).items():
+        for field, value in goal_update.model_dump(exclude_unset=True).items():
             setattr(db_goal, field, value)
         db.commit()
         db.refresh(db_goal)
     return db_goal
 
-def delete_goal(db: Session, goal_id: int, user_id: int) -> bool:
+def delete_goal(db: Session, goal_id: int, user_id: Optional[int] = None) -> bool:
     db_goal = get_goal(db, goal_id, user_id)
     if db_goal:
         db.delete(db_goal)
@@ -143,18 +176,21 @@ def delete_goal(db: Session, goal_id: int, user_id: int) -> bool:
     return False
 
 # Fonctions CRUD pour les catégories
-def get_categories(db: Session) -> List[models.Category]:
-    return db.query(models.Category).all()
+def get_categories(db: Session, category_type: Optional[str] = None) -> List[models.Category]:
+    query = db.query(models.Category)
+    if category_type:
+        query = query.filter(models.Category.type == category_type)
+    return query.all()
 
 def create_category(db: Session, category: schemas.CategoryCreate) -> models.Category:
-    db_category = models.Category(**category.dict())
+    db_category = models.Category(**category.model_dump())
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
     return db_category
 
 # Fonctions d'analyse
-def get_user_analytics(db: Session, user_id: int) -> Dict[str, Any]:
+def get_user_analytics(db: Session, user_id: int, months: int = 6) -> Dict[str, Any]:
     """Obtenir les analyses pour un utilisateur"""
     # Calculer les totaux du mois en cours
     current_month = datetime.now().strftime("%Y-%m")
@@ -189,9 +225,9 @@ def get_user_analytics(db: Session, user_id: int) -> Dict[str, Any]:
         func.strftime("%Y-%m", models.Transaction.date) == current_month
     ).group_by(models.Transaction.category).order_by(func.sum(models.Transaction.amount).desc()).limit(5).all()
     
-    # Tendances mensuelles (6 derniers mois)
+    # Tendances mensuelles (N derniers mois)
     monthly_trends = []
-    for i in range(6):
+    for i in range(months):
         month = (datetime.now() - timedelta(days=30*i)).strftime("%Y-%m")
         month_revenues = db.query(func.sum(models.Transaction.amount)).filter(
             models.Transaction.user_id == user_id,
@@ -218,8 +254,8 @@ def get_user_analytics(db: Session, user_id: int) -> Dict[str, Any]:
         "balance": balance,
         "savings_rate": savings_rate,
         "top_expense_categories": [
-            {"category": cat.category, "total": float(total)} 
-            for cat, total in top_expense_categories
+            {"category": category, "total": float(total)}
+            for category, total in top_expense_categories
         ],
         "monthly_trends": monthly_trends
     }

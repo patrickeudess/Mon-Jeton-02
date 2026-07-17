@@ -56,6 +56,17 @@ def get_transactions(
         category=category
     )
 
+# NB: cette route doit rester déclarée avant "/{transaction_id}",
+# sinon "summary" serait interprété comme un identifiant de transaction.
+@router.get("/summary/analytics")
+def get_transactions_analytics(
+    months: int = Query(6, ge=1, le=24),
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Récupère les analyses des transactions"""
+    return crud.get_user_analytics(db=db, user_id=current_user.id, months=months)
+
 @router.get("/{transaction_id}", response_model=schemas.Transaction)
 def get_transaction(
     transaction_id: int,
@@ -99,13 +110,4 @@ def delete_transaction(
     if not success:
         raise HTTPException(status_code=500, detail="Erreur lors de la suppression")
     
-    return {"message": "Transaction supprimée avec succès"}
-
-@router.get("/summary/analytics")
-def get_transactions_analytics(
-    months: int = Query(6, ge=1, le=24),
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Récupère les analyses des transactions"""
-    return crud.get_user_analytics(db=db, user_id=current_user.id, months=months) 
+    return {"message": "Transaction supprimée avec succès"} 

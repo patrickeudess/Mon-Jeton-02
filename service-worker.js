@@ -1,109 +1,134 @@
 // Service Worker pour Mon Jeton
-const CACHE_NAME = 'mon-budget-malin-v1.0';
-const urlsToCache = [
-    '/',
-    '/index.html',
-    '/transactions.html',
-    '/budgets.html',
-    '/app.js',
-    '/styles.css',
-    '/plotly.js',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png'
+//
+// Stratégie :
+//  - HTML / JS / CSS : réseau d'abord, cache en secours. Les utilisateurs
+//    reçoivent toujours la dernière version du code quand ils sont en ligne,
+//    et la version en cache hors ligne.
+//  - Autres ressources (images, polices…) : cache d'abord, réseau en secours.
+const CACHE_NAME = 'mon-jeton-v2.4';
+
+// Chemins relatifs : l'application peut être hébergée à la racine d'un
+// domaine ou dans un sous-dossier (ex. GitHub Pages).
+const PRECACHE_URLS = [
+    './',
+    './index.html',
+    './transactions.html',
+    './budgets.html',
+    './savings.html',
+    './dashboard.html',
+    './tontine.html',
+    './tontine.js',
+    './login.html',
+    './styles.css',
+    './enhanced-styles.css',
+    './modern-components.css',
+    './theme.css',
+    './app.js',
+    './api-client.js',
+    './auth-manager.js',
+    './optimize_application.js',
+    './chart.umd.js',
+    './common.js',
+    './manifest.json',
+    './logo.svg',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
-// Installation du service worker
+// Installation : pré-cacher les ressources essentielles
 self.addEventListener('install', (event) => {
-  event.waitUntil(
+    event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Cache ouvert');
-                return cache.addAll(urlsToCache);
-            })
+            .then((cache) => cache.addAll(PRECACHE_URLS))
             .catch((error) => {
                 console.error('Erreur lors de l\'installation du cache:', error);
-    })
-  );
+            })
+    );
 });
 
-// Activation du service worker
+// Activation : supprimer les anciens caches et prendre le contrôle
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-        caches.keys().then((cacheNames) => {
-      return Promise.all(
-                cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-                        console.log('Suppression de l\'ancien cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+    event.waitUntil(
+        caches.keys()
+            .then((cacheNames) => Promise.all(
+                cacheNames
+                    .filter((name) => name !== CACHE_NAME)
+                    .map((name) => caches.delete(name))
+            ))
+            .then(() => self.clients.claim())
+    );
 });
+
+function isCodeRequest(request) {
+    return request.mode === 'navigate'
+        || request.destination === 'document'
+        || request.destination === 'script'
+        || request.destination === 'style';
+}
+
+async function networkFirst(request) {
+    try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        const cached = await caches.match(request);
+        if (cached) {
+            return cached;
+        }
+        if (request.mode === 'navigate' || request.destination === 'document') {
+            return caches.match('./index.html');
+        }
+        throw error;
+    }
+}
+
+async function cacheFirst(request) {
+    const cached = await caches.match(request);
+    if (cached) {
+        return cached;
+    }
+    const response = await fetch(request);
+    if (response && response.ok && response.type === 'basic') {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, response.clone());
+    }
+    return response;
+}
 
 // Interception des requêtes
 self.addEventListener('fetch', (event) => {
-    // Ignorer les requêtes non-GET
+    // Ignorer les requêtes non-GET et les domaines externes (ex. appels API)
     if (event.request.method !== 'GET') {
         return;
     }
-
-    // Ignorer les requêtes vers des domaines externes
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
     }
 
-  event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Retourner la réponse du cache si elle existe
-                if (response) {
-                    return response;
-                }
-
-                // Sinon, faire la requête réseau
-                return fetch(event.request)
-                    .then((response) => {
-                        // Vérifier si la réponse est valide
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // Cloner la réponse pour la mettre en cache
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
-                    })
-                    .catch(() => {
-                        // En cas d'erreur réseau, retourner une page d'erreur personnalisée
-                        if (event.request.destination === 'document') {
-                            return caches.match('/index.html');
-                        }
-                    });
-    })
-  );
+    if (isCodeRequest(event.request)) {
+        event.respondWith(networkFirst(event.request));
+    } else {
+        event.respondWith(cacheFirst(event.request));
+    }
 });
 
-// Gestion des messages
+// Gestion des messages (mise à jour immédiate)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
 });
 
-// Gestion des notifications push (optionnel)
+// Gestion des notifications push
 self.addEventListener('push', (event) => {
     const options = {
-                        body: event.data ? event.data.text() : 'Nouvelle notification de Mon Jeton',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
+        body: event.data ? event.data.text() : 'Nouvelle notification de Mon Jeton',
+        icon: './icon-192.png',
+        badge: './icon-192.png',
         vibrate: [100, 50, 100],
         data: {
             dateOfArrival: Date.now(),
@@ -113,12 +138,12 @@ self.addEventListener('push', (event) => {
             {
                 action: 'explore',
                 title: 'Voir les détails',
-                icon: '/icon-192.png'
+                icon: './icon-192.png'
             },
             {
                 action: 'close',
                 title: 'Fermer',
-                icon: '/icon-192.png'
+                icon: './icon-192.png'
             }
         ]
     };
@@ -132,102 +157,9 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
-    if (event.action === 'explore') {
+    if (event.action !== 'close') {
         event.waitUntil(
-            clients.openWindow('/index.html')
-        );
-    } else if (event.action === 'close') {
-        // Fermer la notification
-        event.notification.close();
-    } else {
-        // Action par défaut
-        event.waitUntil(
-            clients.openWindow('/index.html')
+            clients.openWindow('./index.html')
         );
     }
 });
-
-// Gestion des erreurs
-self.addEventListener('error', (event) => {
-    console.error('Erreur du service worker:', event.error);
-});
-
-// Gestion des rejets de promesses non gérés
-self.addEventListener('unhandledrejection', (event) => {
-    console.error('Promesse rejetée non gérée:', event.reason);
-});
-
-// Fonction pour mettre à jour le cache
-function updateCache() {
-    return caches.open(CACHE_NAME)
-        .then((cache) => {
-            return cache.addAll(urlsToCache);
-        });
-}
-
-// Fonction pour nettoyer les anciens caches
-function cleanOldCaches() {
-    return caches.keys()
-        .then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        });
-}
-
-// Fonction pour vérifier la connectivité
-function checkConnectivity() {
-    return fetch('/index.html', { method: 'HEAD' })
-        .then(() => true)
-        .catch(() => false);
-}
-
-// Fonction pour synchroniser les données (si nécessaire)
-function syncData() {
-    // Ici, vous pourriez synchroniser les données avec un serveur
-    console.log('Synchronisation des données...');
-}
-
-// Écouter les changements de connectivité
-self.addEventListener('online', () => {
-    console.log('Connexion rétablie');
-    syncData();
-});
-
-self.addEventListener('offline', () => {
-    console.log('Connexion perdue');
-});
-
-// Fonction pour envoyer une notification
-function sendNotification(title, options) {
-    return self.registration.showNotification(title, options);
-}
-
-// Fonction pour obtenir les données du cache
-function getCachedData(url) {
-    return caches.match(url)
-        .then((response) => {
-            if (response) {
-                return response.json();
-            }
-            return null;
-        });
-}
-
-// Fonction pour mettre en cache des données
-function cacheData(url, data) {
-    const response = new Response(JSON.stringify(data), {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-
-    return caches.open(CACHE_NAME)
-        .then((cache) => {
-            return cache.put(url, response);
-        });
-}

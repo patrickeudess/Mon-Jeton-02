@@ -2,50 +2,33 @@
     "name": "Mon Jeton - Gestion de Budget Intelligente",
     "short_name": "Mon Jeton",
     "description": "Application de gestion de budget et d'épargne intelligente",
-    "start_url": "/",
+    "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#009879",
     "theme_color": "#009879",
     "orientation": "portrait-primary",
-    "scope": "/",
+    "scope": "./",
     "lang": "fr",
     "dir": "ltr",
     "categories": ["finance", "productivity", "utilities"],
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ],
-    "screenshots": [
+    "icons": [
         {
-            "src": "screenshot-home.png",
-            "sizes": "1280x720",
+            "src": "icon-192.png",
+            "sizes": "192x192",
             "type": "image/png",
-            "form_factor": "wide",
-            "label": "Page d'accueil avec vue d'ensemble"
+            "purpose": "any"
         },
         {
-            "src": "screenshot-transactions.png",
-            "sizes": "1280x720",
+            "src": "icon-512.png",
+            "sizes": "512x512",
             "type": "image/png",
-            "form_factor": "wide",
-            "label": "Gestion des transactions"
+            "purpose": "any"
         },
         {
-            "src": "screenshot-budgets.png",
-            "sizes": "1280x720",
+            "src": "icon-512.png",
+            "sizes": "512x512",
             "type": "image/png",
-            "form_factor": "wide",
-            "label": "Budgets et analyses"
+            "purpose": "maskable"
         }
     ],
     "shortcuts": [
@@ -53,7 +36,7 @@
             "name": "Nouvelle transaction",
             "short_name": "Transaction",
             "description": "Ajouter une nouvelle transaction",
-            "url": "/transactions.html",
+            "url": "./transactions.html",
             "icons": [
                 {
                     "src": "icon-192.png",
@@ -65,7 +48,7 @@
             "name": "Budgets",
             "short_name": "Budgets",
             "description": "Gérer les budgets",
-            "url": "/budgets.html",
+            "url": "./budgets.html",
             "icons": [
                 {
                     "src": "icon-192.png",
@@ -75,45 +58,5 @@
         }
     ],
     "related_applications": [],
-    "prefer_related_applications": false,
-    "edge_side_panel": {
-        "preferred_width": 400
-    },
-    "launch_handler": {
-        "client_mode": "navigate-existing"
-    },
-    "handle_links": "preferred",
-    "protocol_handlers": [
-        {
-            "protocol": "web+monbudget",
-            "url": "/index.html"
-        }
-    ],
-    "file_handlers": [
-        {
-            "action": "/transactions.html",
-            "accept": {
-                "text/csv": [".csv"],
-                "application/json": [".json"]
-            }
-        }
-    ],
-    "share_target": {
-        "action": "/transactions.html",
-        "method": "POST",
-        "enctype": "multipart/form-data",
-        "params": {
-            "title": "title",
-            "text": "text",
-            "url": "url"
-        }
-    },
-    "permissions": [
-        "storage"
-    ],
-    "features": [
-        "Cross Platform",
-        "fast",
-        "simple"
-  ]
+    "prefer_related_applications": false
 }
