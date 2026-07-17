@@ -59,6 +59,9 @@
 - Notifications contextuelles
 - Interface épurée sans publicités
 - Chargement rapide et performance optimisée
+- **Mode sombre automatique** (selon les préférences du système)
+- Système de design cohérent : `theme.css` centralise couleurs, ombres,
+  typographie et composants (nav en verre dépoli, cartes, boutons, formulaires)
 
 ## 🛠️ **Technologies Utilisées**
 
@@ -153,6 +156,7 @@ mon_jeton/
 ├── styles.css              # Styles principaux
 ├── enhanced-styles.css     # Styles avancés
 ├── modern-components.css   # Composants modernes
+├── theme.css               # Couche de thème moderne (tokens + mode sombre)
 ├── app.js                  # Logique principale
 ├── common.js               # Utilitaires partagés (graphiques, formatage, PWA)
 ├── chart.umd.js            # Chart.js (bibliothèque de graphiques, locale)

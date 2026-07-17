@@ -1,0 +1,321 @@
+/* =====================================================================
+   Mon Jeton — Couche de thème moderne (chargée après les autres CSS)
+
+   Modernise l'apparence sans réécrire les feuilles existantes :
+   - redéfinit les tokens de design (:root) → tout le CSS en hérite
+   - raffine les composants partagés (nav, cartes, boutons, formulaires)
+   - ajoute un mode sombre automatique (prefers-color-scheme)
+   ===================================================================== */
+
+/* ---------- 1. Tokens de design ---------- */
+:root {
+    /* Marque : vert Mon Jeton + accent orange du logo */
+    --primary-color: #00a082;
+    --primary-dark: #007a63;
+    --primary-light: #37c4a5;
+    --accent-color: #ff6b35;
+    --accent-soft: #fff1eb;
+
+    /* Sémantique */
+    --success-color: #129d6f;
+    --warning-color: #f5a623;
+    --danger-color: #e5484d;
+    --info-color: #0ea5b7;
+
+    /* Neutres légèrement tièdes */
+    --dark-color: #1a2b28;
+    --gray-color: #5f6f6b;
+    --light-color: #f3f6f5;
+    --white: #ffffff;
+
+    /* Surfaces (basculent en mode sombre) */
+    --app-bg: #eef3f1;
+    --app-bg-accent: #e3efe9;
+    --card-bg: #ffffff;
+    --surface-muted: #f4f7f6;
+    --text-strong: #16241f;
+    --text-muted: #61726d;
+    --border-soft: rgba(16, 40, 34, 0.10);
+    --nav-bg: rgba(255, 255, 255, 0.82);
+
+    /* Ombres douces et superposées */
+    --shadow-xs: 0 1px 2px rgba(15, 40, 33, 0.06);
+    --shadow: 0 1px 2px rgba(15, 40, 33, 0.05), 0 6px 18px rgba(15, 40, 33, 0.07);
+    --shadow-lg: 0 4px 12px rgba(15, 40, 33, 0.08), 0 18px 40px rgba(15, 40, 33, 0.12);
+
+    /* Rayons et transitions */
+    --border-radius: 14px;
+    --border-radius-lg: 20px;
+    --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- 2. Base ---------- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    background: var(--app-bg);
+    background-image:
+        radial-gradient(1200px 600px at 100% -10%, var(--app-bg-accent), transparent 60%),
+        radial-gradient(900px 500px at -10% 0%, var(--app-bg-accent), transparent 55%);
+    background-attachment: fixed;
+    color: var(--text-strong);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Chiffres alignés (montants, statistiques) */
+.summary-value, .animated-value, .stat-value, .amount,
+.tontine-progress-label, .summary-card span {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- 3. Barre de navigation (verre dépoli) ---------- */
+.top-nav {
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    box-shadow: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0.7rem 0;
+}
+
+.nav-logo {
+    box-shadow: 0 2px 8px rgba(0, 160, 130, 0.35);
+    padding: 6px;
+}
+
+.nav-title {
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-indicator {
+    background: var(--surface-muted);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.logout-btn {
+    border-radius: 999px !important;
+    transition: var(--transition);
+}
+.logout-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* ---------- 4. Fil d'Ariane ---------- */
+.breadcrumb {
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    padding: 1rem 2rem 0.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.breadcrumb a { color: var(--primary-dark); font-weight: 600; }
+
+/* ---------- 5. En-têtes de section ---------- */
+.summary-card, .goals-summary, .new-goal, .quick-actions,
+.features-section, section.goals-summary, .tontine-reminders {
+    border-radius: var(--border-radius-lg);
+}
+
+.goals-summary h2, .new-goal h2, .quick-actions h2,
+.features-section h2, .features-grid-title, section > h2 {
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+}
+
+/* ---------- 6. Cartes de résumé (statistiques) ---------- */
+.summary-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: rgba(0, 160, 130, 0.25);
+}
+.summary-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+.summary-value, .summary-card .summary-value {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+/* ---------- 7. Grille de fonctionnalités (accueil) ---------- */
+.grid-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+.grid-item::before {
+    height: 100%;
+    opacity: 0.06;
+    background: linear-gradient(160deg, var(--primary-color), transparent 55%);
+}
+.grid-item:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(0, 160, 130, 0.3);
+}
+.grid-icon {
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    margin: 0 auto 0.85rem;
+    border-radius: 16px;
+    background: linear-gradient(160deg, var(--accent-soft), #ffffff);
+    box-shadow: inset 0 0 0 1px var(--border-soft), var(--shadow-xs);
+}
+.grid-badge {
+    background: var(--accent-color);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(255, 107, 53, 0.4);
+    letter-spacing: 0.02em;
+}
+
+/* ---------- 8. Cartes de navigation ---------- */
+.nav-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+.nav-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ---------- 9. Boutons ---------- */
+.btn-primary,
+button[type="submit"],
+.tontine-btn.primary,
+.reminder-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 122, 99, 0.28);
+    transition: var(--transition);
+}
+.btn-primary:hover,
+button[type="submit"]:hover,
+.tontine-btn.primary:hover:not(:disabled),
+.reminder-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 122, 99, 0.34);
+    filter: brightness(1.04);
+}
+.btn-secondary, .tontine-btn.secondary {
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    transition: var(--transition);
+}
+.btn-secondary:hover, .tontine-btn.secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ---------- 10. Formulaires ---------- */
+.enhanced-form input,
+.enhanced-form select,
+.enhanced-form textarea,
+input[type="text"], input[type="number"], input[type="email"],
+input[type="password"], input[type="date"], select, textarea {
+    border-radius: 12px;
+    border: 1.5px solid var(--border-soft);
+    background: var(--surface-muted);
+    transition: var(--transition);
+}
+.enhanced-form input:focus,
+.enhanced-form select:focus,
+.enhanced-form textarea:focus,
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 4px rgba(0, 160, 130, 0.14);
+}
+
+/* ---------- 11. Barres de progression ---------- */
+.progress-bar, .tontine-progress-bar {
+    border-radius: 999px;
+    overflow: hidden;
+}
+.progress-fill, .tontine-progress-fill {
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    border-radius: 999px;
+}
+
+/* ---------- 12. Puces / modèles rapides ---------- */
+.template-chip {
+    border-radius: 999px;
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+.template-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+/* ---------- 13. Cartes tontine ---------- */
+.tontine-card {
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+.tontine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+
+/* ---------- 14. Animation d'apparition ---------- */
+@keyframes mj-fade-in-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.summary-card, .grid-item, .tontine-card, .nav-card {
+    animation: mj-fade-in-up 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ---------- 15. Mode sombre automatique ---------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --app-bg: #0e1614;
+        --app-bg-accent: #13211d;
+        --card-bg: #17221f;
+        --surface-muted: #1d2a26;
+        --light-color: #1d2a26;
+        --white: #17221f;
+        --dark-color: #eaf2ef;
+        --gray-color: #9fb0ab;
+        --text-strong: #eaf2ef;
+        --text-muted: #9fb0ab;
+        --border-soft: rgba(255, 255, 255, 0.10);
+        --nav-bg: rgba(20, 30, 27, 0.82);
+        --primary-light: #4fd6b6;
+        --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    body { color: var(--text-strong); }
+
+    /* En-têtes et textes courants portés par ces couleurs */
+    .goals-summary h2, .new-goal h2, .quick-actions h2,
+    section > h2, .tontine-card h3, .summary-card h3,
+    .grid-item h3, .breadcrumb span { color: var(--text-strong); }
+    .summary-card small, .grid-item p,
+    .tontine-progress-label, .tontine-meta { color: var(--text-muted); }
+
+    /* Conteneurs de section clairs par défaut */
+    .goals-summary, .new-goal, .quick-actions, .features-section,
+    .tontine-card, .summary-card, .grid-item, .nav-card {
+        background: var(--card-bg);
+    }
+}
