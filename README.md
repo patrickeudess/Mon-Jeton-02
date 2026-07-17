@@ -142,6 +142,8 @@ mon_jeton/
 ├── dashboard.html          # Dashboard analytique
 ├── transactions.html       # Gestion des transactions
 ├── budgets.html            # Gestion des budgets
+├── tontine.html            # Module tontine (rotative et collective)
+├── tontine.js              # Logique des tontines (cycles, tours, cotisations)
 ├── security.html           # Paramètres de sécurité (PIN)
 ├── badges.html             # Système de badges
 ├── goals.html              # Objectifs d'épargne

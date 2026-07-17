@@ -1,0 +1,243 @@
+/*
+ * Module Tontine — Mon Jeton
+ *
+ * Gestion des tontines rotatives (chaque cycle, un membre reçoit la cagnotte
+ * à tour de rôle) et des épargnes collectives (cagnotte commune pour un
+ * événement : Tabaski, rentrée scolaire, mariage…).
+ *
+ * Données stockées dans localStorage sous la clé 'tontines' :
+ * {
+ *   id, name, type: 'rotative'|'collective', amount, frequency,
+ *   startDate: 'YYYY-MM-DD', target, members: [{id, name, isMe}],
+ *   contributions: [{memberId, cycle, date, amount}], createdAt
+ * }
+ */
+
+const TONTINE_TEMPLATES = {
+    familiale: {
+        name: 'Tontine familiale',
+        type: 'rotative',
+        amount: 10000,
+        frequency: 'mensuelle',
+        members: 'Moi\nMaman\nTante Awa\nOncle Karim'
+    },
+    tabaski: {
+        name: 'Épargne Tabaski',
+        type: 'collective',
+        amount: 5000,
+        frequency: 'hebdomadaire',
+        target: 150000,
+        members: 'Moi'
+    },
+    rentree: {
+        name: 'Rentrée scolaire',
+        type: 'collective',
+        amount: 10000,
+        frequency: 'mensuelle',
+        target: 120000,
+        members: 'Moi'
+    },
+    mariage: {
+        name: 'Cagnotte mariage',
+        type: 'collective',
+        amount: 25000,
+        frequency: 'mensuelle',
+        target: 500000,
+        members: 'Moi\nFamille\nAmis'
+    }
+};
+
+// --- Stockage ---
+
+function loadTontines() {
+    try {
+        return JSON.parse(localStorage.getItem('tontines') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveTontines(tontines) {
+    localStorage.setItem('tontines', JSON.stringify(tontines));
+}
+
+// --- Calculs de cycles ---
+
+const MS_PER_WEEK = 7 * 24 * 3600 * 1000;
+
+function parseDate(dateString) {
+    return new Date(dateString + 'T00:00:00');
+}
+
+// Index du cycle en cours (0 = premier cycle). -1 si la tontine n'a pas commencé.
+function getCycleIndex(tontine, now = new Date()) {
+    const start = parseDate(tontine.startDate);
+    if (now < start) return -1;
+
+    if (tontine.frequency === 'hebdomadaire') {
+        return Math.floor((now - start) / MS_PER_WEEK);
+    }
+    let months = (now.getFullYear() - start.getFullYear()) * 12
+        + (now.getMonth() - start.getMonth());
+    if (now.getDate() < start.getDate()) months -= 1;
+    return Math.max(0, months);
+}
+
+// Date de fin du cycle en cours = prochaine échéance de cotisation.
+function getNextDueDate(tontine, cycleIndex) {
+    const start = parseDate(tontine.startDate);
+    if (tontine.frequency === 'hebdomadaire') {
+        return new Date(start.getTime() + (cycleIndex + 1) * MS_PER_WEEK);
+    }
+    const due = new Date(start);
+    due.setMonth(due.getMonth() + cycleIndex + 1);
+    return due;
+}
+
+// Bénéficiaire du tour (tontine rotative uniquement).
+function getBeneficiary(tontine, cycleIndex) {
+    if (tontine.type !== 'rotative' || tontine.members.length === 0) return null;
+    return tontine.members[cycleIndex % tontine.members.length];
+}
+
+function getContributionsForCycle(tontine, cycleIndex) {
+    return tontine.contributions.filter(c => c.cycle === cycleIndex);
+}
+
+function hasContributed(tontine, memberId, cycleIndex) {
+    return tontine.contributions.some(c => c.memberId === memberId && c.cycle === cycleIndex);
+}
+
+function getTotalCollected(tontine) {
+    return tontine.contributions.reduce((sum, c) => sum + c.amount, 0);
+}
+
+function getMyMember(tontine) {
+    return tontine.members.find(m => m.isMe) || tontine.members[0] || null;
+}
+
+function getMyTotalContributed(tontine) {
+    const me = getMyMember(tontine);
+    if (!me) return 0;
+    return tontine.contributions
+        .filter(c => c.memberId === me.id)
+        .reduce((sum, c) => sum + c.amount, 0);
+}
+
+// --- Actions ---
+
+function generateTontineId() {
+    return 'tontine_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function createTontine(data) {
+    const memberNames = data.members
+        .split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+
+    if (memberNames.length === 0) {
+        memberNames.push('Moi');
+    }
+
+    const tontine = {
+        id: generateTontineId(),
+        name: data.name,
+        type: data.type,
+        amount: Number(data.amount),
+        frequency: data.frequency,
+        startDate: data.startDate,
+        target: data.type === 'collective' && data.target ? Number(data.target) : null,
+        members: memberNames.map((name, index) => ({
+            id: 'm' + index,
+            name: name,
+            isMe: index === 0
+        })),
+        contributions: [],
+        createdAt: new Date().toISOString()
+    };
+
+    const tontines = loadTontines();
+    tontines.push(tontine);
+    saveTontines(tontines);
+    return tontine;
+}
+
+function deleteTontine(tontineId) {
+    const tontines = loadTontines().filter(t => t.id !== tontineId);
+    saveTontines(tontines);
+}
+
+// Enregistre ou annule la cotisation d'un membre pour un cycle donné.
+function toggleContribution(tontineId, memberId, cycleIndex) {
+    const tontines = loadTontines();
+    const tontine = tontines.find(t => t.id === tontineId);
+    if (!tontine) return null;
+
+    const existing = tontine.contributions.findIndex(
+        c => c.memberId === memberId && c.cycle === cycleIndex
+    );
+
+    if (existing >= 0) {
+        tontine.contributions.splice(existing, 1);
+    } else {
+        tontine.contributions.push({
+            memberId: memberId,
+            cycle: cycleIndex,
+            date: new Date().toISOString(),
+            amount: tontine.amount
+        });
+    }
+
+    saveTontines(tontines);
+    return tontine;
+}
+
+// --- Résumé global (cartes du haut de page) ---
+
+function getTontinesSummary(tontines, now = new Date()) {
+    let totalContributed = 0;
+    let nextDue = null;
+    let nextDueTontine = null;
+
+    tontines.forEach(tontine => {
+        totalContributed += getMyTotalContributed(tontine);
+
+        const cycle = getCycleIndex(tontine, now);
+        const due = cycle >= 0
+            ? getNextDueDate(tontine, cycle)
+            : parseDate(tontine.startDate);
+        if (!nextDue || due < nextDue) {
+            nextDue = due;
+            nextDueTontine = tontine;
+        }
+    });
+
+    return {
+        count: tontines.length,
+        totalContributed: totalContributed,
+        nextDue: nextDue,
+        nextDueTontine: nextDueTontine
+    };
+}
+
+// Export pour les tests et la page
+if (typeof window !== 'undefined') {
+    window.TontineModule = {
+        TONTINE_TEMPLATES,
+        loadTontines,
+        saveTontines,
+        getCycleIndex,
+        getNextDueDate,
+        getBeneficiary,
+        getContributionsForCycle,
+        hasContributed,
+        getTotalCollected,
+        getMyMember,
+        getMyTotalContributed,
+        createTontine,
+        deleteTontine,
+        toggleContribution,
+        getTontinesSummary
+    };
+}

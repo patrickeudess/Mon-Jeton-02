@@ -21,6 +21,8 @@ jobs:
           done
       - name: Validité du manifest PWA
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.json'))"
+      - name: Tests unitaires JavaScript
+        run: node --test tests/*.test.mjs
 
   backend:
     name: Tests de l'API
