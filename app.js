@@ -43,18 +43,18 @@ async function initializeApp() {
 
 async function loadData() {
     try {
-        // Charger les transactions
-        transactions = await loadTransactions();
-        
-        // Charger les budgets
-        budgets = await loadBudgets();
+        // La page d'accueil fonctionne aussi sans backend. Les transactions et
+        // budgets sont donc lus directement depuis le stockage local, qui est
+        // la source de vérité en mode hors ligne.
+        transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        budgets = JSON.parse(localStorage.getItem('budgets') || '{}');
         
         // Charger les catégories
         categories = loadCategories();
         
     } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-        // Fallback vers localStorage
+        console.error('Erreur lors du chargement des données locales:', error);
+        // Une valeur corrompue ne doit pas empêcher l'ouverture de l'accueil.
         transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
         budgets = JSON.parse(localStorage.getItem('budgets') || '{}');
         categories = loadCategories();
@@ -67,6 +67,11 @@ function loadCategories() {
         { name: 'Bonus', icon: '🎁', color: '#ffc107', type: 'revenu' },
         { name: 'Freelance', icon: '💼', color: '#17a2b8', type: 'revenu' },
         { name: 'Investissement', icon: '📈', color: '#6f42c1', type: 'revenu' },
+        { name: 'Vente / Commerce', icon: '🛍️', color: '#009879', type: 'revenu' },
+        { name: 'Recette journalière', icon: '🧾', color: '#20c997', type: 'revenu' },
+        { name: 'Agriculture', icon: '🌾', color: '#7a9e35', type: 'revenu' },
+        { name: 'Mission / Contrat', icon: '🤝', color: '#3f51b5', type: 'revenu' },
+        { name: 'Aide reçue', icon: '🎁', color: '#e83e8c', type: 'revenu' },
         { name: 'Nourriture', icon: '🍽️', color: '#dc3545', type: 'depense' },
         { name: 'Transport', icon: '🚗', color: '#fd7e14', type: 'depense' },
         { name: 'Logement', icon: '🏠', color: '#20c997', type: 'depense' },
