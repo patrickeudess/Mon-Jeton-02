@@ -14,7 +14,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script src="plotly.js"></script>
+    <script src="chart.umd.js"></script>
+    <script src="common.js"></script>
 </head>
 <body>
     <!-- Vérification d'authentification -->
@@ -433,35 +434,11 @@
             const months = Object.keys(monthlyData).sort();
             const revenus = months.map(month => monthlyData[month].revenus);
             const depenses = months.map(month => monthlyData[month].depenses);
-            
-            const trace1 = {
-                x: months,
-                y: revenus,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Revenus',
-                line: { color: '#28a745' },
-                marker: { color: '#28a745' }
-            };
-            
-            const trace2 = {
-                x: months,
-                y: depenses,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Dépenses',
-                line: { color: '#dc3545' },
-                marker: { color: '#dc3545' }
-            };
-            
-            const layout = {
-                title: 'Évolution Mensuelle',
-                xaxis: { title: 'Mois' },
-                yaxis: { title: 'Montant (FCFA)' },
-                height: 300
-            };
-            
-            Plotly.newPlot('modal-evolution-chart', [trace1, trace2], layout);
+
+            MonJeton.renderLineChart('modal-evolution-chart', months, [
+                { label: 'Revenus', data: revenus, color: '#28a745' },
+                { label: 'Dépenses', data: depenses, color: '#dc3545' }
+            ], { title: 'Évolution Mensuelle', xTitle: 'Mois', yTitle: 'Montant (FCFA)', height: 300 });
         }
 
         // Créer le graphique des catégories (pour les modals)
@@ -479,23 +456,10 @@
             
             const labels = Object.keys(categories);
             const values = Object.values(categories);
-            
-            const trace = {
-                values: values,
-                labels: labels,
-                type: 'pie',
-                hole: 0.4,
-                marker: {
-                    colors: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
-                }
-            };
-            
-            const layout = {
-                title: 'Répartition des Dépenses',
-                height: 300
-            };
-            
-            Plotly.newPlot('modal-categories-chart', [trace], layout);
+
+            MonJeton.renderDoughnutChart('modal-categories-chart', labels, values,
+                ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],
+                { title: 'Répartition des Dépenses', height: 300 });
         }
 
         // Mettre à jour les analyses prédictives
@@ -678,34 +642,10 @@
             depenses.push(predictions.depenses);
             months.push(nextMonth);
             
-            const trace1 = {
-                x: months,
-                y: revenus,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Revenus',
-                line: { color: '#28a745' },
-                marker: { color: '#28a745' }
-            };
-            
-            const trace2 = {
-                x: months,
-                y: depenses,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Dépenses',
-                line: { color: '#dc3545' },
-                marker: { color: '#dc3545' }
-            };
-            
-            const layout = {
-                title: 'Prédictions Financières',
-                xaxis: { title: 'Mois' },
-                yaxis: { title: 'Montant (FCFA)' },
-                height: 300
-            };
-            
-            Plotly.newPlot('prediction-chart', [trace1, trace2], layout);
+            MonJeton.renderLineChart('prediction-chart', months, [
+                { label: 'Revenus', data: revenus, color: '#28a745' },
+                { label: 'Dépenses', data: depenses, color: '#dc3545' }
+            ], { title: 'Prédictions Financières', xTitle: 'Mois', yTitle: 'Montant (FCFA)', height: 300 });
         }
 
         // Obtenir le mois suivant
@@ -1016,20 +956,10 @@
                 categories[t.category] = (categories[t.category] || 0) + t.amount;
             });
             
-            const trace = {
-                values: Object.values(categories),
-                labels: Object.keys(categories),
-                type: 'pie',
-                hole: 0.4,
-                marker: { colors: ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#fd7e14'] }
-            };
-            
-            const layout = {
-                title: 'Répartition des Revenus',
-                height: 300
-            };
-            
-            Plotly.newPlot('revenus-categories-chart', [trace], layout);
+            MonJeton.renderDoughnutChart('revenus-categories-chart',
+                Object.keys(categories), Object.values(categories),
+                ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#fd7e14'],
+                { title: 'Répartition des Revenus', height: 300 });
         }
 
         function createDepensesCategoriesChart() {
@@ -1042,20 +972,10 @@
                 categories[t.category] = (categories[t.category] || 0) + t.amount;
             });
             
-            const trace = {
-                values: Object.values(categories),
-                labels: Object.keys(categories),
-                type: 'pie',
-                hole: 0.4,
-                marker: { colors: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#e83e8c'] }
-            };
-            
-            const layout = {
-                title: 'Répartition des Dépenses',
-                height: 300
-            };
-            
-            Plotly.newPlot('depenses-categories-chart', [trace], layout);
+            MonJeton.renderDoughnutChart('depenses-categories-chart',
+                Object.keys(categories), Object.values(categories),
+                ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#e83e8c'],
+                { title: 'Répartition des Dépenses', height: 300 });
         }
 
         function createSoldeEvolutionChart() {
@@ -1077,25 +997,10 @@
             
             const months = Object.keys(monthlyData).sort();
             const soldes = months.map(month => monthlyData[month].revenus - monthlyData[month].depenses);
-            
-            const trace = {
-                x: months,
-                y: soldes,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Solde',
-                line: { color: '#009879' },
-                marker: { color: '#009879' }
-            };
-            
-            const layout = {
-                title: 'Évolution du Solde',
-                xaxis: { title: 'Mois' },
-                yaxis: { title: 'Solde (FCFA)' },
-                height: 300
-            };
-            
-            Plotly.newPlot('solde-evolution-chart', [trace], layout);
+
+            MonJeton.renderLineChart('solde-evolution-chart', months, [
+                { label: 'Solde', data: soldes, color: '#009879' }
+            ], { title: 'Évolution du Solde', xTitle: 'Mois', yTitle: 'Solde (FCFA)', height: 300 });
         }
 
         function createEpargneObjectifs() {

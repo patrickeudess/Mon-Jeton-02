@@ -65,7 +65,7 @@
 ### **Frontend**
 - HTML5, CSS3, JavaScript (vanilla)
 - Progressive Web App (PWA)
-- Plotly.js pour les graphiques
+- Chart.js pour les graphiques (léger : ~200 Ko, fonctionne hors ligne)
 - Service Worker pour le cache
 
 ### **Backend** (optionnel)
@@ -152,6 +152,8 @@ mon_jeton/
 ├── enhanced-styles.css     # Styles avancés
 ├── modern-components.css   # Composants modernes
 ├── app.js                  # Logique principale
+├── common.js               # Utilitaires partagés (graphiques, formatage, PWA)
+├── chart.umd.js            # Chart.js (bibliothèque de graphiques, locale)
 ├── api-client.js           # Client API (backend optionnel)
 ├── auth-manager.js         # Authentification et synchronisation
 ├── manifest.json           # Configuration PWA
@@ -250,6 +252,19 @@ npx serve .
 # PHP
 php -S localhost:8000
 ```
+
+## ✅ **Tests et Intégration Continue**
+
+### **Tests du backend**
+```bash
+cd backend
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -v
+```
+
+### **CI GitHub Actions**
+À chaque push : vérification de la syntaxe JavaScript, validité du manifest
+PWA et exécution des tests de l'API (`.github/workflows/ci.yml`).
 
 ## 📞 **Support**
 

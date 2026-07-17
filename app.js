@@ -4,9 +4,9 @@
  * Ce fichier gère l'enregistrement des transactions, la sauvegarde dans
  * le stockage local du navigateur et la mise à jour de l'interface
  * (tableau des transactions, calcul des totaux et graphique de
- * répartition des dépenses). Plotly est utilisé pour les graphiques,
- * ce qui permet un rendu interactif hors‑connexion grâce au fichier
- * plotly.js local.
+ * répartition des dépenses). Les graphiques sont rendus avec Chart.js
+ * (chart.umd.js local) via les helpers de common.js, ce qui permet un
+ * rendu interactif hors connexion.
  */
 
 let currentChartType = 'bar'; // 'bar' ou 'pie'
@@ -131,42 +131,14 @@ function updateEvolutionChart(transactionData = transactions) {
         }
     });
     
-    // Préparer les données pour Plotly
     const months = Object.keys(monthlyData).sort();
     const revenusData = months.map(month => monthlyData[month].revenus);
     const depensesData = months.map(month => monthlyData[month].depenses);
-    
-    const trace1 = {
-        x: months,
-        y: revenusData,
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Revenus',
-        line: { color: '#4CAF50', width: 3 },
-        marker: { size: 8 }
-    };
-    
-    const trace2 = {
-        x: months,
-        y: depensesData,
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Dépenses',
-        line: { color: '#F44336', width: 3 },
-        marker: { size: 8 }
-    };
-    
-    const layout = {
-        title: 'Évolution des finances',
-        xaxis: { title: 'Mois' },
-        yaxis: { title: 'Montant (FCFA)' },
-        hovermode: 'closest',
-        margin: { t: 50, b: 50, l: 50, r: 50 },
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)'
-    };
-    
-    Plotly.newPlot(chartContainer, [trace1, trace2], layout, { responsive: true, displayModeBar: false });
+
+    MonJeton.renderLineChart('evolution-chart', months, [
+        { label: 'Revenus', data: revenusData, color: '#4CAF50' },
+        { label: 'Dépenses', data: depensesData, color: '#F44336' }
+    ], { title: 'Évolution des finances', xTitle: 'Mois', yTitle: 'Montant (FCFA)' });
 }
 
 function updateBudgetOverview(transactionData = transactions, budgetData = budgets) {

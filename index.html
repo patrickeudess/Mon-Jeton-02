@@ -14,7 +14,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script src="plotly.js"></script>
+    <script src="chart.umd.js"></script>
+    <script src="common.js"></script>
     <script src="optimize_application.js"></script>
 </head>
 <body>
@@ -522,16 +523,6 @@
                 }, 1000);
             }
         });
-
-        // Enregistrement du service worker (PWA). Nécessite HTTPS ou localhost ;
-        // ignoré silencieusement en ouverture directe du fichier (file://).
-        if ('serviceWorker' in navigator &&
-            (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .catch((error) => console.error('Échec de l\'enregistrement du service worker:', error));
-            });
-        }
     </script>
 </body>
 </html>

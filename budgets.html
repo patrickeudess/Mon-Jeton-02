@@ -14,7 +14,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script src="plotly.js"></script>
+    <script src="chart.umd.js"></script>
+    <script src="common.js"></script>
     <script src="optimize_application.js"></script>
     <style>
         /* Styles spécifiques pour l'amélioration des budgets */
@@ -1537,31 +1538,10 @@
                     .reduce((sum, t) => sum + t.amount, 0)
             );
             
-            const trace1 = {
-                x: categories,
-                y: allocated,
-                type: 'bar',
-                name: 'Alloué',
-                marker: { color: '#28a745' }
-            };
-            
-            const trace2 = {
-                x: categories,
-                y: spent,
-                type: 'bar',
-                name: 'Dépensé',
-                marker: { color: '#dc3545' }
-            };
-            
-            const layout = {
-                title: 'Utilisation des Budgets',
-                barmode: 'group',
-                xaxis: { title: 'Catégories' },
-                yaxis: { title: 'Montant (FCFA)' },
-                height: 400
-            };
-            
-            Plotly.newPlot('budgets-chart', [trace1, trace2], layout);
+            MonJeton.renderBarChart('budgets-chart', categories, [
+                { label: 'Alloué', data: allocated, color: '#28a745' },
+                { label: 'Dépensé', data: spent, color: '#dc3545' }
+            ], { title: 'Utilisation des Budgets', xTitle: 'Catégories', yTitle: 'Montant (FCFA)', height: 400 });
         }
 
         // Graphique d'évolution des dépenses
@@ -1580,25 +1560,10 @@
             
             const months = Object.keys(monthlyData).sort();
             const expenses = months.map(month => monthlyData[month]);
-            
-            const trace = {
-                x: months,
-                y: expenses,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Dépenses',
-                line: { color: '#dc3545' },
-                marker: { color: '#dc3545' }
-            };
-            
-            const layout = {
-                title: 'Évolution des Dépenses',
-                xaxis: { title: 'Mois' },
-                yaxis: { title: 'Montant (FCFA)' },
-                height: 400
-            };
-            
-            Plotly.newPlot('expenses-evolution-chart', [trace], layout);
+
+            MonJeton.renderLineChart('expenses-evolution-chart', months, [
+                { label: 'Dépenses', data: expenses, color: '#dc3545' }
+            ], { title: 'Évolution des Dépenses', xTitle: 'Mois', yTitle: 'Montant (FCFA)', height: 400 });
         }
 
         // Gérer le formulaire de budget - GESTIONNAIRE AMÉLIORÉ
