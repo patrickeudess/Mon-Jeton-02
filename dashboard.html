@@ -974,16 +974,22 @@
             window.location.href = 'transactions.html';
         }
 
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
         function showParametres() {
             const modal = document.getElementById('details-modal');
             const modalContent = document.getElementById('modal-content');
-            
+
             modalContent.innerHTML = `
                 <h2>⚙️ Paramètres</h2>
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h3>👤 Informations Personnelles</h3>
-                    <p><strong>Nom:</strong> ${localStorage.getItem('user_name') || 'Non défini'}</p>
-                    <p><strong>Email:</strong> ${localStorage.getItem('user_email') || 'Non défini'}</p>
+                    <p><strong>Nom:</strong> ${escapeHtml(localStorage.getItem('user_name') || 'Non défini')}</p>
+                    <p><strong>Email:</strong> ${escapeHtml(localStorage.getItem('user_email') || 'Non défini')}</p>
                 </div>
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h3>🔧 Options</h3>

@@ -522,6 +522,16 @@
                 }, 1000);
             }
         });
+
+        // Enregistrement du service worker (PWA). Nécessite HTTPS ou localhost ;
+        // ignoré silencieusement en ouverture directe du fichier (file://).
+        if ('serviceWorker' in navigator &&
+            (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .catch((error) => console.error('Échec de l\'enregistrement du service worker:', error));
+            });
+        }
     </script>
 </body>
 </html>

@@ -85,9 +85,9 @@ function updateUI() {
     updateBudgetOverview();
 }
 
-function updateQuickSummary() {
+function updateQuickSummary(transactionData = transactions) {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+    const monthTransactions = transactionData.filter(t => t.date.startsWith(currentMonth));
     
     const totalRevenus = monthTransactions
         .filter(t => t.type === 'revenu')
@@ -112,13 +112,13 @@ function updateQuickSummary() {
     }
 }
 
-function updateEvolutionChart() {
+function updateEvolutionChart(transactionData = transactions) {
     const chartContainer = document.getElementById('evolution-chart');
     if (!chartContainer) return;
-    
+
     // Grouper les transactions par mois
     const monthlyData = {};
-    transactions.forEach(transaction => {
+    transactionData.forEach(transaction => {
         const month = transaction.date.slice(0, 7);
         if (!monthlyData[month]) {
             monthlyData[month] = { revenus: 0, depenses: 0 };
@@ -169,9 +169,9 @@ function updateEvolutionChart() {
     Plotly.newPlot(chartContainer, [trace1, trace2], layout, { responsive: true, displayModeBar: false });
 }
 
-function updateBudgetOverview() {
+function updateBudgetOverview(transactionData = transactions, budgetData = budgets) {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+    const monthTransactions = transactionData.filter(t => t.date.startsWith(currentMonth));
     
     // Calculer les dépenses par catégorie
     const expensesByCategory = {};
@@ -185,8 +185,8 @@ function updateBudgetOverview() {
         });
     
     // Mettre à jour les progress bars des budgets
-    Object.keys(budgets).forEach(category => {
-        const budgetAmount = budgets[category];
+    Object.keys(budgetData).forEach(category => {
+        const budgetAmount = budgetData[category];
         const spentAmount = expensesByCategory[category] || 0;
         const percentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0;
         

@@ -1,18 +1,22 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from typing import List
-import os
+import secrets
 
 class Settings(BaseSettings):
     # Configuration de base
-    app_name: str = "Mon Budget Malin API"
+    app_name: str = "Mon Jeton API"
     debug: bool = True
     environment: str = "development"
-    
+
     # Configuration de la base de données
-    database_url: str = "sqlite:///./budget_malin.db"
-    
+    database_url: str = "sqlite:///./mon_jeton.db"
+
     # Configuration de sécurité
-    secret_key: str = "votre_cle_secrete_tres_longue_et_complexe_changez_la_en_production"
+    # Sans SECRET_KEY dans l'environnement (ou .env), une clé aléatoire est
+    # générée à chaque démarrage : les tokens émis sont alors invalidés au
+    # redémarrage. Définissez SECRET_KEY en production.
+    secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(64))
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     

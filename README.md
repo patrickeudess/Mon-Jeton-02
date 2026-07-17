@@ -34,10 +34,10 @@
 - Défis motivants (épargne, budget, tontine)
 - Gamification pour encourager l'utilisation
 
-### 🔒 **Sécurité Avancée**
-- Verrouillage PIN à 4 chiffres
+### 🔒 **Sécurité**
+- Verrouillage PIN à 4 chiffres (stocké haché en SHA-256, jamais en clair)
 - Paramètres de sécurité configurables
-- Export/import sécurisé des données
+- Export/import des données au format JSON
 - Historique des connexions
 
 ### 💡 **Micro-éducation Financière**
@@ -141,20 +141,27 @@ mon_jeton/
 ├── login.html              # Page de connexion/inscription
 ├── dashboard.html          # Dashboard analytique
 ├── transactions.html       # Gestion des transactions
-├── budgets.html           # Gestion des budgets
-├── tontine.html           # Module tontine
-├── security.html          # Paramètres de sécurité
-├── badges.html            # Système de badges
-├── goals.html             # Objectifs d'épargne
-├── tips.html              # Conseils financiers
-├── savings.html           # Gestion de l'épargne
-├── styles.css             # Styles principaux
-├── enhanced-styles.css    # Styles avancés
-├── modern-components.css  # Composants modernes
-├── app.js                 # Logique principale
-├── manifest.json          # Configuration PWA
-├── service-worker.js      # Service Worker
-└── backend/               # API backend (optionnel)
+├── budgets.html            # Gestion des budgets
+├── security.html           # Paramètres de sécurité (PIN)
+├── badges.html             # Système de badges
+├── goals.html              # Objectifs d'épargne
+├── tips.html               # Conseils financiers
+├── savings.html            # Gestion de l'épargne
+├── assistant.html          # Assistant financier
+├── styles.css              # Styles principaux
+├── enhanced-styles.css     # Styles avancés
+├── modern-components.css   # Composants modernes
+├── app.js                  # Logique principale
+├── api-client.js           # Client API (backend optionnel)
+├── auth-manager.js         # Authentification et synchronisation
+├── manifest.json           # Configuration PWA
+├── service-worker.js       # Service Worker
+├── icon-192.png            # Icône PWA
+├── icon-512.png            # Icône PWA
+├── docs/                   # Guides et documents d'analyse
+│   └── archive/            # Anciens documents de diagnostic
+├── tests-manuels/          # Pages de test/vérification manuelles
+└── backend/                # API backend (optionnel)
     ├── app/
     ├── requirements.txt
     └── run.py
@@ -166,8 +173,10 @@ mon_jeton/
 ```bash
 # backend/.env
 DATABASE_URL=sqlite:///./mon_jeton.db
+# Obligatoire en production. Sans SECRET_KEY, une clé aléatoire est générée
+# à chaque démarrage et les sessions sont invalidées au redémarrage.
 SECRET_KEY=votre_cle_secrete
-JWT_ALGORITHM=HS256
+ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
@@ -191,9 +200,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 - Récompenses visuelles
 
 ### **Sécurité**
-- Verrouillage PIN
-- Chiffrement des données
-- Export sécurisé
+- Verrouillage PIN (empreinte SHA-256)
+- Export des données JSON
 - Historique des connexions
 
 ## 🌍 **Adaptation Locale**
