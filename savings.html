@@ -656,6 +656,17 @@
             document.getElementById('display-name').textContent = userName;
         }
 
+        // La liste des objectifs est maintenant gérée dans les fenêtres dédiées.
+        // Ces fonctions conservent le chargement de la page stable sans créer
+        // une seconde liste d'objectifs sur l'écran principal.
+        function displayObjectifs() {
+            updateObjectifsSelect();
+        }
+
+        function displayEpargnes() {
+            // Les épargnes régulières sont affichées à la demande.
+        }
+
         // Gérer la déconnexion
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('auth_token');
