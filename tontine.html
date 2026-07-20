@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="common.js"></script>
     <script src="api-client.js?v=2.5"></script>
-    <script src="tontine.js?v=3.1"></script>
+    <script src="tontine.js?v=3.2"></script>
     <style>
         :root { --tontine-green:#087f67; --tontine-mint:#e8f7f2; --tontine-ink:#17352f; }
         body { background: linear-gradient(180deg, #f2fbf8 0, #f7f9fb 420px); }
@@ -245,6 +245,7 @@
                         <select id="tontine-type" required>
                             <option value="rotative">🔄 Rotative (chacun son tour)</option>
                             <option value="collective">🎯 Épargne collective (cagnotte commune)</option>
+                            <option value="avec">🤝 AVEC (épargne et prêts du groupe)</option>
                         </select>
                     </div>
                 </div>
@@ -260,6 +261,21 @@
                             <option value="hebdomadaire">Hebdomadaire</option>
                             <option value="mensuelle" selected>Mensuelle</option>
                         </select>
+                    </div>
+                </div>
+
+                <div id="avec-settings" class="form-row" style="display:none;">
+                    <div class="form-group">
+                        <label for="avec-social-fund">Fonds social / membre (FCFA)</label>
+                        <input type="number" id="avec-social-fund" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="avec-rate">Intérêt mensuel sur prêt (%)</label>
+                        <input type="number" id="avec-rate" min="0" max="100" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="avec-loan-months">Durée maximale du prêt</label>
+                        <select id="avec-loan-months"><option value="1">1 mois</option><option value="2">2 mois</option><option value="3" selected>3 mois</option></select>
                     </div>
                 </div>
 
@@ -397,8 +413,11 @@
 
         // --- Formulaire ---
         function toggleTargetField() {
-            const isCollective = document.getElementById('tontine-type').value === 'collective';
+            const type = document.getElementById('tontine-type').value;
+            const isCollective = type === 'collective';
             document.getElementById('tontine-target-group').style.display = isCollective ? '' : 'none';
+            document.getElementById('avec-settings').style.display = type === 'avec' ? '' : 'none';
+            document.querySelector('label[for="tontine-amount"]').textContent = type === 'avec' ? '💵 Valeur d’une part (FCFA) :' : '💵 Cotisation par membre (FCFA) :';
         }
         document.getElementById('tontine-type').addEventListener('change', toggleTargetField);
 
@@ -414,6 +433,9 @@
                 frequency: document.getElementById('tontine-frequency').value,
                 startDate: document.getElementById('tontine-start').value,
                 target: document.getElementById('tontine-target').value,
+                socialFund: document.getElementById('avec-social-fund').value,
+                serviceRate: document.getElementById('avec-rate').value,
+                loanMonths: document.getElementById('avec-loan-months').value,
                 members: document.getElementById('tontine-members').value
             });
             queueTontineSync(created.id);
@@ -447,7 +469,12 @@
             let progressPercent = 0;
             let progressLabel = '';
 
-            if (tontine.type === 'rotative') {
+            if (tontine.type === 'avec') {
+                const avec = T.ensureAvec(tontine);
+                const fund = T.getAvecFund(tontine);
+                turnHtml = `<div class="tontine-turn">🤝 Caisse de prêts : ${formatAmount(fund)} · fonds social : ${formatAmount(avec.socialFund.reduce((sum, item) => sum + item.amount, 0))}</div>`;
+                progressLabel = `${avec.shares.reduce((sum, item) => sum + item.units, 0)} part(s) enregistrée(s)`;
+            } else if (tontine.type === 'rotative') {
                 const beneficiary = started ? T.getBeneficiary(tontine, cycle) : tontine.members[0];
                 const potAmount = tontine.amount * memberCount;
                 turnHtml = started
@@ -470,10 +497,10 @@
                 <div class="tontine-card">
                     <div class="tontine-card-header">
                         <h3>${esc(tontine.name)}</h3>
-                        <span class="tontine-type-badge ${tontine.type}">${tontine.type === 'rotative' ? '🔄 Rotative' : '🎯 Collective'}</span>
+                        <span class="tontine-type-badge ${tontine.type}">${tontine.type === 'rotative' ? '🔄 Rotative' : tontine.type === 'avec' ? '🤝 AVEC' : '🎯 Collective'}</span>
                     </div>
                     <div class="tontine-meta">
-                        <span>💵 ${formatAmount(tontine.amount)} / ${tontine.frequency === 'hebdomadaire' ? 'semaine' : 'mois'}</span>
+                        <span>💵 ${formatAmount(tontine.amount)} ${tontine.type === 'avec' ? 'la part' : '/ ' + (tontine.frequency === 'hebdomadaire' ? 'semaine' : 'mois')}</span>
                         <span>👥 ${memberCount} membre${memberCount > 1 ? 's' : ''}</span>
                         <span>📅 échéance ${formatDate(nextDue)}</span>
                     </div>
@@ -661,6 +688,28 @@
                     <input name="memberName" maxlength="80" required placeholder="Nom du nouveau membre" aria-label="Nom du nouveau membre">
                     <button class="tontine-btn secondary" type="submit">Ajouter un membre</button>
                 </form>` : '';
+            const avecHtml = tontine.type === 'avec' ? (() => {
+                const avec = T.ensureAvec(tontine);
+                const me = T.getMyMember(tontine);
+                const myShares = me ? T.getMemberShares(tontine, me.id) : 0;
+                const pending = avec.loans.filter(loan => loan.status === 'requested');
+                const pendingHtml = pending.length ? pending.map(loan => {
+                    const borrower = tontine.members.find(member => member.id === loan.memberId);
+                    return `<div class="activity-item"><strong>${esc(borrower ? borrower.name : 'Membre')}</strong> demande ${formatAmount(loan.amount)}${loan.purpose ? ' · ' + esc(loan.purpose) : ''}${T.canManageMembers(tontine) ? `<button class="tontine-btn primary" style="margin-top:8px;" onclick="approveAvecLoan('${tontine.id}', '${loan.id}')">Approuver</button>` : ''}</div>`;
+                }).join('') : '<p class="community-empty">Aucune demande de prêt en attente.</p>';
+                return `<section class="community-panel" aria-label="Registre AVEC">
+                    <h3>🤝 Registre AVEC</h3>
+                    <p class="community-intro">Part : ${formatAmount(avec.shareValue)} · fonds social : ${formatAmount(avec.socialFundValue)} · prêt maximum : 3× l’épargne personnelle.</p>
+                    <p><strong>Votre épargne :</strong> ${myShares} part(s), soit ${formatAmount(myShares * avec.shareValue)}. <strong>Caisse disponible :</strong> ${formatAmount(T.getAvecFund(tontine))}</p>
+                    <button class="tontine-btn primary" onclick="saveAvecShare('${tontine.id}')">Enregistrer 1 part</button>
+                    <form class="announcement-form" onsubmit="requestAvecLoan(event, '${tontine.id}')" style="margin-top:14px;">
+                        <input name="loanAmount" type="number" min="100" required placeholder="Montant du prêt" aria-label="Montant du prêt">
+                        <input name="loanPurpose" maxlength="160" placeholder="Motif (facultatif)" aria-label="Motif du prêt">
+                        <button class="tontine-btn secondary" type="submit">Demander un prêt</button>
+                    </form>
+                    <h4 style="margin:16px 0 8px;">Demandes à valider</h4>${pendingHtml}
+                </section>`;
+            })() : '';
 
             document.getElementById('tontine-modal-body').innerHTML = `
                 <h2 style="margin-top:0;">${esc(tontine.name)}</h2>
@@ -686,6 +735,7 @@
                     <h4 style="margin:18px 0 8px;">Ce qui s'est passé</h4>
                     <div class="activity-feed">${activityHtml}</div>
                 </section>
+                ${avecHtml}
             `;
         }
 
@@ -711,6 +761,28 @@
             queueTontineSync(tontineId);
             renderAll();
             showNotification(result.member.name + ' a été ajouté à la tontine.', 'success');
+        }
+
+        function saveAvecShare(tontineId) {
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            if (!me || !T.addAvecShare(tontineId, me.id, 1)) return;
+            queueTontineSync(tontineId); renderAll();
+            showNotification('Part d’épargne enregistrée.', 'success');
+        }
+
+        function requestAvecLoan(event, tontineId) {
+            event.preventDefault();
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            const result = T.requestAvecLoan(tontineId, me && me.id, event.currentTarget.elements.loanAmount.value, event.currentTarget.elements.loanPurpose.value);
+            if (result.error) return showNotification(result.error, 'error');
+            queueTontineSync(tontineId); renderAll(); showNotification('Demande de prêt enregistrée.', 'success');
+        }
+
+        function approveAvecLoan(tontineId, loanId) {
+            if (!T.approveAvecLoan(tontineId, loanId)) return showNotification('Prêt non approuvé : caisse insuffisante ou droit manquant.', 'error');
+            queueTontineSync(tontineId); renderAll(); showNotification('Prêt approuvé et inscrit au registre.', 'success');
         }
 
         function toggleMemberContribution(tontineId, memberId) {

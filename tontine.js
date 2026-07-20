@@ -122,6 +122,74 @@ function addAnnouncement(tontineId, author, message) {
     return tontine;
 }
 
+function isAvec(group) { return group && group.type === 'avec'; }
+
+function ensureAvec(group) {
+    if (!isAvec(group)) return null;
+    group.avec = group.avec || {};
+    group.avec.shareValue = Math.max(100, Number(group.avec.shareValue || group.amount) || 100);
+    group.avec.socialFundValue = Math.max(0, Number(group.avec.socialFundValue) || 0);
+    group.avec.serviceRate = Math.max(0, Math.min(100, Number(group.avec.serviceRate) || 0));
+    group.avec.loanMonths = Math.max(1, Math.min(3, Number(group.avec.loanMonths) || 3));
+    if (!Array.isArray(group.avec.shares)) group.avec.shares = [];
+    if (!Array.isArray(group.avec.socialFund)) group.avec.socialFund = [];
+    if (!Array.isArray(group.avec.loans)) group.avec.loans = [];
+    return group.avec;
+}
+
+function getMemberShares(group, memberId) {
+    const avec = ensureAvec(group);
+    return avec ? avec.shares.filter(item => item.memberId === memberId).reduce((sum, item) => sum + item.units, 0) : 0;
+}
+
+function getAvecFund(group) {
+    const avec = ensureAvec(group);
+    if (!avec) return 0;
+    const savings = avec.shares.reduce((sum, item) => sum + item.units * avec.shareValue, 0);
+    const repaid = avec.loans.reduce((sum, loan) => sum + (loan.repayments || []).reduce((total, item) => total + item.amount, 0), 0);
+    const lent = avec.loans.filter(loan => loan.status === 'approved').reduce((sum, loan) => sum + loan.amount, 0);
+    return Math.max(0, savings + repaid - lent);
+}
+
+function addAvecShare(groupId, memberId, units = 1) {
+    const groups = loadTontines();
+    const group = groups.find(item => item.id === groupId);
+    const avec = ensureAvec(group);
+    const count = Math.max(1, Math.min(5, Number(units) || 1));
+    const member = group && group.members.find(item => item.id === memberId);
+    if (!avec || !member) return null;
+    avec.shares.push({ id: 's_' + Date.now(), memberId, units: count, date: new Date().toISOString() });
+    if (avec.socialFundValue) avec.socialFund.push({ id: 'sf_' + Date.now(), memberId, amount: avec.socialFundValue, date: new Date().toISOString() });
+    addCommunityActivity(group, member.name + ' a enregistré ' + count + ' part(s) d’épargne.');
+    saveTontines(groups);
+    return group;
+}
+
+function requestAvecLoan(groupId, memberId, amount, purpose) {
+    const groups = loadTontines();
+    const group = groups.find(item => item.id === groupId);
+    const avec = ensureAvec(group);
+    const member = group && group.members.find(item => item.id === memberId);
+    const value = Number(amount) || 0;
+    const limit = member ? getMemberShares(group, memberId) * avec.shareValue * 3 : 0;
+    if (!avec || !member || value <= 0 || value > limit) return { error: 'Le prêt doit être positif et ne pas dépasser 3 fois votre épargne.' };
+    const loan = { id: 'l_' + Date.now(), memberId, amount: value, purpose: String(purpose || '').slice(0, 160), rate: avec.serviceRate, months: avec.loanMonths, status: 'requested', repayments: [], date: new Date().toISOString() };
+    avec.loans.push(loan);
+    addCommunityActivity(group, member.name + ' a demandé un prêt de ' + value.toLocaleString('fr-FR') + ' FCFA.');
+    saveTontines(groups);
+    return { group, loan };
+}
+
+function approveAvecLoan(groupId, loanId) {
+    const groups = loadTontines(); const group = groups.find(item => item.id === groupId); const avec = ensureAvec(group);
+    const loan = avec && avec.loans.find(item => item.id === loanId);
+    if (!loan || !canManageMembers(group) || loan.status !== 'requested' || loan.amount > getAvecFund(group)) return null;
+    loan.status = 'approved'; loan.approvedAt = new Date().toISOString();
+    const borrower = group.members.find(item => item.id === loan.memberId);
+    addCommunityActivity(group, 'Prêt de ' + loan.amount.toLocaleString('fr-FR') + ' FCFA approuvé pour ' + (borrower ? borrower.name : 'un membre') + '.');
+    saveTontines(groups); return group;
+}
+
 // --- Calculs de cycles ---
 
 const MS_PER_WEEK = 7 * 24 * 3600 * 1000;
@@ -209,6 +277,7 @@ function createTontine(data) {
         frequency: data.frequency,
         startDate: data.startDate,
         target: data.type === 'collective' && data.target ? Number(data.target) : null,
+        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, shares: [], socialFund: [], loans: [] } : null,
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,
@@ -493,6 +562,13 @@ if (typeof window !== 'undefined') {
         getCommunity,
         canManageMembers,
         addMember,
+        isAvec,
+        ensureAvec,
+        getMemberShares,
+        getAvecFund,
+        addAvecShare,
+        requestAvecLoan,
+        approveAvecLoan,
         addAnnouncement,
         getPendingContributionReminders,
         toApiPayload,
