@@ -117,6 +117,19 @@
         .member-status-btn.paid { background: #009879; color: white; }
         .member-status-btn.unpaid { background: #e9ecef; color: #6c757d; }
 
+        .community-panel { margin-top:20px; padding-top:18px; border-top:1px solid #e5efec; }
+        .community-panel h3 { margin:0 0 6px; color:var(--tontine-ink); }
+        .community-intro { margin:0 0 14px; color:#60716d; font-size:.9rem; }
+        .announcement-form { display:flex; gap:8px; margin:12px 0 16px; }
+        .announcement-form input { flex:1; min-width:0; padding:11px 12px; border:1px solid #cfe1dc; border-radius:10px; font:inherit; }
+        .announcement-form button { flex:0 0 auto; }
+        .community-feed, .activity-feed { display:grid; gap:9px; }
+        .announcement, .activity-item { padding:11px 12px; border-radius:10px; background:#f4faf8; }
+        .announcement strong { display:block; color:#17352f; }
+        .announcement time, .activity-item time { display:block; margin-top:4px; color:#6c757d; font-size:.78rem; }
+        .activity-item { background:#f8f9fa; border-left:3px solid #8bd5c1; font-size:.9rem; }
+        .community-empty { color:#6c757d; font-size:.9rem; margin:8px 0; }
+
         .turn-order { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
         .turn-order-item {
             background: #f1f3f5; border-radius: 16px; padding: 5px 12px; font-size: 0.85rem;
@@ -137,6 +150,8 @@
             .tontine-actions .tontine-btn { flex:1 1 calc(50% - 8px); }
             .tontine-modal { padding:10px; }
             .tontine-modal-content { margin:16px auto; padding:22px 16px; }
+            .announcement-form { flex-direction:column; }
+            .announcement-form button { width:100%; }
         }
     </style>
 </head>
@@ -623,6 +638,17 @@
                     </div>`;
             }).join('');
 
+            const community = T.getCommunity(tontine);
+            const dateTime = value => new Date(value).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+            const announcementsHtml = community.announcements.length
+                ? community.announcements.slice(0, 5).map(item => `
+                    <article class="announcement"><strong>${esc(item.author)}</strong>${esc(item.message)}<time>${dateTime(item.date)}</time></article>`).join('')
+                : '<p class="community-empty">Aucune annonce pour le moment. Partagez la prochaine échéance ou une décision du groupe.</p>';
+            const activityHtml = community.activity.length
+                ? community.activity.slice(0, 6).map(item => `
+                    <div class="activity-item">${esc(item.message)}<time>${dateTime(item.date)}</time></div>`).join('')
+                : '<p class="community-empty">Les cotisations et les décisions apparaîtront ici.</p>';
+
             document.getElementById('tontine-modal-body').innerHTML = `
                 <h2 style="margin-top:0;">${esc(tontine.name)}</h2>
                 <p style="color:#6c757d; margin-top:-8px;">
@@ -635,7 +661,29 @@
                 ${orderHtml}
                 <h4 style="margin-bottom:8px;">👥 Cotisations du cycle en cours${started ? ' (n°' + (cycle + 1) + ')' : ' (pas encore démarrée)'}</h4>
                 ${membersHtml}
+                <section class="community-panel" aria-label="Communauté de la tontine">
+                    <h3>💬 Communauté</h3>
+                    <p class="community-intro">Une annonce claire pour le groupe, puis un historique des actions.</p>
+                    <form class="announcement-form" onsubmit="postAnnouncement(event, '${tontine.id}')">
+                        <input name="announcement" maxlength="500" required placeholder="Ex. Cotisation attendue avant vendredi" aria-label="Nouvelle annonce">
+                        <button class="tontine-btn primary" type="submit">Publier</button>
+                    </form>
+                    <div class="community-feed">${announcementsHtml}</div>
+                    <h4 style="margin:18px 0 8px;">Ce qui s'est passé</h4>
+                    <div class="activity-feed">${activityHtml}</div>
+                </section>
             `;
+        }
+
+        function postAnnouncement(event, tontineId) {
+            event.preventDefault();
+            const input = event.currentTarget.elements.announcement;
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            if (!T.addAnnouncement(tontineId, me ? me.name : 'Membre', input.value)) return;
+            queueTontineSync(tontineId);
+            renderAll();
+            showNotification('Annonce publiée dans la communauté.', 'success');
         }
 
         function toggleMemberContribution(tontineId, memberId) {

@@ -61,6 +61,44 @@ function saveTontines(tontines) {
     localStorage.setItem('tontines', JSON.stringify(tontines));
 }
 
+// Chaque tontine possède son propre espace communautaire. Les anciennes
+// tontines reçoivent automatiquement cette structure au premier usage.
+function ensureCommunity(tontine) {
+    if (!tontine.community || typeof tontine.community !== 'object') {
+        tontine.community = {};
+    }
+    if (!Array.isArray(tontine.community.announcements)) tontine.community.announcements = [];
+    if (!Array.isArray(tontine.community.activity)) tontine.community.activity = [];
+    return tontine.community;
+}
+
+function addCommunityActivity(tontine, message) {
+    const community = ensureCommunity(tontine);
+    community.activity.unshift({ id: 'a_' + Date.now(), message, date: new Date().toISOString() });
+    community.activity = community.activity.slice(0, 50);
+}
+
+function getCommunity(tontine) {
+    return ensureCommunity(tontine);
+}
+
+function addAnnouncement(tontineId, author, message) {
+    const text = String(message || '').trim();
+    if (!text) return null;
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine) return null;
+    const community = ensureCommunity(tontine);
+    const safeAuthor = String(author || 'Membre').trim().slice(0, 80) || 'Membre';
+    community.announcements.unshift({
+        id: 'm_' + Date.now(), author: safeAuthor, message: text.slice(0, 500), date: new Date().toISOString()
+    });
+    community.announcements = community.announcements.slice(0, 50);
+    addCommunityActivity(tontine, safeAuthor + ' a publié une annonce.');
+    saveTontines(tontines);
+    return tontine;
+}
+
 // --- Calculs de cycles ---
 
 const MS_PER_WEEK = 7 * 24 * 3600 * 1000;
@@ -154,6 +192,10 @@ function createTontine(data) {
             isMe: index === 0
         })),
         contributions: [],
+        community: {
+            announcements: [],
+            activity: [{ id: 'a_' + Date.now(), message: 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
+        },
         createdAt: new Date().toISOString()
     };
 
@@ -238,6 +280,10 @@ function togglePayoutTransaction(tontineId, cycleIndex) {
         });
     }
     saveTransactions(transactions);
+    addCommunityActivity(tontine, existing >= 0
+        ? 'La cagnotte du cycle ' + (cycleIndex + 1) + ' a été annulée.'
+        : beneficiary.name + ' a été marqué comme bénéficiaire du cycle ' + (cycleIndex + 1) + '.');
+    saveTontines(loadTontines().map(item => item.id === tontine.id ? tontine : item));
     return existing < 0;
 }
 
@@ -270,6 +316,10 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
             amount: tontine.amount
         });
         contributed = true;
+    }
+
+    if (member) {
+        addCommunityActivity(tontine, member.name + (contributed ? ' a été marqué comme ayant cotisé.' : ' a été remis en attente de cotisation.'));
     }
 
     saveTontines(tontines);
@@ -416,6 +466,8 @@ if (typeof window !== 'undefined') {
         hasRecordedPayout,
         togglePayoutTransaction,
         setContributionReminder,
+        getCommunity,
+        addAnnouncement,
         getPendingContributionReminders,
         toApiPayload,
         fromApiTontine,
