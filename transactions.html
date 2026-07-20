@@ -421,9 +421,9 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="payment-method">💳 Méthode de Paiement *</label>
-                                <select id="payment-method" name="payment-method" required>
-                                    <option value="">Sélectionnez la méthode</option>
+                                <label for="payment-method">💳 Méthode de paiement <span class="field-optional">(optionnel)</span></label>
+                                <select id="payment-method" name="payment-method">
+                                    <option value="">Non précisée</option>
                                     <option value="especes">💵 Espèces</option>
                                     <option value="carte">💳 Carte bancaire</option>
                                     <option value="mobile_money">📱 Mobile Money</option>
@@ -595,7 +595,7 @@
             });
             
             // Validation
-            if (!type || !category || !amount || !date || !paymentMethod) {
+            if (!type || !category || !amount || !date) {
                 alert('Veuillez remplir tous les champs obligatoires !');
                 return;
             }
@@ -816,7 +816,7 @@
                 'cheque': '📄 Chèque',
                 'autre': '📋 Autre'
             };
-            return methods[method] || method;
+            return methods[method] || '—';
         }
 
         // Fonctions pour les interactions de la grille
