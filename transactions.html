@@ -201,6 +201,11 @@
             background: #138496;
         }
 
+        .simple-form-intro { margin: -8px 0 18px; color: #4e625d; font-weight: 600; }
+        .transaction-details { margin-top: 14px; border: 1px solid #dce8e4; border-radius: 10px; padding: 12px; }
+        .transaction-details summary { cursor: pointer; color: #007a63; font-weight: 700; }
+        .transaction-details .form-grid { margin-top: 14px; }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -392,10 +397,11 @@
 
                 <section class="transaction-form-section">
                     <h2>➕ Nouvelle Transaction</h2>
+                    <p class="simple-form-intro">3 étapes : choisissez, indiquez le montant, puis enregistrez.</p>
                     <form id="transaction-form">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="transaction-type">📊 Type *</label>
+                                <label for="transaction-type">1. C'est un revenu ou une dépense ?</label>
                                 <select id="transaction-type" name="transaction-type" required>
                                     <option value="">Sélectionnez le type</option>
                                     <option value="revenu">📈 Revenu</option>
@@ -404,19 +410,23 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="transaction-category">📂 Catégorie *</label>
-                                <select id="transaction-category" name="transaction-category" required>
-                                    <option value="">Sélectionnez une catégorie</option>
+                                <label for="transaction-category">2. Pour quoi ?</label>
+                                <select id="transaction-category" name="transaction-category" required disabled>
+                                    <option value="">Choisissez d'abord le type</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
-                                <label for="transaction-amount">💵 Montant (FCFA) *</label>
+                                <label for="transaction-amount">3. Combien ? (FCFA)</label>
                                 <input type="number" id="transaction-amount" name="transaction-amount" required placeholder="50000" min="0">
                             </div>
-                            
+                        </div>
+
+                        <details class="transaction-details">
+                            <summary>Ajouter un détail (facultatif)</summary>
+                            <div class="form-grid">
                             <div class="form-group">
-                                <label for="transaction-date">📅 Date *</label>
+                                <label for="transaction-date">📅 Date (aujourd'hui par défaut)</label>
                                 <input type="date" id="transaction-date" name="transaction-date" required>
                             </div>
                             
@@ -437,7 +447,8 @@
                                 <label for="transaction-description">📝 Description (optionnel)</label>
                                 <textarea id="transaction-description" name="transaction-description" placeholder="Décrivez cette transaction" rows="3"></textarea>
                             </div>
-                        </div>
+                            </div>
+                        </details>
                         
                         <div class="form-actions">
                             <button type="submit" class="btn-primary">💾 Enregistrer</button>
@@ -480,46 +491,15 @@
         // Initialiser les catégories
         function initializeCategories() {
             const categorySelect = document.getElementById('transaction-category');
-            const allCategories = [
-                { value: 'Salaire', text: '💼 Salaire' },
-                { value: 'Freelance', text: '💻 Freelance' },
-                { value: 'Commerce', text: '🏪 Commerce' },
-                { value: 'Investissement', text: '📈 Investissement' },
-                { value: 'Vente / Commerce', text: '🛍️ Vente / Commerce' },
-                { value: 'Recette journalière', text: '🧾 Recette journalière' },
-                { value: 'Agriculture', text: '🌾 Agriculture' },
-                { value: 'Mission / Contrat', text: '🤝 Mission / Contrat' },
-                { value: 'Aide reçue', text: '🎁 Aide reçue' },
-                { value: 'Bonus', text: '🎁 Bonus' },
-                { value: 'Aide familiale', text: '👨‍👩‍👧‍👦 Aide familiale' },
-                { value: 'Autre revenu', text: '📋 Autre revenu' },
-                { value: 'Alimentation', text: '🍽️ Alimentation' },
-                { value: 'Transport', text: '🚗 Transport' },
-                { value: 'Logement', text: '🏠 Logement' },
-                { value: 'Santé', text: '🏥 Santé' },
-                { value: 'Éducation', text: '📚 Éducation' },
-                { value: 'Loisirs', text: '🎮 Loisirs' },
-                { value: 'Vêtements', text: '👕 Vêtements' },
-                { value: 'Factures', text: '📄 Factures' },
-                { value: 'Communication', text: '📱 Communication' },
-                { value: 'Aide financière', text: '🤝 Aide financière' },
-                { value: 'Événement coutumier', text: '🎭 Événement coutumier' },
-                { value: 'Dîmes et offrandes', text: '🕌 Dîmes et offrandes' },
-                { value: 'Autre dépense', text: '📋 Autre dépense' }
-            ];
-            
-            allCategories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.value;
-                option.textContent = cat.text;
-                categorySelect.appendChild(option);
-            });
+            categorySelect.innerHTML = '<option value="">Choisissez d\'abord le type</option>';
+            categorySelect.disabled = true;
         }
 
         // Gérer le changement de type
         document.getElementById('transaction-type').addEventListener('change', function() {
             const type = this.value;
             const categorySelect = document.getElementById('transaction-category');
+            categorySelect.disabled = !type;
             
             // Vider les options existantes
             const options = categorySelect.querySelectorAll('option');
@@ -628,6 +608,7 @@
             
             // Réinitialiser les catégories
             initializeCategories();
+            document.getElementById('transaction-date').value = new Date().toISOString().slice(0, 10);
             
             alert('Transaction ajoutée avec succès !');
         });
