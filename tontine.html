@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="common.js"></script>
     <script src="api-client.js?v=2.5"></script>
-    <script src="tontine.js"></script>
+    <script src="tontine.js?v=3.1"></script>
     <style>
         :root { --tontine-green:#087f67; --tontine-mint:#e8f7f2; --tontine-ink:#17352f; }
         body { background: linear-gradient(180deg, #f2fbf8 0, #f7f9fb 420px); }
@@ -303,6 +303,14 @@
         const T = window.TontineModule;
         const esc = MonJeton.escapeHtml;
         let openTontineId = null;
+
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('fr-FR').format(Number(amount) || 0) + ' FCFA';
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
 
         function pendingSync() {
             try { return JSON.parse(localStorage.getItem('tontine_sync_queue') || '{}'); }
