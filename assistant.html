@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistant IA - Mon Jeton</title>
+    <title>Assistant & conseils - Mon Jeton</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="theme.css">
     <style>
@@ -128,6 +128,39 @@
             color: #333;
             font-size: 1.3em;
         }
+
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .learning-toggle {
+            border: 1px solid #667eea;
+            border-radius: 999px;
+            background: #f4f2ff;
+            color: #4d3b94;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .learning-panel {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .learning-panel.active { display: block; }
+        .learning-panel.active + .typing-indicator { display: none !important; }
+
+        .learning-intro { margin-bottom: 20px; color: #5f6368; }
+        .learning-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+        .learning-card { background: white; border: 1px solid #e9ecef; border-radius: 14px; padding: 18px; text-align: left; cursor: pointer; font: inherit; color: #333; }
+        .learning-card:hover { border-color: #667eea; box-shadow: 0 6px 18px rgba(102,126,234,.14); }
+        .learning-card strong { display: block; margin: 7px 0; }
+        .learning-card span { color: #667; font-size: .9em; }
 
         .chat-status {
             display: flex;
@@ -394,11 +427,12 @@
                 <div class="ai-avatar">
                     <i class="fas fa-robot"></i>
                 </div>
-                <h1>Assistant IA</h1>
-                <p>Votre conseiller financier personnel</p>
+                <h1>Assistant & conseils</h1>
+                <p>Votre espace d'aide et d'apprentissage</p>
             </div>
-            
+
             <div class="quick-actions">
+                <p style="font-size:0.8rem; opacity:0.8; margin:0 0 8px;">CONSEILS RAPIDES</p>
                 <button class="quick-action" onclick="askQuestion('Comment optimiser mon épargne ?')">
                     <i class="fas fa-piggy-bank"></i>
                     Optimiser l'épargne
@@ -414,25 +448,19 @@
                     Réduire les dépenses
                 </button>
                 
-                <button class="quick-action" onclick="askQuestion('Quels investissements recommandez-vous ?')">
-                    <i class="fas fa-chart-line"></i>
-                    Conseils d'investissement
-                </button>
-                
                 <button class="quick-action" onclick="askQuestion('Comment utiliser efficacement Mobile Money ?')">
                     <i class="fas fa-mobile-alt"></i>
                     Mobile Money
                 </button>
                 
-                <button class="quick-action" onclick="askQuestion('Quels sont les pièges financiers à éviter ?')">
+                <button class="quick-action" onclick="askQuestion('Comment protéger mon argent et éviter les arnaques ?')">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Pièges à éviter
+                    Sécurité et arnaques
                 </button>
             </div>
             
             <div class="sidebar-footer">
-                <p>Assistant IA Mon Jeton</p>
-                <p>Version 1.0</p>
+                <p><a href="index.html" style="color:inherit;">← Retour à l'accueil</a></p>
             </div>
         </div>
 
@@ -440,9 +468,12 @@
         <div class="chat-area">
             <div class="chat-header">
                 <h2><i class="fas fa-comments"></i> Conversation</h2>
-                <div class="chat-status">
-                    <div class="status-indicator"></div>
-                    <span>En ligne</span>
+                <div class="chat-header-actions">
+                    <button type="button" class="learning-toggle" id="learning-toggle" onclick="showLearningPanel()">💡 Apprendre</button>
+                    <div class="chat-status">
+                        <div class="status-indicator"></div>
+                        <span>En ligne</span>
+                    </div>
                 </div>
             </div>
             
@@ -450,9 +481,22 @@
                 <div class="welcome-message">
                     <i class="fas fa-robot"></i>
                     <h3>Bonjour ! 👋</h3>
-                    <p>Je suis votre assistant IA financier. Posez-moi vos questions sur l'épargne, le budget, les investissements ou tout autre sujet financier.</p>
+                    <p>Posez une question ou choisissez un conseil rapide. Retrouvez ici l'épargne, le budget, Mobile Money et la sécurité.</p>
                 </div>
             </div>
+
+            <section class="learning-panel" id="learning-panel" aria-label="Conseils et apprentissage">
+                <h2>💡 Conseils & apprentissage</h2>
+                <p class="learning-intro">Choisissez un thème : l'assistant vous donnera des conseils simples et adaptés.</p>
+                <div class="learning-grid">
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment mieux épargner chaque mois ?')">💰<strong>Épargne</strong><span>Créer de bonnes habitudes.</span></button>
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment construire un budget simple ?')">📊<strong>Budget</strong><span>Prévoir et suivre ses dépenses.</span></button>
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment optimiser mes frais Mobile Money ?')">📱<strong>Mobile Money</strong><span>Réduire les frais et sécuriser les paiements.</span></button>
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment préparer le budget pour Tabaski et les cérémonies ?')">🎭<strong>Événements</strong><span>Anticiper les fêtes et cérémonies.</span></button>
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment organiser un budget familial ?')">👨‍👩‍👧‍👦<strong>Famille</strong><span>Planifier les dépenses du foyer.</span></button>
+                    <button class="learning-card" type="button" onclick="openLearningTopic('Comment protéger mon argent et éviter les arnaques ?')">🔒<strong>Sécurité</strong><span>Codes PIN, fraude et vigilance.</span></button>
+                </div>
+            </section>
             
             <div class="typing-indicator" id="typing-indicator">
                 <div class="message-avatar">
@@ -485,4 +529,4 @@
 
     <script src="assistant.js"></script>
 </body>
-</html> 
+</html>

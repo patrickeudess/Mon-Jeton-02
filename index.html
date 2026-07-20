@@ -32,6 +32,9 @@
         .profile-option { display:block; border:2px solid #e1ebe8; border-radius:12px; padding:12px; cursor:pointer; }
         .profile-option:has(input:checked) { border-color:#009879; background:#e8f7f2; }
         .profile-option input { margin-right:7px; }
+        .more-tools { margin-top:18px; border-top:1px solid #e1ebe8; padding-top:14px; }
+        .more-tools summary { cursor:pointer; color:#087f67; font-weight:700; padding:8px 0; }
+        .more-tools .icon-grid { margin-top:10px; }
         @media(max-width:720px){ .inclusive-head{align-items:flex-start;flex-direction:column}.inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr} }
     </style>
 </head>
@@ -122,27 +125,27 @@
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
                     <span class="action-icon">➕</span>
-                    <span class="action-text">Nouvelle Transaction</span>
+                    <span class="action-text">Ajouter revenu ou dépense</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
                     <span class="action-icon">👁️</span>
-                    <span class="action-text">Voir Solde</span>
+                    <span class="action-text">Voir mon argent</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickBudgetCheck()">
                     <span class="action-icon">🔍</span>
-                    <span class="action-text">Vérifier Budget</span>
+                    <span class="action-text">Préparer mon budget</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickSavings()">
                     <span class="action-icon">🏦</span>
-                    <span class="action-text">Mon Épargne</span>
+                    <span class="action-text">Mon épargne</span>
                 </button>
 
             </div>
         </section>
 
-        <!-- Grille principale 3x3 -->
+        <!-- Outils essentiels, avec les options avancées rangées plus bas -->
         <section class="grid-container">
-            <h2 class="grid-title">📱 Fonctionnalités</h2>
+            <h2 class="grid-title">Autres besoins</h2>
             
             <div class="icon-grid">
                 <!-- Transaction -->
@@ -152,6 +155,23 @@
                     <p>Ajouter et gérer vos revenus et dépenses</p>
                     <div class="grid-badge">Nouveau</div>
                 </a>
+
+                <a href="tontine.html" class="grid-item tontine-item">
+                    <div class="grid-icon">👥</div>
+                    <h3>Tontines</h3>
+                    <p>Créer ou suivre une tontine</p>
+                </a>
+
+                <a href="assistant.html" class="grid-item assistant-item">
+                    <div class="grid-icon">🤖</div>
+                    <h3>Besoin d'aide ?</h3>
+                    <p>Conseils simples et apprentissage</p>
+                </a>
+            </div>
+
+            <details class="more-tools">
+                <summary>Plus d'outils</summary>
+                <div class="icon-grid">
 
                 <!-- Analyse : l'accueil reste l'espace d'action, cette page sert aux détails -->
                 <a href="dashboard.html" class="grid-item dashboard-item">
@@ -174,30 +194,6 @@
                     <p>Suivre votre épargne, vos projets et vos placements</p>
                 </a>
 
-                <!-- Tontines -->
-                <a href="tontine.html" class="grid-item tontine-item">
-                    <div class="grid-icon">👥</div>
-                    <h3>Tontines</h3>
-                    <p>Tontines rotatives et épargnes collectives</p>
-                    <div class="grid-badge">Nouveau</div>
-                </a>
-
-
-
-                <!-- Aide personnalisée -->
-                <a href="assistant.html" class="grid-item assistant-item">
-                    <div class="grid-icon">🤖</div>
-                    <h3>Assistant</h3>
-                    <p>Obtenir une aide adaptée à votre situation</p>
-                </a>
-
-                <!-- Ressources d'apprentissage -->
-                <a href="tips.html" class="grid-item tips-item">
-                    <div class="grid-icon">💡</div>
-                    <h3>Conseils & apprentissage</h3>
-                    <p>Découvrir des repères simples pour mieux gérer votre argent</p>
-                </a>
-
                 <!-- Sécurité -->
                 <a href="security.html" class="grid-item security-item">
                     <div class="grid-icon">🔒</div>
@@ -211,7 +207,8 @@
                     <h3>Badges</h3>
                     <p>Défis et récompenses pour motiver l'épargne</p>
                 </a>
-            </div>
+                </div>
+            </details>
         </section>
 
         <!-- Dernières transactions -->

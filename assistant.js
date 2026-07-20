@@ -66,7 +66,7 @@ const knowledgeBase = {
     
     // Pièges financiers
     'pièges': {
-        keywords: ['pièges', 'éviter', 'dangers', 'risques', 'arnaques'],
+        keywords: ['pièges', 'éviter', 'dangers', 'risques', 'arnaques', 'sécurité', 'protéger'],
         responses: [
             "🚨 **Arnaques en ligne :** Ne cliquez jamais sur des liens suspects dans vos SMS ou emails.",
             "💳 **Dettes à la consommation :** Évitez les crédits à taux élevés pour des achats non essentiels.",
@@ -93,7 +93,30 @@ const knowledgeBase = {
 document.addEventListener('DOMContentLoaded', function() {
     loadConversationHistory();
     autoResizeTextarea();
+    if (window.location.hash === '#apprendre') showLearningPanel();
 });
+
+function showLearningPanel() {
+    document.getElementById('learning-panel').classList.add('active');
+    document.getElementById('chat-messages').style.display = 'none';
+    document.querySelector('.chat-input').style.display = 'none';
+    document.getElementById('learning-toggle').textContent = '💬 Discussion';
+    document.getElementById('learning-toggle').onclick = showConversation;
+}
+
+function showConversation() {
+    document.getElementById('learning-panel').classList.remove('active');
+    document.getElementById('chat-messages').style.display = '';
+    document.querySelector('.chat-input').style.display = '';
+    document.getElementById('learning-toggle').textContent = '💡 Apprendre';
+    document.getElementById('learning-toggle').onclick = showLearningPanel;
+    window.location.hash = '';
+}
+
+function openLearningTopic(question) {
+    showConversation();
+    askQuestion(question);
+}
 
 // Fonction pour poser une question via les boutons rapides
 function askQuestion(question) {
@@ -480,4 +503,4 @@ window.clearConversationHistory = clearConversationHistory;
 window.exportConversation = exportConversation;
 window.showConversationStats = showConversationStats;
 window.showHelp = showHelp;
-window.askForPersonalizedAdvice = askForPersonalizedAdvice; 
+window.askForPersonalizedAdvice = askForPersonalizedAdvice;
