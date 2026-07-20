@@ -144,7 +144,27 @@ function ensureAvec(group) {
     if (!Array.isArray(group.avec.shares)) group.avec.shares = [];
     if (!Array.isArray(group.avec.socialFund)) group.avec.socialFund = [];
     if (!Array.isArray(group.avec.loans)) group.avec.loans = [];
+    if (!group.avec.roles || typeof group.avec.roles !== 'object') group.avec.roles = {};
+    group.members.forEach((member, index) => {
+        if (!group.avec.roles[member.id]) group.avec.roles[member.id] = index === 0 ? 'Président' : 'Membre';
+    });
     return group.avec;
+}
+
+function getAvecRole(group, memberId) {
+    const avec = ensureAvec(group);
+    return avec && avec.roles[memberId] ? avec.roles[memberId] : 'Membre';
+}
+
+function setAvecRole(groupId, memberId, role) {
+    const allowed = ['Président', 'Secrétaire', 'Trésorier', 'Membre'];
+    const groups = loadTontines(); const group = groups.find(item => item.id === groupId);
+    if (!group || !isAvec(group) || !canManageMembers(group) || !allowed.includes(role)) return null;
+    const avec = ensureAvec(group); const member = group.members.find(item => item.id === memberId);
+    if (!member) return null;
+    avec.roles[memberId] = role;
+    addCommunityActivity(group, member.name + ' est désormais ' + role + '.');
+    saveTontines(groups); return group;
 }
 
 function getMemberShares(group, memberId) {
@@ -287,7 +307,7 @@ function createTontine(data) {
         frequency: data.frequency,
         startDate: data.startDate,
         target: data.type === 'collective' && data.target ? Number(data.target) : null,
-        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, shares: [], socialFund: [], loans: [] } : null,
+        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' } } : null,
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,
@@ -575,6 +595,8 @@ if (typeof window !== 'undefined') {
         isAvec,
         ensureAvec,
         getMemberShares,
+        getAvecRole,
+        setAvecRole,
         getAvecFund,
         addAvecShare,
         requestAvecLoan,
