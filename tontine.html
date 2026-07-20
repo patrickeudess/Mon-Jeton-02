@@ -540,7 +540,7 @@
         }
 
         function renderAll() {
-            const tontines = T.loadTontines();
+            const tontines = T.loadTontines().filter(item => item.type !== 'avec');
             renderSummary(tontines);
             renderList(tontines);
             if (openTontineId) {

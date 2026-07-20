@@ -5,7 +5,7 @@
 //    reçoivent toujours la dernière version du code quand ils sont en ligne,
 //    et la version en cache hors ligne.
 //  - Autres ressources (images, polices…) : cache d'abord, réseau en secours.
-const CACHE_NAME = 'mon-jeton-v3.0';
+const CACHE_NAME = 'mon-jeton-v3.1';
 
 // Chemins relatifs : l'application peut être hébergée à la racine d'un
 // domaine ou dans un sous-dossier (ex. GitHub Pages).
@@ -18,6 +18,8 @@ const PRECACHE_URLS = [
     './dashboard.html',
     './tontine.html',
     './tontine.js',
+    './avec.html',
+    './avec.js',
     './login.html',
     './styles.css',
     './enhanced-styles.css',
