@@ -17,7 +17,23 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="chart.umd.js"></script>
     <script src="common.js"></script>
+    <script src="income-profile.js"></script>
     <script src="optimize_application.js"></script>
+    <style>
+        .inclusive-finance { margin: 20px 0; padding: 22px; border-radius: 18px; background: linear-gradient(135deg,#073b35,#087f67); color:#fff; box-shadow:0 14px 32px rgba(8,127,103,.2); }
+        .inclusive-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+        .inclusive-head h2 { margin:0; color:#fff; }
+        .profile-select { border:1px solid rgba(255,255,255,.35); background:#fff; color:#17352f; border-radius:10px; padding:9px 12px; font-weight:700; }
+        .inclusive-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+        .inclusive-metric { padding:15px; border-radius:14px; background:rgba(255,255,255,.12); }
+        .inclusive-metric strong { display:block; margin-top:6px; font-size:1.2rem; }
+        .inclusive-note { margin:14px 0 0; opacity:.88; font-size:.88rem; }
+        .profile-options { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; text-align:left; margin:16px 0; }
+        .profile-option { display:block; border:2px solid #e1ebe8; border-radius:12px; padding:12px; cursor:pointer; }
+        .profile-option:has(input:checked) { border-color:#009879; background:#e8f7f2; }
+        .profile-option input { margin-right:7px; }
+        @media(max-width:720px){ .inclusive-head{align-items:flex-start;flex-direction:column}.inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr} }
+    </style>
 </head>
 <body>
     <!-- Vérification d'authentification -->
@@ -81,6 +97,25 @@
             </div>
         </header>
 
+        <section class="inclusive-finance" aria-labelledby="inclusive-title">
+            <div class="inclusive-head">
+                <div><h2 id="inclusive-title">Votre trésorerie réelle</h2><small id="income-profile-label">Profil financier</small></div>
+                <select id="income-profile-select" class="profile-select" aria-label="Type de revenu">
+                    <option value="fixe">Revenu fixe</option>
+                    <option value="variable">Revenu variable</option>
+                    <option value="journalier">Revenu journalier</option>
+                    <option value="saisonnier">Revenu saisonnier</option>
+                </select>
+            </div>
+            <div class="inclusive-grid">
+                <div class="inclusive-metric"><span>Disponible aujourd’hui</span><strong id="cash-available">0 FCFA</strong></div>
+                <div class="inclusive-metric"><span>Revenu prudent</span><strong id="prudent-income">0 FCFA</strong></div>
+                <div class="inclusive-metric"><span>Budget du cycle</span><strong id="cycle-budget">0 FCFA</strong></div>
+                <div class="inclusive-metric"><span>Jours couverts</span><strong id="coverage-days">—</strong></div>
+            </div>
+            <p id="inclusive-note" class="inclusive-note"></p>
+        </section>
+
         <!-- Actions rapides -->
         <section class="quick-actions">
             <h2>⚡ Actions Rapides</h2>
@@ -118,11 +153,11 @@
                     <div class="grid-badge">Nouveau</div>
                 </a>
 
-                <!-- Dashboard -->
+                <!-- Analyse : l'accueil reste l'espace d'action, cette page sert aux détails -->
                 <a href="dashboard.html" class="grid-item dashboard-item">
                     <div class="grid-icon">📊</div>
-                    <h3>Dashboard</h3>
-                    <p>Vue d'ensemble et analyses prédictives</p>
+                    <h3>Analyse</h3>
+                    <p>Comprendre vos tendances et prévoir votre budget</p>
                 </a>
 
                 <!-- Budgets -->
@@ -132,11 +167,11 @@
                     <p>Définir et suivre vos budgets par catégorie</p>
                 </a>
 
-                <!-- Épargne -->
-                <a href="savings.html" class="grid-item savings-item">
+                <!-- Épargne et projets : point d'entrée unique pour éviter deux listes d'objectifs -->
+                <a href="savings.html#objectifs" class="grid-item savings-item">
                     <div class="grid-icon">🏦</div>
-                    <h3>Épargne</h3>
-                    <p>Gérer vos objectifs d'épargne et placements</p>
+                    <h3>Épargne & projets</h3>
+                    <p>Suivre votre épargne, vos projets et vos placements</p>
                 </a>
 
                 <!-- Tontines -->
@@ -149,25 +184,18 @@
 
 
 
-                <!-- Assistant IA -->
+                <!-- Aide personnalisée -->
                 <a href="assistant.html" class="grid-item assistant-item">
                     <div class="grid-icon">🤖</div>
-                    <h3>Assistant IA</h3>
-                    <p>Conseils financiers personnalisés</p>
+                    <h3>Assistant</h3>
+                    <p>Obtenir une aide adaptée à votre situation</p>
                 </a>
 
-                <!-- Objectifs -->
-                <a href="goals.html" class="grid-item goals-item">
-                    <div class="grid-icon">🏆</div>
-                    <h3>Objectifs</h3>
-                    <p>Définir et atteindre vos objectifs financiers</p>
-                </a>
-
-                <!-- Conseils -->
+                <!-- Ressources d'apprentissage -->
                 <a href="tips.html" class="grid-item tips-item">
                     <div class="grid-icon">💡</div>
-                    <h3>Conseils</h3>
-                    <p>Astuces et conseils pour optimiser vos finances</p>
+                    <h3>Conseils & apprentissage</h3>
+                    <p>Découvrir des repères simples pour mieux gérer votre argent</p>
                 </a>
 
                 <!-- Sécurité -->
@@ -241,6 +269,18 @@
                 <button onclick="nextSlide()" class="btn-primary">Suivant</button>
             </div>
             <div class="onboarding-slide" id="slide-3">
+                <div class="onboarding-icon">📈</div>
+                <h2>Comment recevez-vous votre argent ?</h2>
+                <p>Mon Jeton adaptera les budgets et conseils à votre réalité.</p>
+                <div class="profile-options">
+                    <label class="profile-option"><input type="radio" name="onboarding-profile" value="fixe"> Salaire ou revenu fixe</label>
+                    <label class="profile-option"><input type="radio" name="onboarding-profile" value="variable" checked> Paiements irréguliers</label>
+                    <label class="profile-option"><input type="radio" name="onboarding-profile" value="journalier"> Recettes journalières</label>
+                    <label class="profile-option"><input type="radio" name="onboarding-profile" value="saisonnier"> Revenus saisonniers</label>
+                </div>
+                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+            </div>
+            <div class="onboarding-slide" id="slide-4">
                 <div class="onboarding-icon">👥</div>
                 <h2>Épargne & Objectifs</h2>
                 <p>Gérez vos objectifs d'épargne et placements pour atteindre vos objectifs financiers.</p>
@@ -249,7 +289,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2.5"></script>
     <script>
         // Afficher le nom de l'utilisateur
         function displayUserInfo() {
@@ -283,7 +323,32 @@
             document.getElementById('total-revenus').textContent = formatAmount(totalRevenus) + ' FCFA';
             document.getElementById('total-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
             document.getElementById('solde-actuel').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
+            renderInclusiveSummary(transactions);
         }
+
+        function renderInclusiveSummary(sourceTransactions = null) {
+            const data = sourceTransactions || JSON.parse(localStorage.getItem('transactions') || '[]');
+            const profile = IncomeProfile.loadProfile();
+            const analysis = IncomeProfile.analyze(data, profile);
+            const select = document.getElementById('income-profile-select');
+            if (select) select.value = profile.type;
+            document.getElementById('income-profile-label').textContent = analysis.profileLabel;
+            document.getElementById('cash-available').textContent = formatAmount(analysis.available) + ' FCFA';
+            document.getElementById('prudent-income').textContent = formatAmount(analysis.prudentIncome) + ' FCFA';
+            document.getElementById('cycle-budget').textContent = formatAmount(analysis.cycleBudget) + ' FCFA / ' + IncomeProfile.formatCycle(analysis.cycle);
+            document.getElementById('coverage-days').textContent = analysis.coverageDays === null ? 'À calculer' : analysis.coverageDays + ' jours';
+            document.getElementById('inclusive-note').textContent = analysis.needsMoreData
+                ? 'Ajoutez au moins trois entrées d’argent pour obtenir une estimation prudente plus fiable.'
+                : 'Réserve conseillée pour les périodes faibles : ' + formatAmount(analysis.reserveRecommendation) + ' FCFA.';
+        }
+
+        document.getElementById('income-profile-select').addEventListener('change', function() {
+            const profile = IncomeProfile.loadProfile();
+            profile.type = this.value;
+            profile.cycle = this.value === 'fixe' ? 'mensuelle' : 'hebdomadaire';
+            IncomeProfile.saveProfile(profile);
+            renderInclusiveSummary();
+        });
 
         // Charger les dernières transactions
         function loadRecentTransactions() {
@@ -470,7 +535,7 @@
 
         // Onboarding
         let currentSlide = 1;
-        const totalSlides = 3;
+        const totalSlides = 4;
 
         function nextSlide() {
             document.getElementById(`slide-${currentSlide}`).classList.remove('active');
@@ -482,8 +547,14 @@
         }
 
         function finishOnboarding() {
+            const selected = document.querySelector('input[name="onboarding-profile"]:checked');
+            const profile = IncomeProfile.loadProfile();
+            profile.type = selected ? selected.value : 'variable';
+            profile.cycle = profile.type === 'fixe' ? 'mensuelle' : 'hebdomadaire';
+            IncomeProfile.saveProfile(profile);
             localStorage.setItem('onboarding_completed', 'true');
             document.getElementById('onboarding-modal').classList.remove('active');
+            renderInclusiveSummary();
         }
 
         // Charger les conseils contextuels

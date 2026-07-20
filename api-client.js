@@ -9,11 +9,10 @@ class BudgetAPI {
         // localStorage 'api_base_url'. En dehors d'un environnement local,
         // aucune URL par défaut n'est utilisée : l'application fonctionne
         // alors en mode 100 % localStorage.
-        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
         this.baseURL = baseURL
             || window.API_BASE_URL
             || localStorage.getItem('api_base_url')
-            || (isLocalhost ? 'http://localhost:8000' : null);
+            || null;
         this.token = localStorage.getItem('auth_token');
     }
 
