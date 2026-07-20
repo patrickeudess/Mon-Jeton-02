@@ -82,6 +82,29 @@ function getCommunity(tontine) {
     return ensureCommunity(tontine);
 }
 
+function canManageMembers(tontine) {
+    const me = getMyMember(tontine);
+    const creatorId = tontine.createdByMemberId || (tontine.members[0] && tontine.members[0].id);
+    return Boolean(me && creatorId && me.id === creatorId);
+}
+
+function addMember(tontineId, name) {
+    const cleanName = String(name || '').trim().replace(/\s+/g, ' ');
+    if (!cleanName) return { error: 'Le nom du membre est requis.' };
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine) return { error: 'Tontine introuvable.' };
+    if (!canManageMembers(tontine)) return { error: 'Seul le créateur peut ajouter un membre.' };
+    if (tontine.members.some(member => member.name.toLocaleLowerCase('fr-FR') === cleanName.toLocaleLowerCase('fr-FR'))) {
+        return { error: 'Ce membre est déjà dans la tontine.' };
+    }
+    const member = { id: 'm_' + Date.now().toString(36), name: cleanName.slice(0, 80), isMe: false };
+    tontine.members.push(member);
+    addCommunityActivity(tontine, member.name + ' a été ajouté(e) à la tontine.');
+    saveTontines(tontines);
+    return { tontine, member };
+}
+
 function addAnnouncement(tontineId, author, message) {
     const text = String(message || '').trim();
     if (!text) return null;
@@ -381,6 +404,7 @@ function toApiPayload(tontine) {
             is_me: member.isMe,
             position
         })),
+        createdByMemberId: 'm0',
         contributions: tontine.contributions.map(item => ({
             member_client_id: item.memberId,
             cycle: item.cycle,
@@ -467,6 +491,8 @@ if (typeof window !== 'undefined') {
         togglePayoutTransaction,
         setContributionReminder,
         getCommunity,
+        canManageMembers,
+        addMember,
         addAnnouncement,
         getPendingContributionReminders,
         toApiPayload,

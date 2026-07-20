@@ -648,6 +648,11 @@
                 ? community.activity.slice(0, 6).map(item => `
                     <div class="activity-item">${esc(item.message)}<time>${dateTime(item.date)}</time></div>`).join('')
                 : '<p class="community-empty">Les cotisations et les décisions apparaîtront ici.</p>';
+            const memberManagementHtml = T.canManageMembers(tontine) ? `
+                <form class="announcement-form" onsubmit="addCommunityMember(event, '${tontine.id}')">
+                    <input name="memberName" maxlength="80" required placeholder="Nom du nouveau membre" aria-label="Nom du nouveau membre">
+                    <button class="tontine-btn secondary" type="submit">Ajouter un membre</button>
+                </form>` : '';
 
             document.getElementById('tontine-modal-body').innerHTML = `
                 <h2 style="margin-top:0;">${esc(tontine.name)}</h2>
@@ -664,6 +669,7 @@
                 <section class="community-panel" aria-label="Communauté de la tontine">
                     <h3>💬 Communauté</h3>
                     <p class="community-intro">Une annonce claire pour le groupe, puis un historique des actions.</p>
+                    ${memberManagementHtml}
                     <form class="announcement-form" onsubmit="postAnnouncement(event, '${tontine.id}')">
                         <input name="announcement" maxlength="500" required placeholder="Ex. Cotisation attendue avant vendredi" aria-label="Nouvelle annonce">
                         <button class="tontine-btn primary" type="submit">Publier</button>
@@ -684,6 +690,19 @@
             queueTontineSync(tontineId);
             renderAll();
             showNotification('Annonce publiée dans la communauté.', 'success');
+        }
+
+        function addCommunityMember(event, tontineId) {
+            event.preventDefault();
+            const input = event.currentTarget.elements.memberName;
+            const result = T.addMember(tontineId, input.value);
+            if (result.error) {
+                showNotification(result.error, 'error');
+                return;
+            }
+            queueTontineSync(tontineId);
+            renderAll();
+            showNotification(result.member.name + ' a été ajouté à la tontine.', 'success');
         }
 
         function toggleMemberContribution(tontineId, memberId) {
