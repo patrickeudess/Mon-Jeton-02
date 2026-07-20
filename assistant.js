@@ -66,7 +66,7 @@ const knowledgeBase = {
     
     // Pièges financiers
     'pièges': {
-        keywords: ['pièges', 'éviter', 'dangers', 'risques', 'arnaques'],
+        keywords: ['pièges', 'éviter', 'dangers', 'risques', 'arnaques', 'sécurité', 'protéger'],
         responses: [
             "🚨 **Arnaques en ligne :** Ne cliquez jamais sur des liens suspects dans vos SMS ou emails.",
             "💳 **Dettes à la consommation :** Évitez les crédits à taux élevés pour des achats non essentiels.",
@@ -480,4 +480,4 @@ window.clearConversationHistory = clearConversationHistory;
 window.exportConversation = exportConversation;
 window.showConversationStats = showConversationStats;
 window.showHelp = showHelp;
-window.askForPersonalizedAdvice = askForPersonalizedAdvice; 
+window.askForPersonalizedAdvice = askForPersonalizedAdvice;

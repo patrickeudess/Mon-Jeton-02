@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistant IA - Mon Jeton</title>
+    <title>Assistant & conseils - Mon Jeton</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="theme.css">
     <style>
@@ -394,11 +394,12 @@
                 <div class="ai-avatar">
                     <i class="fas fa-robot"></i>
                 </div>
-                <h1>Assistant IA</h1>
-                <p>Votre conseiller financier personnel</p>
+                <h1>Assistant & conseils</h1>
+                <p>Votre espace d'aide et d'apprentissage</p>
             </div>
-            
+
             <div class="quick-actions">
+                <p style="font-size:0.8rem; opacity:0.8; margin:0 0 8px;">CONSEILS RAPIDES</p>
                 <button class="quick-action" onclick="askQuestion('Comment optimiser mon épargne ?')">
                     <i class="fas fa-piggy-bank"></i>
                     Optimiser l'épargne
@@ -414,25 +415,19 @@
                     Réduire les dépenses
                 </button>
                 
-                <button class="quick-action" onclick="askQuestion('Quels investissements recommandez-vous ?')">
-                    <i class="fas fa-chart-line"></i>
-                    Conseils d'investissement
-                </button>
-                
                 <button class="quick-action" onclick="askQuestion('Comment utiliser efficacement Mobile Money ?')">
                     <i class="fas fa-mobile-alt"></i>
                     Mobile Money
                 </button>
                 
-                <button class="quick-action" onclick="askQuestion('Quels sont les pièges financiers à éviter ?')">
+                <button class="quick-action" onclick="askQuestion('Comment protéger mon argent et éviter les arnaques ?')">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Pièges à éviter
+                    Sécurité et arnaques
                 </button>
             </div>
             
             <div class="sidebar-footer">
-                <p>Assistant IA Mon Jeton</p>
-                <p>Version 1.0</p>
+                <p><a href="index.html" style="color:inherit;">← Retour à l'accueil</a></p>
             </div>
         </div>
 
@@ -450,7 +445,7 @@
                 <div class="welcome-message">
                     <i class="fas fa-robot"></i>
                     <h3>Bonjour ! 👋</h3>
-                    <p>Je suis votre assistant IA financier. Posez-moi vos questions sur l'épargne, le budget, les investissements ou tout autre sujet financier.</p>
+                    <p>Posez une question ou choisissez un conseil rapide. Retrouvez ici l'épargne, le budget, Mobile Money et la sécurité.</p>
                 </div>
             </div>
             
@@ -485,4 +480,4 @@
 
     <script src="assistant.js"></script>
 </body>
-</html> 
+</html>
