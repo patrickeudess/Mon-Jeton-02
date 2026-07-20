@@ -44,6 +44,16 @@ const TONTINE_TEMPLATES = {
         frequency: 'mensuelle',
         target: 500000,
         members: 'Moi\nFamille\nAmis'
+    },
+    avec: {
+        name: 'AVEC du quartier',
+        type: 'avec',
+        amount: 1000,
+        frequency: 'hebdomadaire',
+        socialFund: 100,
+        serviceRate: 10,
+        loanMonths: 3,
+        members: 'Moi\nAwa\nKoffi'
     }
 };
 

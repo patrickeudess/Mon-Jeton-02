@@ -5,7 +5,7 @@
 //    reçoivent toujours la dernière version du code quand ils sont en ligne,
 //    et la version en cache hors ligne.
 //  - Autres ressources (images, polices…) : cache d'abord, réseau en secours.
-const CACHE_NAME = 'mon-jeton-v2.9';
+const CACHE_NAME = 'mon-jeton-v3.0';
 
 // Chemins relatifs : l'application peut être hébergée à la racine d'un
 // domaine ou dans un sous-dossier (ex. GitHub Pages).

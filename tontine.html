@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="common.js"></script>
     <script src="api-client.js?v=2.5"></script>
-    <script src="tontine.js?v=3.2"></script>
+    <script src="tontine.js?v=3.3"></script>
     <style>
         :root { --tontine-green:#087f67; --tontine-mint:#e8f7f2; --tontine-ink:#17352f; }
         body { background: linear-gradient(180deg, #f2fbf8 0, #f7f9fb 420px); }
@@ -224,7 +224,7 @@
 
         <!-- Nouvelle tontine -->
         <section class="new-goal">
-            <h2>➕ Nouvelle Tontine</h2>
+            <h2>➕ Créer un groupe</h2>
 
             <p style="color:#6c757d; margin: 8px 0 0;">Modèles rapides :</p>
             <div class="tontine-templates">
@@ -232,6 +232,7 @@
                 <button type="button" class="template-chip" data-template="tabaski">🐑 Tabaski</button>
                 <button type="button" class="template-chip" data-template="rentree">📚 Rentrée scolaire</button>
                 <button type="button" class="template-chip" data-template="mariage">💒 Mariage</button>
+                <button type="button" class="template-chip" data-template="avec">🤝 Créer une AVEC</button>
             </div>
 
             <form id="tontine-form" class="enhanced-form">
@@ -403,6 +404,9 @@
                 document.getElementById('tontine-amount').value = template.amount;
                 document.getElementById('tontine-frequency').value = template.frequency;
                 document.getElementById('tontine-members').value = template.members;
+                if (template.socialFund !== undefined) document.getElementById('avec-social-fund').value = template.socialFund;
+                if (template.serviceRate !== undefined) document.getElementById('avec-rate').value = template.serviceRate;
+                if (template.loanMonths !== undefined) document.getElementById('avec-loan-months').value = template.loanMonths;
                 if (template.target) {
                     document.getElementById('tontine-target').value = template.target;
                 }
