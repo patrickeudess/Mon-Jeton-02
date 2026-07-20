@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Épargne - Mon Jeton</title>
+    <title>Épargne et projets - Mon Jeton</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
@@ -461,7 +461,7 @@
     </nav>
 
     <nav class="breadcrumb">
-        <a href="index.html">🏠 Accueil</a> > <span>🏦 Épargne</span>
+        <a href="index.html">🏠 Accueil</a> > <span>🏦 Épargne et projets</span>
     </nav>
 
     <div class="savings-container">
@@ -533,7 +533,8 @@
             </div>
         </section>
 
-        <!-- Objectifs d'épargne -->
+        <!-- Objectifs d'épargne : point d'entrée unique des projets personnels -->
+        <span id="objectifs" aria-hidden="true"></span>
 
 
 
@@ -667,8 +668,26 @@
         function loadSavingsData() {
             const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
             
-            // Charger les objectifs et épargnes
+            // Une seule liste d'objectifs : les anciens objectifs sont importés une fois
+            // depuis l'ancienne page Objectifs, sans effacer les données d'origine.
             objectifs = JSON.parse(localStorage.getItem('objectifs_epargne') || '[]');
+            if (!localStorage.getItem('goals_migrated_to_savings')) {
+                const legacyGoals = JSON.parse(localStorage.getItem('goals') || '[]');
+                legacyGoals.forEach(goal => {
+                    if (!objectifs.some(item => String(item.id) === String(goal.id))) {
+                        objectifs.push({
+                            id: goal.id,
+                            nom: goal.name || 'Projet sans nom',
+                            montantCible: Number(goal.target) || 0,
+                            dateLimite: goal.deadline || new Date().toISOString().slice(0, 10),
+                            description: goal.description || '',
+                            createdAt: goal.createdAt || new Date().toISOString()
+                        });
+                    }
+                });
+                localStorage.setItem('objectifs_epargne', JSON.stringify(objectifs));
+                localStorage.setItem('goals_migrated_to_savings', 'true');
+            }
             epargnes = JSON.parse(localStorage.getItem('epargnes_regulieres') || '[]');
             
             // Calculer l'épargne totale
@@ -1332,4 +1351,4 @@
     </script>
     <script src="savings.js"></script>
 </body>
-</html> 
+</html>
