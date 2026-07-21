@@ -13,7 +13,9 @@
     const list = document.getElementById('avec-list'); const data = groups();
     list.innerHTML = data.length ? data.map(group => {
       const avec = T.ensureAvec(group), me = mine(group), shares = me ? T.getMemberShares(group, me.id) : 0;
-      return `<article class="avec-card"><h3>${esc(group.name)}</h3><p class="muted">Part : ${money(avec.shareValue)} · Fonds social : ${money(avec.socialFundValue)}</p><p class="amount">Caisse disponible : ${money(T.getAvecFund(group))}</p><p>Votre épargne : ${shares} part(s)</p><button class="btn primary" onclick="openAvec('${group.id}')">Ouvrir l’AVEC</button></article>`;
+      const latest = T.getCommunity(group).activity[0];
+      const update = latest ? esc(latest.message) : 'Aucun mouvement partagé pour le moment.';
+      return `<article class="avec-card"><h3>${esc(group.name)}</h3><p class="muted">Part : ${money(avec.shareValue)} · Fonds social : ${money(avec.socialFundValue)}</p><p class="amount">Caisse disponible : ${money(T.getAvecFund(group))}</p><p>Votre épargne : ${shares} part(s)</p><p class="shared-preview"><strong>📣 Dernière actualité</strong><span>${update}</span></p><button class="btn primary" onclick="openAvec('${group.id}')">Ouvrir l’AVEC</button></article>`;
     }).join('') : '<p class="muted">Aucune AVEC. Créez votre premier groupe.</p>';
     if (openId) show(openId);
   }
