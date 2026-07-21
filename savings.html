@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="theme.css">
     <script src="common.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script><script src="firebase-config.js?v=2"></script><script src="firebase-private-data.js?v=1"></script>
     <style>
         /* Fond blanc pour toute la page */
         body {
@@ -654,6 +655,17 @@
         function displayUserInfo() {
             const userName = localStorage.getItem('user_name') || 'Utilisateur';
             document.getElementById('display-name').textContent = userName;
+        }
+
+        // La liste des objectifs est maintenant gérée dans les fenêtres dédiées.
+        // Ces fonctions conservent le chargement de la page stable sans créer
+        // une seconde liste d'objectifs sur l'écran principal.
+        function displayObjectifs() {
+            updateObjectifsSelect();
+        }
+
+        function displayEpargnes() {
+            // Les épargnes régulières sont affichées à la demande.
         }
 
         // Gérer la déconnexion

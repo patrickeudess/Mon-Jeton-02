@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mon Jeton</string>
+    <string name="title_activity_main">Mon Jeton</string>
+    <string name="package_name">ci.monjeton.app</string>
+    <string name="custom_url_scheme">ci.monjeton.app</string>
+</resources>

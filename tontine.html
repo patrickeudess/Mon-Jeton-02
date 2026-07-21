@@ -17,7 +17,14 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="common.js"></script>
     <script src="api-client.js?v=2.5"></script>
-    <script src="tontine.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=2"></script>
+    <script src="firebase-groups.js?v=2"></script>
+    <script src="firebase-private-data.js?v=1"></script>
+    <script src="tontine.js?v=3.5"></script>
+    <script src="group-sync-ui.js?v=2"></script>
     <style>
         :root { --tontine-green:#087f67; --tontine-mint:#e8f7f2; --tontine-ink:#17352f; }
         body { background: linear-gradient(180deg, #f2fbf8 0, #f7f9fb 420px); }
@@ -38,6 +45,8 @@
             display:inline-flex; align-items:center; gap:7px; margin-top:18px; padding:7px 12px;
             border-radius:999px; background:rgba(255,255,255,.18); font-size:.82rem; font-weight:700;
         }
+        .pilot-note { margin:0 0 22px; padding:13px 15px; background:#fff8e8; border:1px solid #f1d28a; border-radius:14px; color:#674d10; line-height:1.45; }
+        .pilot-note strong { display:block; margin-bottom:3px; }
 
         .goals-summary, .new-goal, .tontine-container > section:last-child {
             background:rgba(255,255,255,.88); border:1px solid rgba(8,127,103,.10);
@@ -116,12 +125,29 @@
         }
         .member-status-btn.paid { background: #009879; color: white; }
         .member-status-btn.unpaid { background: #e9ecef; color: #6c757d; }
+        .member-status-btn:disabled { cursor:default; opacity:.72; }
+
+        .community-panel { margin-top:20px; padding-top:18px; border-top:1px solid #e5efec; }
+        .community-panel h3 { margin:0 0 6px; color:var(--tontine-ink); }
+        .community-intro { margin:0 0 14px; color:#60716d; font-size:.9rem; }
+        .announcement-form { display:flex; gap:8px; margin:12px 0 16px; }
+        .announcement-form input { flex:1; min-width:0; padding:11px 12px; border:1px solid #cfe1dc; border-radius:10px; font:inherit; }
+        .announcement-form button { flex:0 0 auto; }
+        .community-feed, .activity-feed { display:grid; gap:9px; }
+        .announcement, .activity-item { padding:11px 12px; border-radius:10px; background:#f4faf8; }
+        .announcement strong { display:block; color:#17352f; }
+        .announcement time, .activity-item time { display:block; margin-top:4px; color:#6c757d; font-size:.78rem; }
+        .activity-item { background:#f8f9fa; border-left:3px solid #8bd5c1; font-size:.9rem; }
+        .community-empty { color:#6c757d; font-size:.9rem; margin:8px 0; }
 
         .turn-order { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
         .turn-order-item {
             background: #f1f3f5; border-radius: 16px; padding: 5px 12px; font-size: 0.85rem;
         }
         .turn-order-item.current { background: #009879; color: white; font-weight: 700; }
+        .turn-move { margin-left:5px; width:25px; height:25px; border:0; border-radius:50%; background:#d8eee8; color:#075b4e; font-weight:800; cursor:pointer; }
+        .turn-order-item.current .turn-move { background:rgba(255,255,255,.24); color:white; }
+        .turn-move:disabled { opacity:.4; cursor:default; }
 
         .empty-state { text-align: center; color: #6c757d; padding: 30px 10px; }
         .summary-grid { gap:14px; }
@@ -137,6 +163,8 @@
             .tontine-actions .tontine-btn { flex:1 1 calc(50% - 8px); }
             .tontine-modal { padding:10px; }
             .tontine-modal-content { margin:16px auto; padding:22px 16px; }
+            .announcement-form { flex-direction:column; }
+            .announcement-form button { width:100%; }
         }
     </style>
 </head>
@@ -166,6 +194,7 @@
                 </div>
                 <div id="user-info" class="user-info">
                     <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
+                    <a class="logout-btn" href="privacy.html">Données</a>
                     <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
                 </div>
             </div>
@@ -182,6 +211,7 @@
             <p>Suivez les cotisations, les bénéficiaires et vos objectifs collectifs depuis un espace simple et sécurisé.</p>
             <span id="tontine-sync-status" class="sync-pill">● Données disponibles hors ligne</span>
         </header>
+        <p class="pilot-note"><strong>ℹ️ Règle simple</strong>Mon Jeton sert à suivre les cotisations et les tours. L’application ne reçoit pas l’argent : le groupe confirme ensemble chaque paiement et chaque remise.</p>
         <!-- Résumé -->
         <section class="goals-summary">
             <h2>👥 Mes Tontines</h2>
@@ -201,7 +231,7 @@
                 <div class="summary-card">
                     <div class="summary-icon">📅</div>
                     <h3>Prochaine Échéance</h3>
-                    <span id="tontines-next-due" class="summary-value">—</span>
+                    <span id="tontines-next-due" class="summary-value">À venir</span>
                     <small id="tontines-next-due-name">Aucune tontine</small>
                 </div>
             </div>
@@ -209,7 +239,7 @@
 
         <!-- Nouvelle tontine -->
         <section class="new-goal">
-            <h2>➕ Nouvelle Tontine</h2>
+            <h2>➕ Créer un groupe</h2>
 
             <p style="color:#6c757d; margin: 8px 0 0;">Modèles rapides :</p>
             <div class="tontine-templates">
@@ -217,6 +247,7 @@
                 <button type="button" class="template-chip" data-template="tabaski">🐑 Tabaski</button>
                 <button type="button" class="template-chip" data-template="rentree">📚 Rentrée scolaire</button>
                 <button type="button" class="template-chip" data-template="mariage">💒 Mariage</button>
+                <button type="button" class="template-chip" data-template="avec">🤝 Créer une AVEC</button>
             </div>
 
             <form id="tontine-form" class="enhanced-form">
@@ -230,6 +261,7 @@
                         <select id="tontine-type" required>
                             <option value="rotative">🔄 Rotative (chacun son tour)</option>
                             <option value="collective">🎯 Épargne collective (cagnotte commune)</option>
+                            <option value="avec">🤝 AVEC (épargne et prêts du groupe)</option>
                         </select>
                     </div>
                 </div>
@@ -245,6 +277,21 @@
                             <option value="hebdomadaire">Hebdomadaire</option>
                             <option value="mensuelle" selected>Mensuelle</option>
                         </select>
+                    </div>
+                </div>
+
+                <div id="avec-settings" class="form-row" style="display:none;">
+                    <div class="form-group">
+                        <label for="avec-social-fund">Fonds social / membre (FCFA)</label>
+                        <input type="number" id="avec-social-fund" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="avec-rate">Intérêt mensuel sur prêt (%)</label>
+                        <input type="number" id="avec-rate" min="0" max="100" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="avec-loan-months">Durée maximale du prêt</label>
+                        <select id="avec-loan-months"><option value="1">1 mois</option><option value="2">2 mois</option><option value="3" selected>3 mois</option></select>
                     </div>
                 </div>
 
@@ -288,6 +335,14 @@
         const T = window.TontineModule;
         const esc = MonJeton.escapeHtml;
         let openTontineId = null;
+
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('fr-FR').format(Number(amount) || 0) + ' FCFA';
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
 
         function pendingSync() {
             try { return JSON.parse(localStorage.getItem('tontine_sync_queue') || '{}'); }
@@ -364,6 +419,9 @@
                 document.getElementById('tontine-amount').value = template.amount;
                 document.getElementById('tontine-frequency').value = template.frequency;
                 document.getElementById('tontine-members').value = template.members;
+                if (template.socialFund !== undefined) document.getElementById('avec-social-fund').value = template.socialFund;
+                if (template.serviceRate !== undefined) document.getElementById('avec-rate').value = template.serviceRate;
+                if (template.loanMonths !== undefined) document.getElementById('avec-loan-months').value = template.loanMonths;
                 if (template.target) {
                     document.getElementById('tontine-target').value = template.target;
                 }
@@ -374,8 +432,11 @@
 
         // --- Formulaire ---
         function toggleTargetField() {
-            const isCollective = document.getElementById('tontine-type').value === 'collective';
+            const type = document.getElementById('tontine-type').value;
+            const isCollective = type === 'collective';
             document.getElementById('tontine-target-group').style.display = isCollective ? '' : 'none';
+            document.getElementById('avec-settings').style.display = type === 'avec' ? '' : 'none';
+            document.querySelector('label[for="tontine-amount"]').textContent = type === 'avec' ? '💵 Valeur d’une part (FCFA) :' : '💵 Cotisation par membre (FCFA) :';
         }
         document.getElementById('tontine-type').addEventListener('change', toggleTargetField);
 
@@ -391,6 +452,9 @@
                 frequency: document.getElementById('tontine-frequency').value,
                 startDate: document.getElementById('tontine-start').value,
                 target: document.getElementById('tontine-target').value,
+                socialFund: document.getElementById('avec-social-fund').value,
+                serviceRate: document.getElementById('avec-rate').value,
+                loanMonths: document.getElementById('avec-loan-months').value,
                 members: document.getElementById('tontine-members').value
             });
             queueTontineSync(created.id);
@@ -407,7 +471,7 @@
             document.getElementById('tontines-count').textContent = summary.count;
             document.getElementById('tontines-contributed').textContent = formatAmount(summary.totalContributed);
             document.getElementById('tontines-next-due').textContent =
-                summary.nextDue ? formatDate(summary.nextDue) : '—';
+                summary.nextDue ? formatDate(summary.nextDue) : 'À venir';
             document.getElementById('tontines-next-due-name').textContent =
                 summary.nextDueTontine ? summary.nextDueTontine.name : 'Aucune tontine';
         }
@@ -424,11 +488,16 @@
             let progressPercent = 0;
             let progressLabel = '';
 
-            if (tontine.type === 'rotative') {
+            if (tontine.type === 'avec') {
+                const avec = T.ensureAvec(tontine);
+                const fund = T.getAvecFund(tontine);
+                turnHtml = `<div class="tontine-turn">🤝 Caisse de prêts : ${formatAmount(fund)} · fonds social : ${formatAmount(avec.socialFund.reduce((sum, item) => sum + item.amount, 0))}</div>`;
+                progressLabel = `${avec.shares.reduce((sum, item) => sum + item.units, 0)} part(s) enregistrée(s)`;
+            } else if (tontine.type === 'rotative') {
                 const beneficiary = started ? T.getBeneficiary(tontine, cycle) : tontine.members[0];
                 const potAmount = tontine.amount * memberCount;
                 turnHtml = started
-                    ? `<div class="tontine-turn">🎁 Tour de <strong>${esc(beneficiary.name)}</strong> — cagnotte ${formatAmount(potAmount)}</div>`
+                    ? `<div class="tontine-turn">🎁 Tour de <strong>${esc(beneficiary.name)}</strong> : cagnotte ${formatAmount(potAmount)}</div>`
                     : `<div class="tontine-turn">🚀 Démarre le ${formatDate(new Date(tontine.startDate + 'T00:00:00'))}</div>`;
                 progressPercent = memberCount > 0 ? Math.round((cyclePaid / memberCount) * 100) : 0;
                 progressLabel = `${cyclePaid}/${memberCount} cotisations ce cycle`;
@@ -447,10 +516,10 @@
                 <div class="tontine-card">
                     <div class="tontine-card-header">
                         <h3>${esc(tontine.name)}</h3>
-                        <span class="tontine-type-badge ${tontine.type}">${tontine.type === 'rotative' ? '🔄 Rotative' : '🎯 Collective'}</span>
+                        <span class="tontine-type-badge ${tontine.type}">${tontine.type === 'rotative' ? '🔄 Rotative' : tontine.type === 'avec' ? '🤝 AVEC' : '🎯 Collective'}</span>
                     </div>
                     <div class="tontine-meta">
-                        <span>💵 ${formatAmount(tontine.amount)} / ${tontine.frequency === 'hebdomadaire' ? 'semaine' : 'mois'}</span>
+                        <span>💵 ${formatAmount(tontine.amount)} ${tontine.type === 'avec' ? 'la part' : '/ ' + (tontine.frequency === 'hebdomadaire' ? 'semaine' : 'mois')}</span>
                         <span>👥 ${memberCount} membre${memberCount > 1 ? 's' : ''}</span>
                         <span>📅 échéance ${formatDate(nextDue)}</span>
                     </div>
@@ -486,7 +555,7 @@
         }
 
         function renderAll() {
-            const tontines = T.loadTontines();
+            const tontines = T.loadTontines().filter(item => item.type !== 'avec');
             renderSummary(tontines);
             renderList(tontines);
             if (openTontineId) {
@@ -590,38 +659,84 @@
 
             let orderHtml = '';
             if (tontine.type === 'rotative') {
-                const currentIndex = started ? cycle % tontine.members.length : -1;
-                const round = started ? Math.floor(cycle / tontine.members.length) + 1 : 1;
+                const order = T.ensureTurnOrder(tontine);
+                const currentIndex = started ? cycle % order.length : -1;
+                const round = started ? Math.floor(cycle / order.length) + 1 : 1;
+                const isManager = T.canManageMembers(tontine);
                 orderHtml = `
-                    <h4 style="margin-bottom:4px;">🔄 Ordre des tours (tour n°${round})</h4>
+                    <h4 style="margin-bottom:4px;">🔄 Ordre des bénéficiaires (tour n°${round})</h4>
+                    <p class="community-intro">${isManager ? 'Utilisez les flèches pour choisir qui reçoit après qui. Le groupe voit immédiatement le nouvel ordre.' : 'Le responsable définit l’ordre. Vous voyez ici la personne qui reçoit à chaque tour.'}</p>
                     <div class="turn-order">
-                        ${tontine.members.map((m, i) =>
-                            `<span class="turn-order-item ${i === currentIndex ? 'current' : ''}">${i + 1}. ${esc(m.name)}</span>`
-                        ).join('')}
+                        ${order.map((memberId, i) => {
+                            const m = tontine.members.find(member => member.id === memberId);
+                            if (!m) return '';
+                            return `<span class="turn-order-item ${i === currentIndex ? 'current' : ''}">${i + 1}. ${esc(m.name)}${i === currentIndex ? ' · reçoit maintenant' : ''}${isManager ? `<button class="turn-move" type="button" onclick="moveTurnMember('${tontine.id}', ${i}, -1)" ${i === 0 ? 'disabled' : ''} aria-label="Monter ${esc(m.name)}">↑</button><button class="turn-move" type="button" onclick="moveTurnMember('${tontine.id}', ${i}, 1)" ${i === order.length - 1 ? 'disabled' : ''} aria-label="Descendre ${esc(m.name)}">↓</button>` : ''}</span>`;
+                        }).join('')}
                     </div>`;
 
                 const beneficiary = started ? T.getBeneficiary(tontine, cycle) : null;
-                if (beneficiary && beneficiary.isMe) {
-                    const recorded = T.hasRecordedPayout(tontine.id, cycle);
+                const payout = started ? T.getPayout(tontine, cycle) : null;
+                if (beneficiary && payout) {
+                    orderHtml += `<div class="tontine-turn">✅ ${esc(beneficiary.name)} a reçu la cagnotte de ${formatAmount(tontine.amount * tontine.members.length)}.</div>`;
+                } else if (beneficiary && isManager) {
                     orderHtml += `
-                        <button class="tontine-btn ${recorded ? 'secondary' : 'primary'}" style="margin:8px 0;"
+                        <button class="tontine-btn primary" style="margin:8px 0;"
                             onclick="togglePayout('${tontine.id}', ${cycle})">
-                            ${recorded ? '↩️ Annuler le revenu de cagnotte' : '💰 Enregistrer la cagnotte reçue'}
+                            ✅ Confirmer que ${esc(beneficiary.name)} a reçu la cagnotte
                         </button>`;
                 }
             }
 
             const membersHtml = tontine.members.map(member => {
                 const paid = started && T.hasContributed(tontine, member.id, cycle);
+                const canUpdate = T.canRecordContribution(tontine, member.id);
                 return `
                     <div class="member-row ${paid ? 'paid' : ''}">
                         <span class="member-name">${esc(member.name)}${member.isMe ? '<span class="member-me">(moi)</span>' : ''}</span>
-                        <button class="member-status-btn ${paid ? 'paid' : 'unpaid'}" ${!started ? 'disabled' : ''}
+                        <button class="member-status-btn ${paid ? 'paid' : 'unpaid'}" ${!started || !canUpdate ? 'disabled' : ''}
                             onclick="toggleMemberContribution('${tontine.id}', '${member.id}')">
-                            ${paid ? '✅ Payé' : 'Non payé'}
+                            ${paid ? '✅ Payé' : canUpdate ? 'Marquer payé' : 'En attente'}
                         </button>
                     </div>`;
             }).join('');
+
+            const community = T.getCommunity(tontine);
+            const dateTime = value => new Date(value).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+            const announcementsHtml = community.announcements.length
+                ? community.announcements.slice(0, 5).map(item => `
+                    <article class="announcement"><strong>${esc(item.author)}</strong>${esc(item.message)}<time>${dateTime(item.date)}</time></article>`).join('')
+                : '<p class="community-empty">Aucune annonce pour le moment. Partagez la prochaine échéance ou une décision du groupe.</p>';
+            const activityHtml = community.activity.length
+                ? community.activity.slice(0, 6).map(item => `
+                    <div class="activity-item">${esc(item.message)}<time>${dateTime(item.date)}</time></div>`).join('')
+                : '<p class="community-empty">Les cotisations et les décisions apparaîtront ici.</p>';
+            const memberManagementHtml = T.canManageMembers(tontine) ? `
+                <form class="announcement-form" onsubmit="addCommunityMember(event, '${tontine.id}')">
+                    <input name="memberName" maxlength="80" required placeholder="Nom du nouveau membre" aria-label="Nom du nouveau membre">
+                    <button class="tontine-btn secondary" type="submit">Ajouter un membre</button>
+                </form>` : '';
+            const avecHtml = tontine.type === 'avec' ? (() => {
+                const avec = T.ensureAvec(tontine);
+                const me = T.getMyMember(tontine);
+                const myShares = me ? T.getMemberShares(tontine, me.id) : 0;
+                const pending = avec.loans.filter(loan => loan.status === 'requested');
+                const pendingHtml = pending.length ? pending.map(loan => {
+                    const borrower = tontine.members.find(member => member.id === loan.memberId);
+                    return `<div class="activity-item"><strong>${esc(borrower ? borrower.name : 'Membre')}</strong> demande ${formatAmount(loan.amount)}${loan.purpose ? ' · ' + esc(loan.purpose) : ''}${T.canManageMembers(tontine) ? `<button class="tontine-btn primary" style="margin-top:8px;" onclick="approveAvecLoan('${tontine.id}', '${loan.id}')">Approuver</button>` : ''}</div>`;
+                }).join('') : '<p class="community-empty">Aucune demande de prêt en attente.</p>';
+                return `<section class="community-panel" aria-label="Registre AVEC">
+                    <h3>🤝 Registre AVEC</h3>
+                    <p class="community-intro">Part : ${formatAmount(avec.shareValue)} · fonds social : ${formatAmount(avec.socialFundValue)} · prêt maximum : 3× l’épargne personnelle.</p>
+                    <p><strong>Votre épargne :</strong> ${myShares} part(s), soit ${formatAmount(myShares * avec.shareValue)}. <strong>Caisse disponible :</strong> ${formatAmount(T.getAvecFund(tontine))}</p>
+                    <button class="tontine-btn primary" onclick="saveAvecShare('${tontine.id}')">Enregistrer 1 part</button>
+                    <form class="announcement-form" onsubmit="requestAvecLoan(event, '${tontine.id}')" style="margin-top:14px;">
+                        <input name="loanAmount" type="number" min="100" required placeholder="Montant du prêt" aria-label="Montant du prêt">
+                        <input name="loanPurpose" maxlength="160" placeholder="Motif (facultatif)" aria-label="Motif du prêt">
+                        <button class="tontine-btn secondary" type="submit">Demander un prêt</button>
+                    </form>
+                    <h4 style="margin:16px 0 8px;">Demandes à valider</h4>${pendingHtml}
+                </section>`;
+            })() : '';
 
             document.getElementById('tontine-modal-body').innerHTML = `
                 <h2 style="margin-top:0;">${esc(tontine.name)}</h2>
@@ -635,7 +750,66 @@
                 ${orderHtml}
                 <h4 style="margin-bottom:8px;">👥 Cotisations du cycle en cours${started ? ' (n°' + (cycle + 1) + ')' : ' (pas encore démarrée)'}</h4>
                 ${membersHtml}
+                <section class="community-panel" aria-label="Communauté de la tontine">
+                    <h3>💬 Communauté</h3>
+                    <p class="community-intro">Une annonce claire pour le groupe, puis un historique des actions.</p>
+                    ${memberManagementHtml}
+                    <form class="announcement-form" onsubmit="postAnnouncement(event, '${tontine.id}')">
+                        <input name="announcement" maxlength="500" required placeholder="Ex. Cotisation attendue avant vendredi" aria-label="Nouvelle annonce">
+                        <button class="tontine-btn primary" type="submit">Publier</button>
+                    </form>
+                    <div class="community-feed">${announcementsHtml}</div>
+                    <h4 style="margin:18px 0 8px;">Ce qui s'est passé</h4>
+                    <div class="activity-feed">${activityHtml}</div>
+                </section>
+                ${avecHtml}
             `;
+        }
+
+        function postAnnouncement(event, tontineId) {
+            event.preventDefault();
+            const input = event.currentTarget.elements.announcement;
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            if (!T.addAnnouncement(tontineId, me ? me.name : 'Membre', input.value)) return;
+            queueTontineSync(tontineId);
+            renderAll();
+            showNotification('Annonce publiée dans la communauté.', 'success');
+        }
+
+        function addCommunityMember(event, tontineId) {
+            event.preventDefault();
+            const input = event.currentTarget.elements.memberName;
+            const result = T.addMember(tontineId, input.value);
+            if (result.error) {
+                showNotification(result.error, 'error');
+                return;
+            }
+            queueTontineSync(tontineId);
+            renderAll();
+            showNotification(result.member.name + ' a été ajouté à la tontine.', 'success');
+        }
+
+        function saveAvecShare(tontineId) {
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            if (!me || !T.addAvecShare(tontineId, me.id, 1)) return;
+            queueTontineSync(tontineId); renderAll();
+            showNotification('Part d’épargne enregistrée.', 'success');
+        }
+
+        function requestAvecLoan(event, tontineId) {
+            event.preventDefault();
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            const me = tontine && T.getMyMember(tontine);
+            const result = T.requestAvecLoan(tontineId, me && me.id, event.currentTarget.elements.loanAmount.value, event.currentTarget.elements.loanPurpose.value);
+            if (result.error) return showNotification(result.error, 'error');
+            queueTontineSync(tontineId); renderAll(); showNotification('Demande de prêt enregistrée.', 'success');
+        }
+
+        function approveAvecLoan(tontineId, loanId) {
+            if (!T.approveAvecLoan(tontineId, loanId)) return showNotification('Prêt non approuvé : caisse insuffisante ou droit manquant.', 'error');
+            queueTontineSync(tontineId); renderAll(); showNotification('Prêt approuvé et inscrit au registre.', 'success');
         }
 
         function toggleMemberContribution(tontineId, memberId) {
@@ -643,15 +817,32 @@
             if (!tontine) return;
             const cycle = T.getCycleIndex(tontine);
             if (cycle < 0) return;
-            T.toggleContribution(tontineId, memberId, cycle);
+            const updated = T.toggleContribution(tontineId, memberId, cycle);
+            if (!updated) return showNotification('Vous pouvez déclarer votre paiement ; le responsable valide les autres membres.', 'warning');
             queueTontineSync(tontineId);
             renderAll();
+            showNotification('Paiement mis à jour. Tous les membres synchronisés le voient.', 'success');
+        }
+
+        function moveTurnMember(tontineId, index, direction) {
+            const tontine = T.loadTontines().find(item => item.id === tontineId);
+            if (!tontine || !T.canManageMembers(tontine)) return;
+            const order = T.ensureTurnOrder(tontine).slice();
+            const next = index + direction;
+            if (next < 0 || next >= order.length) return;
+            [order[index], order[next]] = [order[next], order[index]];
+            const result = T.setTurnOrder(tontineId, order);
+            if (result.error) return showNotification(result.error, 'error');
+            queueTontineSync(tontineId);
+            renderAll();
+            showNotification('Ordre des bénéficiaires mis à jour pour tout le groupe.', 'success');
         }
 
         function togglePayout(tontineId, cycle) {
             const recorded = T.togglePayoutTransaction(tontineId, cycle);
-            if (recorded === null) return;
-            showNotification(recorded ? 'Cagnotte enregistrée comme revenu.' : 'Revenu de cagnotte annulé.', 'success');
+            if (recorded === null) return showNotification('Seul le responsable peut confirmer la remise de la cagnotte.', 'warning');
+            queueTontineSync(tontineId);
+            showNotification(recorded ? 'Remise de cagnotte confirmée. Tous les membres sont informés.' : 'Remise de cagnotte annulée.', 'success');
             renderAll();
         }
 

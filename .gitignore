@@ -1,5 +1,7 @@
 # Python
 __pycache__/
+node_modules/
+www/
 *.py[cod]
 *.egg-info/
 venv/

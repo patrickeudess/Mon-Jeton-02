@@ -16,6 +16,7 @@
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="common.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script><script src="firebase-config.js?v=2"></script><script src="firebase-private-data.js?v=1"></script>
     <style>
         .transactions-container {
             max-width: 1200px;
@@ -348,9 +349,61 @@
         .grid-card:nth-child(7) { animation-delay: 0.7s; }
         .grid-card:nth-child(8) { animation-delay: 0.8s; }
         .grid-card:nth-child(9) { animation-delay: 0.9s; }
+
+        .app-toast {
+            position: fixed;
+            z-index: 3000;
+            right: 20px;
+            bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: min(420px, calc(100vw - 40px));
+            padding: 15px 18px;
+            color: #fff;
+            background: #075b4e;
+            border-radius: 14px;
+            box-shadow: 0 14px 35px rgba(0, 70, 58, .28);
+            transform: translateY(130%);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .25s ease, opacity .25s ease;
+        }
+        .app-toast.is-visible { transform: translateY(0); opacity: 1; }
+        .app-toast.is-error { background: #a7362b; }
+        .app-toast-icon { font-size: 1.2rem; }
+        .app-confirm-backdrop {
+            position: fixed; inset: 0; z-index: 2900; display: none;
+            place-items: center; padding: 20px; background: rgba(14, 32, 29, .48);
+        }
+        .app-confirm-backdrop.is-visible { display: grid; }
+        .app-confirm {
+            width: min(390px, 100%); padding: 24px; background: #fff;
+            border-radius: 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, .24);
+        }
+        .app-confirm h2 { margin: 0 0 8px; font-size: 1.25rem; color: #17332e; }
+        .app-confirm p { margin: 0 0 20px; color: #536660; line-height: 1.45; }
+        .app-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .app-confirm-actions button { min-height: 44px; padding: 0 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .app-confirm-cancel { border: 1px solid #cdd8d5; background: #fff; color: #24433c; }
+        .app-confirm-delete { border: 0; background: #bd332d; color: #fff; }
     </style>
 </head>
 <body>
+    <div id="app-toast" class="app-toast" role="status" aria-live="polite">
+        <span id="app-toast-icon" class="app-toast-icon">✓</span>
+        <span id="app-toast-message"></span>
+    </div>
+    <div id="app-confirm-backdrop" class="app-confirm-backdrop" role="presentation">
+        <section class="app-confirm" role="dialog" aria-modal="true" aria-labelledby="app-confirm-title">
+            <h2 id="app-confirm-title">Supprimer cette transaction ?</h2>
+            <p>Cette action retire la transaction de votre liste. Vous ne pourrez pas l’annuler.</p>
+            <div class="app-confirm-actions">
+                <button id="app-confirm-cancel" class="app-confirm-cancel" type="button">Annuler</button>
+                <button id="app-confirm-delete" class="app-confirm-delete" type="button">Supprimer</button>
+            </div>
+        </section>
+    </div>
     <!-- Vérification d'authentification -->
     <script>
         function checkAuth() {
@@ -556,6 +609,34 @@
             }
         });
 
+        let toastTimer;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('app-toast');
+            document.getElementById('app-toast-message').textContent = message;
+            document.getElementById('app-toast-icon').textContent = type === 'error' ? '!' : '✓';
+            toast.classList.toggle('is-error', type === 'error');
+            toast.classList.add('is-visible');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 3600);
+        }
+
+        function confirmTransactionDeletion() {
+            return new Promise(resolve => {
+                const backdrop = document.getElementById('app-confirm-backdrop');
+                const cancel = document.getElementById('app-confirm-cancel');
+                const remove = document.getElementById('app-confirm-delete');
+                const close = result => {
+                    backdrop.classList.remove('is-visible');
+                    cancel.onclick = remove.onclick = null;
+                    resolve(result);
+                };
+                backdrop.classList.add('is-visible');
+                cancel.onclick = () => close(false);
+                remove.onclick = () => close(true);
+                remove.focus();
+            });
+        }
+
         // Gérer le formulaire
         document.getElementById('transaction-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -576,7 +657,7 @@
             
             // Validation
             if (!type || !category || !amount || !date) {
-                alert('Veuillez remplir tous les champs obligatoires !');
+                showToast('Veuillez remplir tous les champs obligatoires.', 'error');
                 return;
             }
             
@@ -610,7 +691,7 @@
             initializeCategories();
             document.getElementById('transaction-date').value = new Date().toISOString().slice(0, 10);
             
-            alert('Transaction ajoutée avec succès !');
+            showToast('Transaction ajoutée avec succès.');
         });
 
         // Charger les transactions
@@ -625,7 +706,7 @@
         // Actualiser les transactions
         function refreshTransactions() {
             loadTransactions();
-            alert('Liste actualisée !');
+            showToast('Liste actualisée.');
         }
 
         // Afficher les transactions en tableau
@@ -700,7 +781,7 @@
             const transaction = transactions.find(t => t.id === transactionId);
             
             if (!transaction) {
-                alert('Transaction non trouvée');
+                showToast('Transaction non trouvée.', 'error');
                 return;
             }
 
@@ -726,7 +807,7 @@
                 // Faire défiler vers le formulaire
                 document.querySelector('.transaction-form-section').scrollIntoView({ behavior: 'smooth' });
                 
-                alert('Modifiez les informations et cliquez sur "Mettre à jour"');
+                showToast('Modifiez les informations, puis cliquez sur « Mettre à jour ».');
             }, 100);
         }
 
@@ -763,19 +844,18 @@
                 submitBtn.textContent = '💾 Enregistrer';
                 submitBtn.onclick = null;
                 
-                alert('Transaction mise à jour avec succès !');
+                showToast('Transaction mise à jour avec succès.');
             }
         }
 
         // Supprimer une transaction
-        function deleteTransaction(transactionId) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?')) {
-                const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-                const updatedTransactions = transactions.filter(t => t.id !== transactionId);
-                localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
-                loadTransactions();
-                alert('Transaction supprimée avec succès');
-            }
+        async function deleteTransaction(transactionId) {
+            if (!(await confirmTransactionDeletion())) return;
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const updatedTransactions = transactions.filter(t => t.id !== transactionId);
+            localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
+            loadTransactions();
+            showToast('Transaction supprimée avec succès.');
         }
 
         // Fonctions utilitaires
@@ -797,7 +877,7 @@
                 'cheque': '📄 Chèque',
                 'autre': '📋 Autre'
             };
-            return methods[method] || '—';
+            return methods[method] || 'Non renseigné';
         }
 
         // Fonctions pour les interactions de la grille

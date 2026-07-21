@@ -1,0 +1,9 @@
+{
+  "appId": "ci.monjeton.app",
+  "appName": "Mon Jeton",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}

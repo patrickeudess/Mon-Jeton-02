@@ -18,6 +18,12 @@
     <script src="chart.umd.js"></script>
     <script src="common.js"></script>
     <script src="income-profile.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=2"></script>
+    <script src="firebase-groups.js?v=2"></script>
+    <script src="firebase-private-data.js?v=1"></script>
     <script src="optimize_application.js"></script>
     <style>
         .inclusive-finance { margin: 20px 0; padding: 22px; border-radius: 18px; background: linear-gradient(135deg,#073b35,#087f67); color:#fff; box-shadow:0 14px 32px rgba(8,127,103,.2); }
@@ -28,6 +34,12 @@
         .inclusive-metric { padding:15px; border-radius:14px; background:rgba(255,255,255,.12); }
         .inclusive-metric strong { display:block; margin-top:6px; font-size:1.2rem; }
         .inclusive-note { margin:14px 0 0; opacity:.88; font-size:.88rem; }
+        .pilot-balance { display:flex; justify-content:center; margin-top:18px; }
+        .pilot-balance .stat-item { min-width:190px; }
+        .hidden-summary { display:none; }
+        .finance-details { margin-top:12px; }
+        .finance-details summary { cursor:pointer; font-weight:700; padding:8px 0; }
+        .finance-details .inclusive-grid { margin-top:8px; }
         .profile-options { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; text-align:left; margin:16px 0; }
         .profile-option { display:block; border:2px solid #e1ebe8; border-radius:12px; padding:12px; cursor:pointer; }
         .profile-option:has(input:checked) { border-color:#009879; background:#e8f7f2; }
@@ -35,10 +47,43 @@
         .more-tools { margin-top:18px; border-top:1px solid #e1ebe8; padding-top:14px; }
         .more-tools summary { cursor:pointer; color:#087f67; font-weight:700; padding:8px 0; }
         .more-tools .icon-grid { margin-top:10px; }
-        @media(max-width:720px){ .inclusive-head{align-items:flex-start;flex-direction:column}.inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr} }
+        /* Accueil compact : les informations essentielles tiennent sans défilement inutile. */
+        .dashboard-home .main-container { padding-top: 12px; }
+        .dashboard-home .welcome-header { padding: 18px 22px; margin-bottom: 12px; min-height: 0; }
+        .dashboard-home .welcome-content h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+        .dashboard-home .welcome-subtitle { margin: 4px 0 0; }
+        .dashboard-home .pilot-balance { margin: 0; }
+        .dashboard-home .pilot-balance .stat-item { min-width: 150px; padding: 10px 15px; border-radius: 14px; }
+        .dashboard-home .pilot-balance .stat-icon { font-size: 1.1rem; }
+        .dashboard-home .pilot-balance .stat-value { font-size: 1.1rem; color: #10a84a; }
+        .dashboard-home .inclusive-finance { margin: 12px 0; padding: 18px 20px; border-radius: 16px; }
+        .dashboard-home .inclusive-head { margin-bottom: 12px; }
+        .dashboard-home .inclusive-head h2 { font-size: 1.35rem; }
+        .dashboard-home .inclusive-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+        .dashboard-home .inclusive-metric { padding: 12px 14px; border-radius: 12px; }
+        .dashboard-home .inclusive-metric strong { font-size: 1.06rem; }
+        .dashboard-home .inclusive-note { margin-top: 10px; font-size: .83rem; }
+        .dashboard-home .finance-details { margin-top: 5px; }
+        .dashboard-home .finance-details summary { padding: 6px 0; }
+        .dashboard-home .quick-actions { padding: 16px 18px; margin-bottom: 12px; }
+        .dashboard-home .quick-actions h2 { margin-bottom: 12px; font-size: 1.2rem; }
+        .dashboard-home .action-buttons { display:grid; grid-template-columns: 1.25fr 1fr 1fr; gap:10px; }
+        .dashboard-home .action-btn { min-width:0; min-height:62px; padding:10px 12px; flex:none; flex-direction:column; gap:4px; }
+        .dashboard-home .action-icon { font-size:1.25rem; line-height:1; }
+        .dashboard-home .action-text { font-size:.82rem; }
+        @media(max-width:720px){
+            .dashboard-home .welcome-header { flex-direction:row; text-align:left; align-items:center; padding:14px 16px; gap:12px; }
+            .dashboard-home .welcome-subtitle { display:none; }
+            .dashboard-home .pilot-balance .stat-item { min-width:120px; padding:8px 10px; }
+            .dashboard-home .pilot-balance .stat-label { font-size:.68rem; }
+            .dashboard-home .inclusive-head{align-items:flex-start;flex-direction:column}.dashboard-home .inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr}
+            .dashboard-home .quick-actions { padding:15px; }
+            .dashboard-home .action-buttons { grid-template-columns:repeat(2,1fr); }
+            .dashboard-home .action-btn.primary { grid-column:1 / -1; flex-direction:row; min-height:52px; }
+        }
     </style>
 </head>
-<body>
+<body class="dashboard-home">
     <!-- Vérification d'authentification -->
     <script>
         // Vérifier si l'utilisateur est connecté
@@ -81,28 +126,20 @@
                 <h1>Bonjour, <span id="user-greeting">Utilisateur</span> ! 👋</h1>
                 <p class="welcome-subtitle">Gérez vos jetons intelligemment</p>
             </div>
-            <div class="quick-stats">
-                <div class="stat-item">
-                    <span class="stat-icon">💰</span>
-                    <span class="stat-value" id="total-revenus">0 FCFA</span>
-                    <span class="stat-label">Revenus</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon">💸</span>
-                    <span class="stat-value" id="total-depenses">0 FCFA</span>
-                    <span class="stat-label">Dépenses</span>
-                </div>
+            <div class="pilot-balance" aria-label="Résumé de votre argent">
                 <div class="stat-item">
                     <span class="stat-icon">💳</span>
                     <span class="stat-value" id="solde-actuel">0 FCFA</span>
-                    <span class="stat-label">Solde</span>
+                    <span class="stat-label">Il vous reste</span>
                 </div>
+                <span id="total-revenus" class="hidden-summary" aria-hidden="true">0 FCFA</span>
+                <span id="total-depenses" class="hidden-summary" aria-hidden="true">0 FCFA</span>
             </div>
         </header>
 
         <section class="inclusive-finance" aria-labelledby="inclusive-title">
             <div class="inclusive-head">
-                <div><h2 id="inclusive-title">Votre trésorerie réelle</h2><small id="income-profile-label">Profil financier</small></div>
+                <div><h2 id="inclusive-title">Préparer votre semaine</h2><small id="income-profile-label">Choisissez votre type de revenu</small></div>
                 <select id="income-profile-select" class="profile-select" aria-label="Type de revenu">
                     <option value="fixe">Revenu fixe</option>
                     <option value="variable">Revenu variable</option>
@@ -112,32 +149,33 @@
             </div>
             <div class="inclusive-grid">
                 <div class="inclusive-metric"><span>Disponible aujourd’hui</span><strong id="cash-available">0 FCFA</strong></div>
-                <div class="inclusive-metric"><span>Revenu prudent</span><strong id="prudent-income">0 FCFA</strong></div>
                 <div class="inclusive-metric"><span>Budget du cycle</span><strong id="cycle-budget">0 FCFA</strong></div>
-                <div class="inclusive-metric"><span>Jours couverts</span><strong id="coverage-days">—</strong></div>
             </div>
             <p id="inclusive-note" class="inclusive-note"></p>
+            <details class="finance-details">
+                <summary>Voir le détail du calcul</summary>
+                <div class="inclusive-grid">
+                    <div class="inclusive-metric"><span>Revenu prudent</span><strong id="prudent-income">0 FCFA</strong></div>
+                    <div class="inclusive-metric"><span>Jours couverts</span><strong id="coverage-days">À calculer</strong></div>
+                </div>
+            </details>
         </section>
 
         <!-- Actions rapides -->
         <section class="quick-actions">
-            <h2>⚡ Actions Rapides</h2>
+            <h2>Actions rapides</h2>
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
                     <span class="action-icon">➕</span>
-                    <span class="action-text">Ajouter revenu ou dépense</span>
+                    <span class="action-text">Ajouter</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
                     <span class="action-icon">👁️</span>
-                    <span class="action-text">Voir mon argent</span>
-                </button>
-                <button class="action-btn secondary" onclick="quickBudgetCheck()">
-                    <span class="action-icon">🔍</span>
-                    <span class="action-text">Préparer mon budget</span>
+                    <span class="action-text">Mon argent</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickSavings()">
                     <span class="action-icon">🏦</span>
-                    <span class="action-text">Mon épargne</span>
+                    <span class="action-text">Préparer</span>
                 </button>
 
             </div>
@@ -145,33 +183,32 @@
 
         <!-- Outils essentiels, avec les options avancées rangées plus bas -->
         <section class="grid-container">
-            <h2 class="grid-title">Autres besoins</h2>
+            <h2 class="grid-title">Mes groupes</h2>
             
             <div class="icon-grid">
-                <!-- Transaction -->
-                <a href="transactions.html" class="grid-item transaction-item">
-                    <div class="grid-icon">📝</div>
-                    <h3>Transactions</h3>
-                    <p>Ajouter et gérer vos revenus et dépenses</p>
-                    <div class="grid-badge">Nouveau</div>
-                </a>
-
                 <a href="tontine.html" class="grid-item tontine-item">
                     <div class="grid-icon">👥</div>
                     <h3>Tontines</h3>
                     <p>Créer ou suivre une tontine</p>
                 </a>
 
-                <a href="assistant.html" class="grid-item assistant-item">
-                    <div class="grid-icon">🤖</div>
-                    <h3>Besoin d'aide ?</h3>
-                    <p>Conseils simples et apprentissage</p>
+                <a href="avec.html" class="grid-item tontine-item">
+                    <div class="grid-icon">🤝</div>
+                    <h3>AVEC</h3>
+                    <p>Épargner et prêter dans votre groupe</p>
                 </a>
+
             </div>
 
             <details class="more-tools">
                 <summary>Plus d'outils</summary>
                 <div class="icon-grid">
+
+                <a href="assistant.html" class="grid-item assistant-item">
+                    <div class="grid-icon">🤖</div>
+                    <h3>Assistant & conseils</h3>
+                    <p>Obtenir une réponse simple</p>
+                </a>
 
                 <!-- Analyse : l'accueil reste l'espace d'action, cette page sert aux détails -->
                 <a href="dashboard.html" class="grid-item dashboard-item">
@@ -185,13 +222,6 @@
                     <div class="grid-icon">🎯</div>
                     <h3>Budgets</h3>
                     <p>Définir et suivre vos budgets par catégorie</p>
-                </a>
-
-                <!-- Épargne et projets : point d'entrée unique pour éviter deux listes d'objectifs -->
-                <a href="savings.html#objectifs" class="grid-item savings-item">
-                    <div class="grid-icon">🏦</div>
-                    <h3>Épargne & projets</h3>
-                    <p>Suivre votre épargne, vos projets et vos placements</p>
                 </a>
 
                 <!-- Sécurité -->
@@ -226,15 +256,6 @@
             </div>
         </section>
 
-        <!-- Conseils contextuels -->
-        <section class="contextual-tips">
-            <h2>💡 Conseil du Jour</h2>
-            <div id="daily-tip" class="tip-card">
-                <div class="tip-icon">💡</div>
-                <h3>Évitez les frais MoMo</h3>
-                <p>Utilisez les transferts gratuits entre comptes Orange Money pour économiser sur les frais de transaction.</p>
-            </div>
-        </section>
     </div>
 
     <!-- Modal pour actions rapides -->
@@ -288,15 +309,20 @@
 
     <script src="app.js?v=2.5"></script>
     <script>
-        // Afficher le nom de l'utilisateur
+        // Afficher le nom de l'utilisateur (prénom lisible, jamais l'e-mail entier)
         function displayUserInfo() {
-            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            const userName = (window.MonJeton && MonJeton.formatDisplayName)
+                ? MonJeton.formatDisplayName(localStorage.getItem('user_name'))
+                : (localStorage.getItem('user_name') || 'Utilisateur');
             document.getElementById('display-name').textContent = userName;
             document.getElementById('user-greeting').textContent = userName;
         }
 
         // Gérer la déconnexion
-        document.getElementById('logout-btn').addEventListener('click', function() {
+        document.getElementById('logout-btn').addEventListener('click', async function() {
+            if (window.FirebaseGroups) {
+                try { await FirebaseGroups.signOut(); } catch (_) {}
+            }
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_email');
             localStorage.removeItem('user_name');
@@ -463,51 +489,7 @@
         }
 
         function quickSavings() {
-            const savings = JSON.parse(localStorage.getItem('savings') || '[]');
-            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-            
-            const totalRevenus = transactions.filter(t => t.type === 'revenu').reduce((sum, t) => sum + t.amount, 0);
-            const totalDepenses = transactions.filter(t => t.type === 'depense').reduce((sum, t) => sum + t.amount, 0);
-            const currentSavings = totalRevenus - totalDepenses;
-            
-            let savingsContent = `
-                <div class="savings-summary">
-                    <div class="savings-item">
-                        <span class="savings-label">Épargne actuelle:</span>
-                        <span class="savings-value">${formatAmount(Math.max(0, currentSavings))} FCFA</span>
-                    </div>
-                    <div class="savings-item">
-                        <span class="savings-label">Taux d'épargne:</span>
-                        <span class="savings-value">${totalRevenus > 0 ? Math.round((currentSavings / totalRevenus) * 100) : 0}%</span>
-                    </div>
-                </div>
-            `;
-            
-            if (savings.length > 0) {
-                savingsContent += '<div class="savings-goals"><h4>Objectifs d\'épargne:</h4>';
-                savings.forEach(goal => {
-                    const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
-                    savingsContent += `
-                        <div class="savings-goal">
-                            <div class="goal-info">
-                                <span class="goal-name">${goal.name}</span>
-                                <span class="goal-amount">${formatAmount(goal.current)} / ${formatAmount(goal.target)} FCFA</span>
-                            </div>
-                            <div class="goal-progress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
-                                </div>
-                                <span class="progress-text">${progress.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                savingsContent += '</div>';
-            } else {
-                savingsContent += '<p>Aucun objectif d\'épargne défini. Créez votre premier objectif !</p>';
-            }
-            
-            showModal('Mon Épargne', savingsContent);
+            window.location.href = 'savings.html#objectifs';
         }
 
         
@@ -554,43 +536,11 @@
             renderInclusiveSummary();
         }
 
-        // Charger les conseils contextuels
-        function loadContextualTips() {
-            const tips = [
-                {
-                    title: "Évitez les frais MoMo",
-                    content: "Utilisez les transferts gratuits entre comptes Orange Money pour économiser sur les frais de transaction."
-                },
-                {
-                    title: "Épargnez pour Tabaski",
-                    content: "Commencez à épargner dès maintenant pour les dépenses de la fête de Tabaski."
-                },
-                {
-                    title: "Budget rentrée scolaire",
-                    content: "Préparez votre budget pour la rentrée scolaire des enfants dès le mois de juillet."
-                },
-                {
-                                    title: "Épargne familiale",
-                content: "Créez un objectif d'épargne familial pour les événements importants comme les mariages."
-                }
-            ];
-
-            const randomTip = tips[Math.floor(Math.random() * tips.length)];
-            const tipElement = document.getElementById('daily-tip');
-            
-            tipElement.innerHTML = `
-                <div class="tip-icon">💡</div>
-                <h3>${randomTip.title}</h3>
-                <p>${randomTip.content}</p>
-            `;
-        }
-
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             displayUserInfo();
             loadSummaryData();
             loadRecentTransactions();
-            loadContextualTips();
 
             // Vérifier si c'est le premier lancement
             const onboardingCompleted = localStorage.getItem('onboarding_completed');

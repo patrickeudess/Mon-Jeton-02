@@ -44,6 +44,16 @@ const TONTINE_TEMPLATES = {
         frequency: 'mensuelle',
         target: 500000,
         members: 'Moi\nFamille\nAmis'
+    },
+    avec: {
+        name: 'AVEC du quartier',
+        type: 'avec',
+        amount: 1000,
+        frequency: 'hebdomadaire',
+        socialFund: 100,
+        serviceRate: 10,
+        loanMonths: 3,
+        members: 'Moi\nAwa\nKoffi'
     }
 };
 
@@ -59,6 +69,162 @@ function loadTontines() {
 
 function saveTontines(tontines) {
     localStorage.setItem('tontines', JSON.stringify(tontines));
+    if (window.FirebaseGroups) {
+        window.FirebaseGroups.persist(tontines).catch(error => console.warn('Synchronisation du groupe en attente :', error.message));
+    }
+}
+
+// Chaque tontine possède son propre espace communautaire. Les anciennes
+// tontines reçoivent automatiquement cette structure au premier usage.
+function ensureCommunity(tontine) {
+    if (!tontine.community || typeof tontine.community !== 'object') {
+        tontine.community = {};
+    }
+    if (!Array.isArray(tontine.community.announcements)) tontine.community.announcements = [];
+    if (!Array.isArray(tontine.community.activity)) tontine.community.activity = [];
+    return tontine.community;
+}
+
+function addCommunityActivity(tontine, message) {
+    const community = ensureCommunity(tontine);
+    community.activity.unshift({ id: 'a_' + Date.now(), message, date: new Date().toISOString() });
+    community.activity = community.activity.slice(0, 50);
+}
+
+function getCommunity(tontine) {
+    return ensureCommunity(tontine);
+}
+
+function canManageMembers(tontine) {
+    const me = getMyMember(tontine);
+    const creatorId = tontine.createdByMemberId || (tontine.members[0] && tontine.members[0].id);
+    return Boolean(me && creatorId && me.id === creatorId);
+}
+
+function addMember(tontineId, name) {
+    const cleanName = String(name || '').trim().replace(/\s+/g, ' ');
+    if (!cleanName) return { error: 'Le nom du membre est requis.' };
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine) return { error: 'Tontine introuvable.' };
+    if (!canManageMembers(tontine)) return { error: 'Seul le créateur peut ajouter un membre.' };
+    if (tontine.members.some(member => member.name.toLocaleLowerCase('fr-FR') === cleanName.toLocaleLowerCase('fr-FR'))) {
+        return { error: 'Ce membre est déjà dans la tontine.' };
+    }
+    const member = { id: 'm_' + Date.now().toString(36), name: cleanName.slice(0, 80), isMe: false };
+    tontine.members.push(member);
+    addCommunityActivity(tontine, member.name + ' a été ajouté(e) à la tontine.');
+    saveTontines(tontines);
+    return { tontine, member };
+}
+
+function addAnnouncement(tontineId, author, message) {
+    const text = String(message || '').trim();
+    if (!text) return null;
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine) return null;
+    const community = ensureCommunity(tontine);
+    const safeAuthor = String(author || 'Membre').trim().slice(0, 80) || 'Membre';
+    community.announcements.unshift({
+        id: 'm_' + Date.now(), author: safeAuthor, message: text.slice(0, 500), date: new Date().toISOString()
+    });
+    community.announcements = community.announcements.slice(0, 50);
+    addCommunityActivity(tontine, safeAuthor + ' a publié une annonce.');
+    saveTontines(tontines);
+    return tontine;
+}
+
+function isAvec(group) { return group && group.type === 'avec'; }
+
+function ensureAvec(group) {
+    if (!isAvec(group)) return null;
+    group.avec = group.avec || {};
+    group.avec.shareValue = Math.max(100, Number(group.avec.shareValue || group.amount) || 100);
+    group.avec.socialFundValue = Math.max(0, Number(group.avec.socialFundValue) || 0);
+    group.avec.serviceRate = Math.max(0, Math.min(100, Number(group.avec.serviceRate) || 0));
+    group.avec.loanMonths = Math.max(1, Math.min(3, Number(group.avec.loanMonths) || 3));
+    if (!Array.isArray(group.avec.shares)) group.avec.shares = [];
+    if (!Array.isArray(group.avec.socialFund)) group.avec.socialFund = [];
+    if (!Array.isArray(group.avec.loans)) group.avec.loans = [];
+    if (!group.avec.roles || typeof group.avec.roles !== 'object') group.avec.roles = {};
+    group.members.forEach((member, index) => {
+        if (!group.avec.roles[member.id]) group.avec.roles[member.id] = index === 0 ? 'Président' : 'Membre';
+    });
+    return group.avec;
+}
+
+function getAvecRole(group, memberId) {
+    const avec = ensureAvec(group);
+    return avec && avec.roles[memberId] ? avec.roles[memberId] : 'Membre';
+}
+
+function setAvecRole(groupId, memberId, role) {
+    const allowed = ['Président', 'Secrétaire', 'Trésorier', 'Membre'];
+    const groups = loadTontines(); const group = groups.find(item => item.id === groupId);
+    if (!group || !isAvec(group) || !canManageMembers(group) || !allowed.includes(role)) return null;
+    const avec = ensureAvec(group); const member = group.members.find(item => item.id === memberId);
+    if (!member) return null;
+    avec.roles[memberId] = role;
+    addCommunityActivity(group, member.name + ' est désormais ' + role + '.');
+    saveTontines(groups); return group;
+}
+
+function getMemberShares(group, memberId) {
+    const avec = ensureAvec(group);
+    return avec ? avec.shares.filter(item => item.memberId === memberId).reduce((sum, item) => sum + item.units, 0) : 0;
+}
+
+function getAvecFund(group) {
+    const avec = ensureAvec(group);
+    if (!avec) return 0;
+    const savings = avec.shares.reduce((sum, item) => sum + item.units * avec.shareValue, 0);
+    const repaid = avec.loans.reduce((sum, loan) => sum + (loan.repayments || []).reduce((total, item) => total + item.amount, 0), 0);
+    const lent = avec.loans.filter(loan => loan.status === 'approved').reduce((sum, loan) => sum + loan.amount, 0);
+    return Math.max(0, savings + repaid - lent);
+}
+
+function addAvecShare(groupId, memberId, units = 1) {
+    const groups = loadTontines();
+    const group = groups.find(item => item.id === groupId);
+    const avec = ensureAvec(group);
+    const count = Math.max(1, Math.min(5, Number(units) || 1));
+    const member = group && group.members.find(item => item.id === memberId);
+    if (!avec || !member) return null;
+    avec.shares.push({ id: 's_' + Date.now(), memberId, units: count, date: new Date().toISOString() });
+    if (avec.socialFundValue) avec.socialFund.push({ id: 'sf_' + Date.now(), memberId, amount: avec.socialFundValue, date: new Date().toISOString() });
+    const deposit = count * avec.shareValue;
+    const social = count * avec.socialFundValue;
+    addCommunityActivity(group, member.name + ' a déposé ' + deposit.toLocaleString('fr-FR') + ' FCFA dans la caisse (' + count + ' part(s))' + (social ? ' et ' + social.toLocaleString('fr-FR') + ' FCFA au fonds social.' : '.'));
+    saveTontines(groups);
+    return group;
+}
+
+function requestAvecLoan(groupId, memberId, amount, purpose) {
+    const groups = loadTontines();
+    const group = groups.find(item => item.id === groupId);
+    const avec = ensureAvec(group);
+    const member = group && group.members.find(item => item.id === memberId);
+    const value = Number(amount) || 0;
+    const limit = member ? getMemberShares(group, memberId) * avec.shareValue * 3 : 0;
+    if (!avec || !member || value <= 0 || value > limit) return { error: 'Le prêt doit être positif et ne pas dépasser 3 fois votre épargne.' };
+    const loan = { id: 'l_' + Date.now(), memberId, amount: value, purpose: String(purpose || '').slice(0, 160), rate: avec.serviceRate, months: avec.loanMonths, status: 'requested', repayments: [], date: new Date().toISOString() };
+    avec.loans.push(loan);
+    addCommunityActivity(group, member.name + ' a demandé un crédit de ' + value.toLocaleString('fr-FR') + ' FCFA' + (loan.purpose ? ' : ' + loan.purpose : '.') );
+    saveTontines(groups);
+    return { group, loan };
+}
+
+function approveAvecLoan(groupId, loanId) {
+    const groups = loadTontines(); const group = groups.find(item => item.id === groupId); const avec = ensureAvec(group);
+    const loan = avec && avec.loans.find(item => item.id === loanId);
+    if (!loan || !canManageMembers(group) || loan.status !== 'requested' || loan.amount > getAvecFund(group)) return null;
+    loan.status = 'approved'; loan.approvedAt = new Date().toISOString();
+    const borrower = group.members.find(item => item.id === loan.memberId);
+    const manager = getMyMember(group);
+    loan.approvedBy = manager ? manager.name : 'Responsable';
+    addCommunityActivity(group, 'Crédit de ' + loan.amount.toLocaleString('fr-FR') + ' FCFA accordé à ' + (borrower ? borrower.name : 'un membre') + ' par ' + loan.approvedBy + '.');
+    saveTontines(groups); return group;
 }
 
 // --- Calculs de cycles ---
@@ -94,10 +260,50 @@ function getNextDueDate(tontine, cycleIndex) {
     return due;
 }
 
+function ensureTurnOrder(tontine) {
+    if (!tontine || tontine.type !== 'rotative') return [];
+    const memberIds = tontine.members.map(member => member.id);
+    const current = Array.isArray(tontine.turnOrder) ? tontine.turnOrder : [];
+    tontine.turnOrder = [
+        ...current.filter(id => memberIds.includes(id)),
+        ...memberIds.filter(id => !current.includes(id))
+    ];
+    if (!Array.isArray(tontine.payouts)) tontine.payouts = [];
+    return tontine.turnOrder;
+}
+
 // Bénéficiaire du tour (tontine rotative uniquement).
 function getBeneficiary(tontine, cycleIndex) {
     if (tontine.type !== 'rotative' || tontine.members.length === 0) return null;
-    return tontine.members[cycleIndex % tontine.members.length];
+    const order = ensureTurnOrder(tontine);
+    const memberId = order[cycleIndex % order.length];
+    return tontine.members.find(member => member.id === memberId) || null;
+}
+
+function getPayout(tontine, cycleIndex) {
+    ensureTurnOrder(tontine);
+    return tontine.payouts.find(item => item.cycle === cycleIndex) || null;
+}
+
+function canRecordContribution(tontine, memberId) {
+    const me = getMyMember(tontine);
+    return Boolean(canManageMembers(tontine) || (me && me.id === memberId));
+}
+
+function setTurnOrder(tontineId, orderedMemberIds) {
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine || tontine.type !== 'rotative') return { error: 'Tontine introuvable.' };
+    if (!canManageMembers(tontine)) return { error: 'Seul le responsable peut modifier l’ordre des tours.' };
+    const ids = Array.isArray(orderedMemberIds) ? orderedMemberIds : [];
+    const expected = tontine.members.map(member => member.id);
+    if (ids.length !== expected.length || ids.some(id => !expected.includes(id)) || new Set(ids).size !== ids.length) {
+        return { error: 'L’ordre des membres est incomplet.' };
+    }
+    tontine.turnOrder = ids.slice();
+    addCommunityActivity(tontine, 'Le responsable a mis à jour l’ordre des bénéficiaires.');
+    saveTontines(tontines);
+    return { tontine };
 }
 
 function getContributionsForCycle(tontine, cycleIndex) {
@@ -148,12 +354,19 @@ function createTontine(data) {
         frequency: data.frequency,
         startDate: data.startDate,
         target: data.type === 'collective' && data.target ? Number(data.target) : null,
+        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' } } : null,
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,
             isMe: index === 0
         })),
         contributions: [],
+        turnOrder: data.type === 'rotative' ? memberNames.map((_, index) => 'm' + index) : [],
+        payouts: [],
+        community: {
+            announcements: [],
+            activity: [{ id: 'a_' + Date.now(), message: 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
+        },
         createdAt: new Date().toISOString()
     };
 
@@ -206,22 +419,15 @@ function syncContributionTransaction(tontine, member, cycleIndex, contributed) {
 }
 
 function hasRecordedPayout(tontineId, cycleIndex) {
-    const id = linkedTransactionId(tontineId, 'cagnotte', cycleIndex);
-    return loadTransactions().some(t => t.id === id);
+    const tontine = loadTontines().find(item => item.id === tontineId);
+    return Boolean(tontine && getPayout(tontine, cycleIndex));
 }
 
-function togglePayoutTransaction(tontineId, cycleIndex) {
-    const tontine = loadTontines().find(t => t.id === tontineId);
-    if (!tontine || tontine.type !== 'rotative') return null;
-    const beneficiary = getBeneficiary(tontine, cycleIndex);
-    if (!beneficiary || !beneficiary.isMe) return null;
-
+function syncPayoutTransaction(tontine, beneficiary, cycleIndex, confirmed) {
+    if (!beneficiary || !beneficiary.isMe) return;
     const id = linkedTransactionId(tontine.id, 'cagnotte', cycleIndex);
-    let transactions = loadTransactions();
-    const existing = transactions.findIndex(t => t.id === id);
-    if (existing >= 0) {
-        transactions.splice(existing, 1);
-    } else {
+    let transactions = loadTransactions().filter(item => item.id !== id);
+    if (confirmed) {
         transactions.push({
             id,
             type: 'revenu',
@@ -231,13 +437,33 @@ function togglePayoutTransaction(tontineId, cycleIndex) {
             description: `Cagnotte reçue - ${tontine.name} (cycle ${cycleIndex + 1})`,
             paymentMethod: 'autre',
             createdAt: new Date().toISOString(),
-            source: 'tontine',
-            tontineId: tontine.id,
-            tontineCycle: cycleIndex,
-            tontineKind: 'cagnotte'
+            source: 'tontine', tontineId: tontine.id, tontineCycle: cycleIndex, tontineKind: 'cagnotte'
         });
     }
     saveTransactions(transactions);
+}
+
+function togglePayoutTransaction(tontineId, cycleIndex) {
+    const tontine = loadTontines().find(t => t.id === tontineId);
+    if (!tontine || tontine.type !== 'rotative') return null;
+    if (!canManageMembers(tontine)) return null;
+    const beneficiary = getBeneficiary(tontine, cycleIndex);
+    if (!beneficiary) return null;
+    ensureTurnOrder(tontine);
+    const existing = tontine.payouts.findIndex(item => item.cycle === cycleIndex);
+    if (existing >= 0) {
+        tontine.payouts.splice(existing, 1);
+        syncPayoutTransaction(tontine, beneficiary, cycleIndex, false);
+    } else {
+        tontine.payouts.push({
+            cycle: cycleIndex, memberId: beneficiary.id, confirmedAt: new Date().toISOString()
+        });
+        syncPayoutTransaction(tontine, beneficiary, cycleIndex, true);
+    }
+    addCommunityActivity(tontine, existing >= 0
+        ? 'La remise de cagnotte à ' + beneficiary.name + ' a été annulée.'
+        : 'Cagnotte remise à ' + beneficiary.name + ' pour le cycle ' + (cycleIndex + 1) + '.');
+    saveTontines(loadTontines().map(item => item.id === tontine.id ? tontine : item));
     return existing < 0;
 }
 
@@ -252,6 +478,7 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
     const tontines = loadTontines();
     const tontine = tontines.find(t => t.id === tontineId);
     if (!tontine) return null;
+    if (!canRecordContribution(tontine, memberId)) return null;
 
     const existing = tontine.contributions.findIndex(
         c => c.memberId === memberId && c.cycle === cycleIndex
@@ -270,6 +497,10 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
             amount: tontine.amount
         });
         contributed = true;
+    }
+
+    if (member) {
+        addCommunityActivity(tontine, member.name + (contributed ? ' a été marqué comme ayant cotisé.' : ' a été remis en attente de cotisation.'));
     }
 
     saveTontines(tontines);
@@ -331,6 +562,7 @@ function toApiPayload(tontine) {
             is_me: member.isMe,
             position
         })),
+        createdByMemberId: 'm0',
         contributions: tontine.contributions.map(item => ({
             member_client_id: item.memberId,
             cycle: item.cycle,
@@ -403,7 +635,11 @@ if (typeof window !== 'undefined') {
         saveTontines,
         getCycleIndex,
         getNextDueDate,
+        ensureTurnOrder,
         getBeneficiary,
+        getPayout,
+        setTurnOrder,
+        canRecordContribution,
         getContributionsForCycle,
         hasContributed,
         getTotalCollected,
@@ -416,6 +652,19 @@ if (typeof window !== 'undefined') {
         hasRecordedPayout,
         togglePayoutTransaction,
         setContributionReminder,
+        getCommunity,
+        canManageMembers,
+        addMember,
+        isAvec,
+        ensureAvec,
+        getMemberShares,
+        getAvecRole,
+        setAvecRole,
+        getAvecFund,
+        addAvecShare,
+        requestAvecLoan,
+        approveAvecLoan,
+        addAnnouncement,
         getPendingContributionReminders,
         toApiPayload,
         fromApiTontine,
