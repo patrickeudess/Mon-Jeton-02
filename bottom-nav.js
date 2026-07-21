@@ -93,8 +93,10 @@
             '.mj-nav-item.mj-primary:active .mj-nav-icon{transform:scale(.92);}',
             /* Focus clavier accessible */
             '.mj-nav-item:focus-visible{outline:3px solid var(--primary-color, #00a082);outline-offset:2px;}',
-            '@media (min-width:820px){.mj-bottomnav{max-width:640px;margin:0 auto;right:0;left:0;',
-            'border-radius:22px 22px 0 0;}}',
+            /* Sur grand écran (ordinateur), la barre mobile n\'a pas sa place :
+               on la masque et on retire le décalage du contenu. La navigation
+               passe alors par le haut de page et la grille d\'accueil. */
+            '@media (min-width:900px){.mj-bottomnav{display:none;}body{padding-bottom:0 !important;}}',
             '@media (prefers-reduced-motion:reduce){.mj-nav-item,.mj-nav-item .mj-nav-icon{transition:none;}}',
             '@media print{.mj-bottomnav{display:none;}}'
         ].join('');
