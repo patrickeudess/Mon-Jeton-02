@@ -4,10 +4,14 @@
  */
 (function () {
   'use strict';
-  const state = { user: null, groupsUnsubscribe: null, requestsUnsubscribe: null, muted: false, pending: [] };
+  const state = { user: null, groupsUnsubscribe: null, requestsUnsubscribe: null, muted: false, pending: [], status: { kind: 'need-auth', message: 'Connectez-vous pour partager vos groupes.' } };
   const code = () => Math.random().toString(36).slice(2, 8).toUpperCase();
   const clean = value => String(value || '').trim();
   const emit = (name, detail) => window.dispatchEvent(new CustomEvent(name, { detail }));
+  function report(kind, message) {
+    state.status = { kind, message };
+    emit('mon-jeton-sync-status', state.status);
+  }
 
   function configured() { return Boolean(window.firebase && window.MON_JETON_FIREBASE_CONFIG); }
   function app() {
@@ -50,6 +54,7 @@
   }
   async function persist(groups) {
     if (!state.user || !db() || state.muted) return;
+    if (!navigator.onLine) { report('offline', 'Vous êtes hors ligne : les changements restent sur cet appareil pour le moment.'); return; }
     const batch = db().batch();
     // Un appareil peut servir à plusieurs comptes. On ne réécrit jamais un
     // groupe appartenant à un autre compte localement resté dans le navigateur.
@@ -64,7 +69,10 @@
         groupId: group.id, ownerUid: remote.createdByUid, groupName: remote.name || 'Groupe'
       }, { merge: true });
     });
-    if (eligible.length) await batch.commit();
+    if (eligible.length) {
+      await batch.commit();
+      report('syncing', 'Mise à jour du groupe en cours…');
+    }
   }
   function subscribeGroups() {
     if (!state.user || !db()) return;
@@ -73,8 +81,8 @@
       .onSnapshot(snapshot => {
         const remote = snapshot.docs.map(doc => toLocal({ id: doc.id, ...doc.data() }, state.user.uid));
         saveLocal(remote);
-        emit('mon-jeton-sync-status', { connected: true });
-      }, error => { console.warn('Synchronisation des groupes :', error.message); emit('mon-jeton-sync-status', { connected: false, error: error.message }); });
+        report('synced', 'Tout est à jour. Les membres autorisés voient les changements.');
+      }, error => { console.warn('Synchronisation des groupes :', error.message); report('error', 'Synchronisation interrompue : vérifiez votre connexion puis réessayez.'); });
     if (state.requestsUnsubscribe) state.requestsUnsubscribe();
     state.requestsUnsubscribe = db().collection('joinRequests').where('ownerUid', '==', state.user.uid)
       .onSnapshot(snapshot => {
@@ -135,12 +143,13 @@
 
   window.FirebaseGroups = {
     configured, persist, joinWithCode, approveRequest, rejectRequest,
-    getUser: () => state.user, getRequests: () => state.pending.slice(), signIn, register, resetPassword, signOut
+    getUser: () => state.user, getRequests: () => state.pending.slice(), getStatus: () => ({ ...state.status }), signIn, register, resetPassword, signOut
   };
   if (configured()) {
     auth().onAuthStateChanged(user => {
       state.user = user || null;
       if (user) {
+        report(navigator.onLine ? 'syncing' : 'offline', navigator.onLine ? 'Connexion sécurisée au groupe…' : 'Vous êtes hors ligne : synchronisation en attente.');
         let existing = [];
         try { existing = JSON.parse(localStorage.getItem('tontines') || '[]'); } catch (_) {}
         // Importation douce des anciens groupes locaux au premier compte.
@@ -150,8 +159,11 @@
         if (state.groupsUnsubscribe) state.groupsUnsubscribe();
         if (state.requestsUnsubscribe) state.requestsUnsubscribe();
         state.groupsUnsubscribe = state.requestsUnsubscribe = null; state.pending = [];
+        report('need-auth', 'Connectez-vous avec votre e-mail et mot de passe pour synchroniser les groupes.');
       }
       emit('mon-jeton-auth-ready', { user: state.user });
     });
   }
+  window.addEventListener('online', () => { if (state.user) { report('syncing', 'Connexion retrouvée : mise à jour des groupes…'); subscribeGroups(); } });
+  window.addEventListener('offline', () => report('offline', 'Vous êtes hors ligne : les changements restent sur cet appareil pour le moment.'));
 })();
