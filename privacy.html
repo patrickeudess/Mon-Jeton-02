@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#087f67">
+  <title>Données et confidentialité – Mon Jeton</title>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="enhanced-styles.css"><link rel="stylesheet" href="theme.css">
+  <script src="common.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js?v=2"></script>
+  <style>
+    body{background:#f2fbf8;color:#17352f}.privacy-wrap{max-width:780px;margin:0 auto;padding:28px 18px 60px}.privacy-hero{padding:28px;border-radius:22px;background:linear-gradient(135deg,#07594b,#00a884);color:#fff}.privacy-hero h1{margin:0 0 8px}.privacy-hero p{margin:0;line-height:1.5}.privacy-card{margin-top:18px;padding:22px;border:1px solid #dcece7;border-radius:18px;background:#fff;box-shadow:0 8px 25px rgba(23,53,47,.06)}.privacy-card h2{margin-top:0;font-size:1.22rem}.privacy-card p,.privacy-card li{line-height:1.55}.privacy-card ul{padding-left:20px}.notice{padding:12px 14px;border-radius:12px;background:#fff8e8;border:1px solid #f1d28a;color:#674d10}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}.action{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}.primary{background:#087f67;color:#fff}.danger{background:#fff0ef;color:#a12d24;border:1px solid #e6aaa4}.muted{color:#61716d}.status{min-height:22px;margin-top:12px;font-weight:700}.back{display:inline-block;margin-top:20px;color:#07594b;font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+  <main class="privacy-wrap">
+    <header class="privacy-hero"><h1>🔒 Vos données</h1><p>Vous gardez le contrôle sur vos informations et sur ce qui est partagé avec votre groupe.</p></header>
+    <section class="privacy-card"><h2>Ce que fait Mon Jeton</h2><p>Mon Jeton aide à suivre un budget, une tontine ou une AVEC. L’application ne reçoit pas l’argent et ne réalise aucun transfert.</p><div class="notice"><strong>Pour les groupes :</strong> les noms des membres, les cotisations, les demandes de prêt et le journal du groupe sont partagés seulement avec les membres autorisés et connectés.</div></section>
+    <section class="privacy-card"><h2>Données enregistrées</h2><ul><li>Sur cet appareil : budget, transactions, objectifs et réglages.</li><li>Avec un compte connecté : ces données personnelles peuvent être synchronisées avec Firebase.</li><li>Dans un groupe : les informations nécessaires au suivi collectif sont visibles par les membres de ce groupe.</li></ul><p class="muted">Ne partagez jamais votre mot de passe ni le code d’accès d’un groupe avec une personne non concernée.</p></section>
+    <section class="privacy-card"><h2>Vos choix</h2><p>Vous pouvez télécharger une copie de vos données personnelles ou les supprimer du compte connecté. La suppression de vos données personnelles ne supprime pas l’historique déjà partagé dans les groupes : le responsable du groupe doit gérer ce suivi avec les membres.</p><div class="actions"><button id="export-data" class="action primary">Télécharger mes données</button><button id="delete-data" class="action danger">Supprimer mes données personnelles</button></div><p id="status" class="status" aria-live="polite"></p></section>
+    <section class="privacy-card"><h2>Besoin d’aide ?</h2><p>Pour un problème d’accès, de groupe ou de données, décrivez le souci dans le dépôt de support Mon Jeton.</p><a class="action primary" href="https://github.com/patrickeudess/Mon-Jeton-02/issues" target="_blank" rel="noopener">Contacter le support</a></section>
+    <a class="back" href="index.html">← Retour à l’accueil</a>
+  </main>
+  <script>
+    (function(){
+      const KEYS=['transactions','budgets','goals','savings','income_profile','user_settings','categories','onboarding_completed'];
+      const status=document.getElementById('status');
+      const read=key=>{const value=localStorage.getItem(key);if(value===null)return null;try{return JSON.parse(value)}catch(_){return value}};
+      document.getElementById('export-data').addEventListener('click',()=>{
+        const values={};KEYS.forEach(key=>{const value=read(key);if(value!==null)values[key]=value});
+        const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),values},null,2)],{type:'application/json'});
+        const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='mon-jeton-mes-donnees.json';link.click();URL.revokeObjectURL(link.href);status.textContent='Vos données ont été téléchargées.';
+      });
+      document.getElementById('delete-data').addEventListener('click',async()=>{
+        if(!confirm('Supprimer vos données personnelles de cet appareil et du compte connecté ? Cette action ne peut pas être annulée.'))return;
+        try{const user=window.firebase&&firebase.auth().currentUser;if(user){const db=firebase.firestore();await db.collection('users').doc(user.uid).collection('data').doc('app').delete();await db.collection('users').doc(user.uid).delete();await firebase.auth().signOut();}KEYS.forEach(key=>localStorage.removeItem(key));localStorage.removeItem('auth_token');localStorage.removeItem('user_name');localStorage.removeItem('user_email');status.textContent='Vos données personnelles ont été supprimées.';setTimeout(()=>location.href='login.html',900)}catch(error){status.textContent='La suppression n’a pas abouti. Vérifiez votre connexion et réessayez.';console.error(error)}});
+    })();
+  </script>
+</body>
+</html>
