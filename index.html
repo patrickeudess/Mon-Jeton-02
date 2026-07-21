@@ -18,6 +18,11 @@
     <script src="chart.umd.js"></script>
     <script src="common.js"></script>
     <script src="income-profile.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=1"></script>
+    <script src="firebase-groups.js?v=1"></script>
     <script src="optimize_application.js"></script>
     <style>
         .inclusive-finance { margin: 20px 0; padding: 22px; border-radius: 18px; background: linear-gradient(135deg,#073b35,#087f67); color:#fff; box-shadow:0 14px 32px rgba(8,127,103,.2); }
@@ -278,7 +283,10 @@
         }
 
         // Gérer la déconnexion
-        document.getElementById('logout-btn').addEventListener('click', function() {
+        document.getElementById('logout-btn').addEventListener('click', async function() {
+            if (window.FirebaseGroups) {
+                try { await FirebaseGroups.signOut(); } catch (_) {}
+            }
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_email');
             localStorage.removeItem('user_name');

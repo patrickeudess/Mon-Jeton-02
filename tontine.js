@@ -69,6 +69,9 @@ function loadTontines() {
 
 function saveTontines(tontines) {
     localStorage.setItem('tontines', JSON.stringify(tontines));
+    if (window.FirebaseGroups) {
+        window.FirebaseGroups.persist(tontines).catch(error => console.warn('Synchronisation du groupe en attente :', error.message));
+    }
 }
 
 // Chaque tontine possède son propre espace communautaire. Les anciennes

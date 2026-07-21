@@ -40,5 +40,6 @@
   document.getElementById('avec-form').addEventListener('submit', event => { event.preventDefault(); const form = event.currentTarget; const group = T.createTontine({ name: form.name.value.trim(), type: 'avec', amount: form.share.value, frequency: 'hebdomadaire', startDate: new Date().toISOString().slice(0, 10), members: form.members.value, socialFund: form.social.value, serviceRate: form.rate.value, loanMonths: form.months.value }); form.reset(); notify(); render(); show(group.id); });
   if (channel) channel.onmessage = () => render();
   window.addEventListener('storage', event => { if (event.key === 'tontines') render(); });
+  window.addEventListener('mon-jeton-groups-updated', render);
   render();
 })();

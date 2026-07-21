@@ -439,6 +439,11 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=1"></script>
+    <script src="firebase-groups.js?v=1"></script>
     <script src="api-client.js?v=2.5"></script>
     <script src="auth-manager.js"></script>
     <script src="optimize_application.js"></script>
@@ -502,6 +507,13 @@
             localStorage.setItem('login_provider', 'Local');
         }
 
+        function createFirebaseSession(user) {
+            localStorage.setItem('auth_token', 'firebase_' + user.uid);
+            localStorage.setItem('user_name', user.displayName || (user.email || '').split('@')[0] || 'Utilisateur');
+            localStorage.setItem('user_email', user.email || '');
+            localStorage.setItem('login_provider', 'Firebase');
+        }
+
         // Gestion du formulaire de connexion
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -511,6 +523,18 @@
 
             if (!email || !password) {
                 showError('login-error', 'Veuillez remplir tous les champs');
+                return;
+            }
+
+            if (window.FirebaseGroups && FirebaseGroups.configured()) {
+                try {
+                    showSuccess('login-success', 'Connexion sécurisée en cours…');
+                    const user = await FirebaseGroups.signIn(email, password);
+                    createFirebaseSession(user);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    showError('login-error', 'Connexion impossible : ' + (error.message || 'vérifiez vos informations.'));
+                }
                 return;
             }
 
@@ -552,6 +576,18 @@
 
             if (password.length < 6) {
                 showError('register-error', 'Le mot de passe doit contenir au moins 6 caractères');
+                return;
+            }
+
+            if (window.FirebaseGroups && FirebaseGroups.configured()) {
+                try {
+                    const user = await FirebaseGroups.register(name, email, password);
+                    createFirebaseSession(user);
+                    showSuccess('register-success', 'Compte créé. Vos groupes peuvent maintenant être synchronisés.');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+                } catch (error) {
+                    showError('register-error', 'Inscription impossible : ' + (error.message || 'réessayez.'));
+                }
                 return;
             }
 
@@ -626,7 +662,13 @@
         function showForgotPassword() {
             const email = prompt('Entrez votre adresse email pour réinitialiser le mot de passe :');
             if (email) {
-                showNotification('Email de réinitialisation envoyé !', 'success');
+                if (window.FirebaseGroups && FirebaseGroups.configured()) {
+                    FirebaseGroups.resetPassword(email)
+                        .then(() => showNotification('Email de réinitialisation envoyé !', 'success'))
+                        .catch(error => showNotification(error.message || 'Envoi impossible.', 'error'));
+                } else {
+                    showNotification('Email de réinitialisation envoyé !', 'success');
+                }
             }
         }
 
