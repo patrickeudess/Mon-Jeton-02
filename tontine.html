@@ -22,6 +22,7 @@
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js?v=2"></script>
     <script src="firebase-groups.js?v=2"></script>
+    <script src="firebase-private-data.js?v=1"></script>
     <script src="tontine.js?v=3.5"></script>
     <script src="group-sync-ui.js?v=2"></script>
     <style>
@@ -222,7 +223,7 @@
                 <div class="summary-card">
                     <div class="summary-icon">📅</div>
                     <h3>Prochaine Échéance</h3>
-                    <span id="tontines-next-due" class="summary-value">—</span>
+                    <span id="tontines-next-due" class="summary-value">À venir</span>
                     <small id="tontines-next-due-name">Aucune tontine</small>
                 </div>
             </div>
@@ -462,7 +463,7 @@
             document.getElementById('tontines-count').textContent = summary.count;
             document.getElementById('tontines-contributed').textContent = formatAmount(summary.totalContributed);
             document.getElementById('tontines-next-due').textContent =
-                summary.nextDue ? formatDate(summary.nextDue) : '—';
+                summary.nextDue ? formatDate(summary.nextDue) : 'À venir';
             document.getElementById('tontines-next-due-name').textContent =
                 summary.nextDueTontine ? summary.nextDueTontine.name : 'Aucune tontine';
         }
@@ -488,7 +489,7 @@
                 const beneficiary = started ? T.getBeneficiary(tontine, cycle) : tontine.members[0];
                 const potAmount = tontine.amount * memberCount;
                 turnHtml = started
-                    ? `<div class="tontine-turn">🎁 Tour de <strong>${esc(beneficiary.name)}</strong> — cagnotte ${formatAmount(potAmount)}</div>`
+                    ? `<div class="tontine-turn">🎁 Tour de <strong>${esc(beneficiary.name)}</strong> : cagnotte ${formatAmount(potAmount)}</div>`
                     : `<div class="tontine-turn">🚀 Démarre le ${formatDate(new Date(tontine.startDate + 'T00:00:00'))}</div>`;
                 progressPercent = memberCount > 0 ? Math.round((cyclePaid / memberCount) * 100) : 0;
                 progressLabel = `${cyclePaid}/${memberCount} cotisations ce cycle`;

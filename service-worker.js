@@ -5,7 +5,7 @@
 //    reçoivent toujours la dernière version du code quand ils sont en ligne,
 //    et la version en cache hors ligne.
 //  - Autres ressources (images, polices…) : cache d'abord, réseau en secours.
-const CACHE_NAME = 'mon-jeton-v3.4';
+const CACHE_NAME = 'mon-jeton-v3.5';
 
 // Chemins relatifs : l'application peut être hébergée à la racine d'un
 // domaine ou dans un sous-dossier (ex. GitHub Pages).
@@ -20,6 +20,7 @@ const PRECACHE_URLS = [
     './tontine.js',
     './firebase-config.js',
     './firebase-groups.js',
+    './firebase-private-data.js',
     './group-sync-ui.js',
     './avec.html',
     './avec.js',

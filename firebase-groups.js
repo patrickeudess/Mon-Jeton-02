@@ -140,6 +140,12 @@
   }
   async function resetPassword(email) { return auth().sendPasswordResetEmail(email); }
   async function signOut() { return auth().signOut(); }
+  async function ensureUserRecord(user) {
+    if (!user || !db()) return;
+    return db().collection('users').doc(user.uid).set({
+      email: user.email || '', displayName: displayName(user), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
 
   window.FirebaseGroups = {
     configured, persist, joinWithCode, approveRequest, rejectRequest,
@@ -149,6 +155,7 @@
     auth().onAuthStateChanged(user => {
       state.user = user || null;
       if (user) {
+        ensureUserRecord(user).catch(error => console.warn('Profil Firebase :', error.message));
         report(navigator.onLine ? 'syncing' : 'offline', navigator.onLine ? 'Connexion sécurisée au groupe…' : 'Vous êtes hors ligne : synchronisation en attente.');
         let existing = [];
         try { existing = JSON.parse(localStorage.getItem('tontines') || '[]'); } catch (_) {}
