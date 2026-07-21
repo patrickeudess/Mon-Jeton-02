@@ -1,5 +1,8 @@
 # Python
 __pycache__/
+node_modules/
+www/
+android/
 *.py[cod]
 *.egg-info/
 venv/
