@@ -47,10 +47,43 @@
         .more-tools { margin-top:18px; border-top:1px solid #e1ebe8; padding-top:14px; }
         .more-tools summary { cursor:pointer; color:#087f67; font-weight:700; padding:8px 0; }
         .more-tools .icon-grid { margin-top:10px; }
-        @media(max-width:720px){ .inclusive-head{align-items:flex-start;flex-direction:column}.inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr} }
+        /* Accueil compact : les informations essentielles tiennent sans défilement inutile. */
+        .dashboard-home .main-container { padding-top: 12px; }
+        .dashboard-home .welcome-header { padding: 18px 22px; margin-bottom: 12px; min-height: 0; }
+        .dashboard-home .welcome-content h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+        .dashboard-home .welcome-subtitle { margin: 4px 0 0; }
+        .dashboard-home .pilot-balance { margin: 0; }
+        .dashboard-home .pilot-balance .stat-item { min-width: 150px; padding: 10px 15px; border-radius: 14px; }
+        .dashboard-home .pilot-balance .stat-icon { font-size: 1.1rem; }
+        .dashboard-home .pilot-balance .stat-value { font-size: 1.1rem; color: #10a84a; }
+        .dashboard-home .inclusive-finance { margin: 12px 0; padding: 18px 20px; border-radius: 16px; }
+        .dashboard-home .inclusive-head { margin-bottom: 12px; }
+        .dashboard-home .inclusive-head h2 { font-size: 1.35rem; }
+        .dashboard-home .inclusive-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+        .dashboard-home .inclusive-metric { padding: 12px 14px; border-radius: 12px; }
+        .dashboard-home .inclusive-metric strong { font-size: 1.06rem; }
+        .dashboard-home .inclusive-note { margin-top: 10px; font-size: .83rem; }
+        .dashboard-home .finance-details { margin-top: 5px; }
+        .dashboard-home .finance-details summary { padding: 6px 0; }
+        .dashboard-home .quick-actions { padding: 16px 18px; margin-bottom: 12px; }
+        .dashboard-home .quick-actions h2 { margin-bottom: 12px; font-size: 1.2rem; }
+        .dashboard-home .action-buttons { display:grid; grid-template-columns: 1.25fr 1fr 1fr; gap:10px; }
+        .dashboard-home .action-btn { min-width:0; min-height:62px; padding:10px 12px; flex:none; flex-direction:column; gap:4px; }
+        .dashboard-home .action-icon { font-size:1.25rem; line-height:1; }
+        .dashboard-home .action-text { font-size:.82rem; }
+        @media(max-width:720px){
+            .dashboard-home .welcome-header { flex-direction:row; text-align:left; align-items:center; padding:14px 16px; gap:12px; }
+            .dashboard-home .welcome-subtitle { display:none; }
+            .dashboard-home .pilot-balance .stat-item { min-width:120px; padding:8px 10px; }
+            .dashboard-home .pilot-balance .stat-label { font-size:.68rem; }
+            .dashboard-home .inclusive-head{align-items:flex-start;flex-direction:column}.dashboard-home .inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr}
+            .dashboard-home .quick-actions { padding:15px; }
+            .dashboard-home .action-buttons { grid-template-columns:repeat(2,1fr); }
+            .dashboard-home .action-btn.primary { grid-column:1 / -1; flex-direction:row; min-height:52px; }
+        }
     </style>
 </head>
-<body>
+<body class="dashboard-home">
     <!-- Vérification d'authentification -->
     <script>
         // Vérifier si l'utilisateur est connecté
@@ -130,19 +163,19 @@
 
         <!-- Actions rapides -->
         <section class="quick-actions">
-            <h2>Que voulez-vous faire ?</h2>
+            <h2>Actions rapides</h2>
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
                     <span class="action-icon">➕</span>
-                    <span class="action-text">Ajouter une opération</span>
+                    <span class="action-text">Ajouter</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
                     <span class="action-icon">👁️</span>
-                    <span class="action-text">Voir mon argent</span>
+                    <span class="action-text">Mon argent</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickSavings()">
                     <span class="action-icon">🏦</span>
-                    <span class="action-text">Préparer une dépense</span>
+                    <span class="action-text">Préparer</span>
                 </button>
 
             </div>
