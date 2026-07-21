@@ -272,8 +272,8 @@
         .depenses-card::before { background: linear-gradient(90deg, #dc3545, #fd7e14); }
         .solde-card::before { background: linear-gradient(90deg, #009879, #17a2b8); }
         .epargne-card::before { background: linear-gradient(90deg, #ffc107, #fd7e14); }
-        .graphiques-card::before { background: linear-gradient(90deg, #6f42c1, #e83e8c); }
-        .predictions-card::before { background: linear-gradient(90deg, #6610f2, #6f42c1); }
+        .graphiques-card::before { background: linear-gradient(90deg, #009879, #00c896); }
+        .predictions-card::before { background: linear-gradient(90deg, #007a63, #009879); }
         .conseils-card::before { background: linear-gradient(90deg, #20c997, #28a745); }
         .transactions-card::before { background: linear-gradient(90deg, #fd7e14, #dc3545); }
         .parametres-card::before { background: linear-gradient(90deg, #6c757d, #495057); }
@@ -960,7 +960,7 @@
             
             MonJeton.renderDoughnutChart('revenus-categories-chart',
                 Object.keys(categories), Object.values(categories),
-                ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#fd7e14'],
+                ['#28a745', '#20c997', '#17a2b8', '#009879', '#fd7e14'],
                 { title: 'Répartition des Revenus', height: 300 });
         }
 
@@ -976,7 +976,7 @@
             
             MonJeton.renderDoughnutChart('depenses-categories-chart',
                 Object.keys(categories), Object.values(categories),
-                ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#e83e8c'],
+                ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#00c896'],
                 { title: 'Répartition des Dépenses', height: 300 });
         }
 
