@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assistant & conseils - Mon Jeton</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="theme.css">
     <style>
         * {
@@ -405,6 +404,7 @@
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+            .mj-emoji{font-style:normal;line-height:1;}
     </style>
 </head>
 <body>
@@ -425,7 +425,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="ai-avatar">
-                    <i class="fas fa-robot"></i>
+                    <i class="mj-emoji">🤖</i>
                 </div>
                 <h1>Assistant & conseils</h1>
                 <p>Votre espace d'aide et d'apprentissage</p>
@@ -434,27 +434,27 @@
             <div class="quick-actions">
                 <p style="font-size:0.8rem; opacity:0.8; margin:0 0 8px;">CONSEILS RAPIDES</p>
                 <button class="quick-action" onclick="askQuestion('Comment optimiser mon épargne ?')">
-                    <i class="fas fa-piggy-bank"></i>
+                    <i class="mj-emoji">🐷</i>
                     Optimiser l'épargne
                 </button>
                 
                 <button class="quick-action" onclick="askQuestion('Quels sont les meilleurs conseils pour gérer mon budget ?')">
-                    <i class="fas fa-chart-pie"></i>
+                    <i class="mj-emoji">📊</i>
                     Gestion du budget
                 </button>
                 
                 <button class="quick-action" onclick="askQuestion('Comment réduire mes dépenses ?')">
-                    <i class="fas fa-cut"></i>
+                    <i class="mj-emoji">✂️</i>
                     Réduire les dépenses
                 </button>
                 
                 <button class="quick-action" onclick="askQuestion('Comment utiliser efficacement Mobile Money ?')">
-                    <i class="fas fa-mobile-alt"></i>
+                    <i class="mj-emoji">📱</i>
                     Mobile Money
                 </button>
                 
                 <button class="quick-action" onclick="askQuestion('Comment protéger mon argent et éviter les arnaques ?')">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="mj-emoji">⚠️</i>
                     Sécurité et arnaques
                 </button>
             </div>
@@ -467,7 +467,7 @@
         <!-- Chat Area -->
         <div class="chat-area">
             <div class="chat-header">
-                <h2><i class="fas fa-comments"></i> Conversation</h2>
+                <h2><i class="mj-emoji">💬</i> Conversation</h2>
                 <div class="chat-header-actions">
                     <button type="button" class="learning-toggle" id="learning-toggle" onclick="showLearningPanel()">💡 Apprendre</button>
                     <div class="chat-status">
@@ -479,7 +479,7 @@
             
             <div class="chat-messages" id="chat-messages">
                 <div class="welcome-message">
-                    <i class="fas fa-robot"></i>
+                    <i class="mj-emoji">🤖</i>
                     <h3>Bonjour ! 👋</h3>
                     <p>Posez une question ou choisissez un conseil rapide. Retrouvez ici l'épargne, le budget, Mobile Money et la sécurité.</p>
                 </div>
@@ -500,7 +500,7 @@
             
             <div class="typing-indicator" id="typing-indicator">
                 <div class="message-avatar">
-                    <i class="fas fa-robot"></i>
+                    <i class="mj-emoji">🤖</i>
                 </div>
                 <div class="typing-dots">
                     <div class="typing-dot"></div>
@@ -520,7 +520,7 @@
                         ></textarea>
                     </div>
                     <button class="send-button" onclick="sendMessage()" id="send-button">
-                        <i class="fas fa-paper-plane"></i>
+                        <i class="mj-emoji">📨</i>
                     </button>
                 </div>
             </div>

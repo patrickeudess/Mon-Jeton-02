@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="theme.css">
     <script src="common.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script><script src="firebase-config.js?v=2"></script><script src="firebase-private-data.js?v=1"></script>
@@ -425,6 +424,16 @@
                 grid-template-columns: 1fr;
             }
         }
+            .mj-emoji{font-style:normal;line-height:1;}
+    
+        /* Mode sombre : la page suit le thème au lieu de forcer le blanc. */
+        @media (prefers-color-scheme: dark) {
+            body, .container { background: var(--app-bg) !important; color: var(--text-strong) !important; }
+            .section-header, .section-header h2 { background: transparent !important; color: var(--text-strong) !important; }
+            .table-container, .table-container table, table { background: var(--card-bg) !important; }
+            .table-container td, td { color: var(--text-strong) !important; border-bottom-color: var(--border-soft) !important; }
+            .table-container tr:hover, tr:hover { background: var(--surface-muted) !important; }
+        }
     </style>
 </head>
 <body>
@@ -468,66 +477,66 @@
         <section class="savings-grid">
             <div class="grid-container">
                 <div class="grid-card" onclick="showTotalSavings()">
-                    <i class="fas fa-coins"></i>
+                    <i class="mj-emoji">🪙</i>
                     <h3>Total Épargne</h3>
                     <div class="value" id="total-savings">0 F CFA</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showSavingsRate()">
-                    <i class="fas fa-percentage"></i>
+                    <i class="mj-emoji">📊</i>
                     <h3>Taux d'Épargne</h3>
                     <div class="value" id="savings-rate">0%</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showActiveGoals()">
-                    <i class="fas fa-bullseye"></i>
+                    <i class="mj-emoji">🎯</i>
                     <h3>Objectifs Actifs</h3>
                     <div class="value" id="active-goals">0</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showCompletedGoals()">
-                    <i class="fas fa-trophy"></i>
+                    <i class="mj-emoji">🏆</i>
                     <h3>Objectifs Atteints</h3>
                     <div class="value" id="completed-goals">0</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showMonthlySavings()">
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="mj-emoji">📅</i>
                     <h3>Épargne Mensuelle</h3>
                     <div class="value" id="monthly-savings">0 F CFA</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showAnalyses()">
-                    <i class="fas fa-chart-pie"></i>
+                    <i class="mj-emoji">📊</i>
                     <h3>Analyses</h3>
                     <div class="action">Voir</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showNewGoal()">
-                    <i class="fas fa-plus"></i>
+                    <i class="mj-emoji">➕</i>
                     <h3>Nouvel Objectif</h3>
                     <div class="action">Créer</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showRegularSavings()">
-                    <i class="fas fa-file-alt"></i>
+                    <i class="mj-emoji">📄</i>
                     <h3>Épargne Régulière</h3>
                     <div class="action">Enregistrer</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showHistory()">
-                    <i class="fas fa-history"></i>
+                    <i class="mj-emoji">🕘</i>
                     <h3>Historique</h3>
                     <div class="action">Voir</div>
-                    <i class="fas fa-arrow-right arrow"></i>
+                    <i class="mj-emoji">→</i>
                 </div>
             </div>
         </section>
@@ -543,7 +552,7 @@
     <div id="objectif-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('objectif-modal')">&times;</span>
-            <h2><i class="fas fa-bullseye"></i> Nouvel Objectif d'Épargne</h2>
+            <h2><i class="mj-emoji">🎯</i> Nouvel Objectif d'Épargne</h2>
             
             <form id="objectif-form">
                 <div class="form-group">
@@ -568,10 +577,10 @@
                 
                 <div class="form-actions">
                     <button type="button" onclick="closeModal('objectif-modal')" class="btn-secondary">
-                        <i class="fas fa-times"></i> Annuler
+                        <i class="mj-emoji">✕</i> Annuler
                     </button>
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-save"></i> Créer l'Objectif
+                        <i class="mj-emoji">💾</i> Créer l'Objectif
                     </button>
                 </div>
             </form>
@@ -582,7 +591,7 @@
     <div id="epargne-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('epargne-modal')">&times;</span>
-            <h2><i class="fas fa-file-alt"></i> Nouvelle Épargne Régulière</h2>
+            <h2><i class="mj-emoji">📄</i> Nouvelle Épargne Régulière</h2>
             
             <form id="epargne-form">
                 <div class="form-group">
@@ -622,10 +631,10 @@
                 
                 <div class="form-actions">
                     <button type="button" onclick="closeModal('epargne-modal')" class="btn-secondary">
-                        <i class="fas fa-times"></i> Annuler
+                        <i class="mj-emoji">✕</i> Annuler
                     </button>
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-save"></i> Enregistrer l'Épargne
+                        <i class="mj-emoji">💾</i> Enregistrer l'Épargne
                     </button>
                 </div>
             </form>
@@ -806,7 +815,7 @@
             document.getElementById('objectif-description').value = objectif.description || '';
             
             const submitBtn = document.querySelector('#objectif-form button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Mettre à jour l\'Objectif';
+            submitBtn.innerHTML = '<i class="mj-emoji">💾</i> Mettre à jour l\'Objectif';
             
             document.getElementById('objectif-form').dataset.editingId = id;
             showNouvelObjectif();
@@ -837,7 +846,7 @@
             document.getElementById('epargne-objectif').value = epargne.objectifLie || '';
             
             const submitBtn = document.querySelector('#epargne-form button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Mettre à jour l\'Épargne';
+            submitBtn.innerHTML = '<i class="mj-emoji">💾</i> Mettre à jour l\'Épargne';
             
             document.getElementById('epargne-form').dataset.editingId = id;
             showEpargneReguliere();
@@ -873,7 +882,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-coins"></i> Détails du Total Épargne</h2>
+                    <h2><i class="mj-emoji">🪙</i> Détails du Total Épargne</h2>
                     
                     <div style="margin: 20px 0;">
                         <div style="background: linear-gradient(135deg, #00a082 0%, #007a63 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -919,7 +928,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-percentage"></i> Détails du Taux d'Épargne</h2>
+                    <h2><i class="mj-emoji">📊</i> Détails du Taux d'Épargne</h2>
                     
                     <div style="margin: 20px 0;">
                         <div style="background: linear-gradient(135deg, #00a082 0%, #007a63 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -969,7 +978,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-bullseye"></i> Objectifs Actifs</h2>
+                    <h2><i class="mj-emoji">🎯</i> Objectifs Actifs</h2>
                     
                     <div style="margin: 20px 0;">
                         <div style="background: linear-gradient(135deg, #00a082 0%, #007a63 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -1013,7 +1022,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-trophy"></i> Objectifs Atteints</h2>
+                    <h2><i class="mj-emoji">🏆</i> Objectifs Atteints</h2>
                     
                     <div style="margin: 20px 0;">
                         <div style="background: linear-gradient(135deg, #00a082 0%, #007a63 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -1067,7 +1076,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-calendar-alt"></i> Épargne Mensuelle</h2>
+                    <h2><i class="mj-emoji">📅</i> Épargne Mensuelle</h2>
                     
                     <div style="margin: 20px 0;">
                         <div style="background: linear-gradient(135deg, #00a082 0%, #007a63 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -1134,7 +1143,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-chart-pie"></i> Analyses d'Épargne</h2>
+                    <h2><i class="mj-emoji">📊</i> Analyses d'Épargne</h2>
                     
                     <div style="margin: 20px 0;">
                         <h3>📊 Statistiques Générales</h3>
@@ -1209,7 +1218,7 @@
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-                    <h2><i class="fas fa-history"></i> Historique des Épargnes</h2>
+                    <h2><i class="mj-emoji">🕘</i> Historique des Épargnes</h2>
                     
                     <div style="margin: 20px 0;">
                         <h3>📋 Toutes les Épargnes</h3>
@@ -1304,7 +1313,7 @@
             this.reset();
             delete this.dataset.editingId;
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Créer l\'Objectif';
+            submitBtn.innerHTML = '<i class="mj-emoji">💾</i> Créer l\'Objectif';
             
             closeModal('objectif-modal');
             alert(editingId ? 'Objectif mis à jour avec succès !' : 'Objectif créé avec succès !');
@@ -1353,7 +1362,7 @@
             this.reset();
             delete this.dataset.editingId;
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer l\'Épargne';
+            submitBtn.innerHTML = '<i class="mj-emoji">💾</i> Enregistrer l\'Épargne';
             
             closeModal('epargne-modal');
             alert(editingId ? 'Épargne mise à jour avec succès !' : 'Épargne enregistrée avec succès !');
