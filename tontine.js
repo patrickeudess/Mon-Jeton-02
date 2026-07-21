@@ -193,7 +193,9 @@ function addAvecShare(groupId, memberId, units = 1) {
     if (!avec || !member) return null;
     avec.shares.push({ id: 's_' + Date.now(), memberId, units: count, date: new Date().toISOString() });
     if (avec.socialFundValue) avec.socialFund.push({ id: 'sf_' + Date.now(), memberId, amount: avec.socialFundValue, date: new Date().toISOString() });
-    addCommunityActivity(group, member.name + ' a enregistré ' + count + ' part(s) d’épargne.');
+    const deposit = count * avec.shareValue;
+    const social = count * avec.socialFundValue;
+    addCommunityActivity(group, member.name + ' a déposé ' + deposit.toLocaleString('fr-FR') + ' FCFA dans la caisse (' + count + ' part(s))' + (social ? ' et ' + social.toLocaleString('fr-FR') + ' FCFA au fonds social.' : '.'));
     saveTontines(groups);
     return group;
 }
@@ -208,7 +210,7 @@ function requestAvecLoan(groupId, memberId, amount, purpose) {
     if (!avec || !member || value <= 0 || value > limit) return { error: 'Le prêt doit être positif et ne pas dépasser 3 fois votre épargne.' };
     const loan = { id: 'l_' + Date.now(), memberId, amount: value, purpose: String(purpose || '').slice(0, 160), rate: avec.serviceRate, months: avec.loanMonths, status: 'requested', repayments: [], date: new Date().toISOString() };
     avec.loans.push(loan);
-    addCommunityActivity(group, member.name + ' a demandé un prêt de ' + value.toLocaleString('fr-FR') + ' FCFA.');
+    addCommunityActivity(group, member.name + ' a demandé un crédit de ' + value.toLocaleString('fr-FR') + ' FCFA' + (loan.purpose ? ' : ' + loan.purpose : '.') );
     saveTontines(groups);
     return { group, loan };
 }
@@ -219,7 +221,9 @@ function approveAvecLoan(groupId, loanId) {
     if (!loan || !canManageMembers(group) || loan.status !== 'requested' || loan.amount > getAvecFund(group)) return null;
     loan.status = 'approved'; loan.approvedAt = new Date().toISOString();
     const borrower = group.members.find(item => item.id === loan.memberId);
-    addCommunityActivity(group, 'Prêt de ' + loan.amount.toLocaleString('fr-FR') + ' FCFA approuvé pour ' + (borrower ? borrower.name : 'un membre') + '.');
+    const manager = getMyMember(group);
+    loan.approvedBy = manager ? manager.name : 'Responsable';
+    addCommunityActivity(group, 'Crédit de ' + loan.amount.toLocaleString('fr-FR') + ' FCFA accordé à ' + (borrower ? borrower.name : 'un membre') + ' par ' + loan.approvedBy + '.');
     saveTontines(groups); return group;
 }
 
