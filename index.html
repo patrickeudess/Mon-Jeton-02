@@ -309,9 +309,11 @@
 
     <script src="app.js?v=2.5"></script>
     <script>
-        // Afficher le nom de l'utilisateur
+        // Afficher le nom de l'utilisateur (prénom lisible, jamais l'e-mail entier)
         function displayUserInfo() {
-            const userName = localStorage.getItem('user_name') || 'Utilisateur';
+            const userName = (window.MonJeton && MonJeton.formatDisplayName)
+                ? MonJeton.formatDisplayName(localStorage.getItem('user_name'))
+                : (localStorage.getItem('user_name') || 'Utilisateur');
             document.getElementById('display-name').textContent = userName;
             document.getElementById('user-greeting').textContent = userName;
         }

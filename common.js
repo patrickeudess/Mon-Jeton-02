@@ -157,10 +157,23 @@
 
     // --- Utilisateur ---
 
+    // Transforme un identifiant brut en nom lisible et accueillant :
+    //   « awa.kone@gmail.com » → « Awa Kone »,  « comptable » → « Comptable ».
+    // On garde uniquement la partie avant « @ », on remplace les séparateurs
+    // par des espaces et on met une majuscule au début de chaque mot.
+    function formatDisplayName(raw) {
+        let name = String(raw || '').trim();
+        if (!name) return 'Utilisateur';
+        if (name.includes('@')) name = name.split('@')[0];
+        name = name.replace(/[._+-]+/g, ' ').replace(/\s+/g, ' ').trim();
+        name = name.replace(/(^|\s)\p{L}/gu, (m) => m.toUpperCase());
+        return name || 'Utilisateur';
+    }
+
     function displayUserInfo(elementId = 'display-name') {
         const element = document.getElementById(elementId);
         if (element) {
-            element.textContent = localStorage.getItem('user_name') || 'Utilisateur';
+            element.textContent = formatDisplayName(localStorage.getItem('user_name'));
         }
     }
 
@@ -210,6 +223,7 @@
         renderLineChart,
         renderBarChart,
         renderDoughnutChart,
-        displayUserInfo
+        displayUserInfo,
+        formatDisplayName
     };
 })();
