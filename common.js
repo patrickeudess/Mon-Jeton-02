@@ -170,8 +170,35 @@
     if ('serviceWorker' in navigator &&
         (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js')
+            // Une version distincte et updateViaCache évitent qu'un ancien cache
+            // HTTP bloque la découverte de la mise à jour.
+            navigator.serviceWorker.register('service-worker.js?v=3.6', { updateViaCache: 'none' })
+                .then((registration) => {
+                    const activateUpdate = (worker) => {
+                        if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+                    };
+                    if (registration.waiting) activateUpdate(registration.waiting);
+                    registration.addEventListener('updatefound', () => {
+                        const worker = registration.installing;
+                        if (!worker) return;
+                        worker.addEventListener('statechange', () => {
+                            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                                activateUpdate(worker);
+                            }
+                        });
+                    });
+                    registration.update().catch(() => {});
+                })
                 .catch((error) => console.error('Échec de l\'enregistrement du service worker:', error));
+
+            // Une fois la mise à jour activée, recharger une seule fois suffit.
+            // L'utilisateur reçoit la dernière version sans Ctrl+F5.
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
         });
     }
 
