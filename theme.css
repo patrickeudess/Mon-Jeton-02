@@ -451,3 +451,58 @@ button, .action-btn, .tontine-btn, .btn-primary, .btn-secondary,
     .action-buttons { grid-template-columns: 1fr; }
     .nav-title { font-size: 1.05rem; }
 }
+
+/* =====================================================================
+   17. ACCESSIBILITÉ & CONFORT — pensé pour tous, y compris les
+   utilisateurs peu à l'aise avec la lecture ou le numérique.
+   ===================================================================== */
+
+/* Focus clavier toujours visible : on se repère sans la souris. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+.grid-item:focus-visible,
+.action-btn:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 10px;
+}
+
+/* Retour tactile immédiat : au toucher, l'élément « s'enfonce » légèrement.
+   Rassure l'utilisateur que son geste a bien été pris en compte. */
+.action-btn:active,
+.grid-item:active,
+.btn-primary:active,
+.btn-secondary:active,
+.template-chip:active {
+    transform: scale(0.97);
+}
+
+/* Textes d'aide et labels un peu plus lisibles. */
+.action-text,
+.grid-item h3 {
+    line-height: 1.25;
+}
+
+/* Respect de la préférence système « réduire les animations » :
+   pas d'apparition ni de mouvement pour qui en a besoin (confort,
+   appareils modestes, sensibilité au mouvement). */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .summary-card, .grid-item, .tontine-card, .nav-card { animation: none !important; }
+}
+
+/* Confort de lecture : éviter les lignes de texte trop larges sur grand écran. */
+@media (min-width: 1000px) {
+    .welcome-subtitle, .tip-card p, .empty-state p, .inclusive-note {
+        max-width: 60ch;
+    }
+}
