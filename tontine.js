@@ -256,10 +256,50 @@ function getNextDueDate(tontine, cycleIndex) {
     return due;
 }
 
+function ensureTurnOrder(tontine) {
+    if (!tontine || tontine.type !== 'rotative') return [];
+    const memberIds = tontine.members.map(member => member.id);
+    const current = Array.isArray(tontine.turnOrder) ? tontine.turnOrder : [];
+    tontine.turnOrder = [
+        ...current.filter(id => memberIds.includes(id)),
+        ...memberIds.filter(id => !current.includes(id))
+    ];
+    if (!Array.isArray(tontine.payouts)) tontine.payouts = [];
+    return tontine.turnOrder;
+}
+
 // Bénéficiaire du tour (tontine rotative uniquement).
 function getBeneficiary(tontine, cycleIndex) {
     if (tontine.type !== 'rotative' || tontine.members.length === 0) return null;
-    return tontine.members[cycleIndex % tontine.members.length];
+    const order = ensureTurnOrder(tontine);
+    const memberId = order[cycleIndex % order.length];
+    return tontine.members.find(member => member.id === memberId) || null;
+}
+
+function getPayout(tontine, cycleIndex) {
+    ensureTurnOrder(tontine);
+    return tontine.payouts.find(item => item.cycle === cycleIndex) || null;
+}
+
+function canRecordContribution(tontine, memberId) {
+    const me = getMyMember(tontine);
+    return Boolean(canManageMembers(tontine) || (me && me.id === memberId));
+}
+
+function setTurnOrder(tontineId, orderedMemberIds) {
+    const tontines = loadTontines();
+    const tontine = tontines.find(item => item.id === tontineId);
+    if (!tontine || tontine.type !== 'rotative') return { error: 'Tontine introuvable.' };
+    if (!canManageMembers(tontine)) return { error: 'Seul le responsable peut modifier l’ordre des tours.' };
+    const ids = Array.isArray(orderedMemberIds) ? orderedMemberIds : [];
+    const expected = tontine.members.map(member => member.id);
+    if (ids.length !== expected.length || ids.some(id => !expected.includes(id)) || new Set(ids).size !== ids.length) {
+        return { error: 'L’ordre des membres est incomplet.' };
+    }
+    tontine.turnOrder = ids.slice();
+    addCommunityActivity(tontine, 'Le responsable a mis à jour l’ordre des bénéficiaires.');
+    saveTontines(tontines);
+    return { tontine };
 }
 
 function getContributionsForCycle(tontine, cycleIndex) {
@@ -317,6 +357,8 @@ function createTontine(data) {
             isMe: index === 0
         })),
         contributions: [],
+        turnOrder: data.type === 'rotative' ? memberNames.map((_, index) => 'm' + index) : [],
+        payouts: [],
         community: {
             announcements: [],
             activity: [{ id: 'a_' + Date.now(), message: 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
@@ -373,22 +415,15 @@ function syncContributionTransaction(tontine, member, cycleIndex, contributed) {
 }
 
 function hasRecordedPayout(tontineId, cycleIndex) {
-    const id = linkedTransactionId(tontineId, 'cagnotte', cycleIndex);
-    return loadTransactions().some(t => t.id === id);
+    const tontine = loadTontines().find(item => item.id === tontineId);
+    return Boolean(tontine && getPayout(tontine, cycleIndex));
 }
 
-function togglePayoutTransaction(tontineId, cycleIndex) {
-    const tontine = loadTontines().find(t => t.id === tontineId);
-    if (!tontine || tontine.type !== 'rotative') return null;
-    const beneficiary = getBeneficiary(tontine, cycleIndex);
-    if (!beneficiary || !beneficiary.isMe) return null;
-
+function syncPayoutTransaction(tontine, beneficiary, cycleIndex, confirmed) {
+    if (!beneficiary || !beneficiary.isMe) return;
     const id = linkedTransactionId(tontine.id, 'cagnotte', cycleIndex);
-    let transactions = loadTransactions();
-    const existing = transactions.findIndex(t => t.id === id);
-    if (existing >= 0) {
-        transactions.splice(existing, 1);
-    } else {
+    let transactions = loadTransactions().filter(item => item.id !== id);
+    if (confirmed) {
         transactions.push({
             id,
             type: 'revenu',
@@ -398,16 +433,32 @@ function togglePayoutTransaction(tontineId, cycleIndex) {
             description: `Cagnotte reçue - ${tontine.name} (cycle ${cycleIndex + 1})`,
             paymentMethod: 'autre',
             createdAt: new Date().toISOString(),
-            source: 'tontine',
-            tontineId: tontine.id,
-            tontineCycle: cycleIndex,
-            tontineKind: 'cagnotte'
+            source: 'tontine', tontineId: tontine.id, tontineCycle: cycleIndex, tontineKind: 'cagnotte'
         });
     }
     saveTransactions(transactions);
+}
+
+function togglePayoutTransaction(tontineId, cycleIndex) {
+    const tontine = loadTontines().find(t => t.id === tontineId);
+    if (!tontine || tontine.type !== 'rotative') return null;
+    if (!canManageMembers(tontine)) return null;
+    const beneficiary = getBeneficiary(tontine, cycleIndex);
+    if (!beneficiary) return null;
+    ensureTurnOrder(tontine);
+    const existing = tontine.payouts.findIndex(item => item.cycle === cycleIndex);
+    if (existing >= 0) {
+        tontine.payouts.splice(existing, 1);
+        syncPayoutTransaction(tontine, beneficiary, cycleIndex, false);
+    } else {
+        tontine.payouts.push({
+            cycle: cycleIndex, memberId: beneficiary.id, confirmedAt: new Date().toISOString()
+        });
+        syncPayoutTransaction(tontine, beneficiary, cycleIndex, true);
+    }
     addCommunityActivity(tontine, existing >= 0
-        ? 'La cagnotte du cycle ' + (cycleIndex + 1) + ' a été annulée.'
-        : beneficiary.name + ' a été marqué comme bénéficiaire du cycle ' + (cycleIndex + 1) + '.');
+        ? 'La remise de cagnotte à ' + beneficiary.name + ' a été annulée.'
+        : 'Cagnotte remise à ' + beneficiary.name + ' pour le cycle ' + (cycleIndex + 1) + '.');
     saveTontines(loadTontines().map(item => item.id === tontine.id ? tontine : item));
     return existing < 0;
 }
@@ -423,6 +474,7 @@ function toggleContribution(tontineId, memberId, cycleIndex) {
     const tontines = loadTontines();
     const tontine = tontines.find(t => t.id === tontineId);
     if (!tontine) return null;
+    if (!canRecordContribution(tontine, memberId)) return null;
 
     const existing = tontine.contributions.findIndex(
         c => c.memberId === memberId && c.cycle === cycleIndex
@@ -579,7 +631,11 @@ if (typeof window !== 'undefined') {
         saveTontines,
         getCycleIndex,
         getNextDueDate,
+        ensureTurnOrder,
         getBeneficiary,
+        getPayout,
+        setTurnOrder,
+        canRecordContribution,
         getContributionsForCycle,
         hasContributed,
         getTotalCollected,
