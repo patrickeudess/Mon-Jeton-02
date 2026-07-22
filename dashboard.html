@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#009879">
+    <meta name="theme-color" content="#087f67">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Mon Jeton">
@@ -182,7 +182,7 @@
         .dashboard-grid h2 {
             text-align: center;
             margin-bottom: 30px;
-            color: #009879;
+            color: #087f67;
             font-size: 2rem;
         }
 
@@ -209,7 +209,7 @@
         .grid-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border-color: #009879;
+            border-color: #087f67;
         }
 
         .grid-card::before {
@@ -219,7 +219,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #009879, #28a745);
+            background: linear-gradient(90deg, #087f67, #28a745);
         }
 
         .card-icon {
@@ -242,7 +242,7 @@
         .card-value {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #009879;
+            color: #087f67;
             margin-bottom: 5px;
         }
 
@@ -257,7 +257,7 @@
             top: 20px;
             right: 20px;
             font-size: 1.5rem;
-            color: #009879;
+            color: #087f67;
             opacity: 0.7;
             transition: all 0.3s ease;
         }
@@ -270,10 +270,10 @@
         /* Couleurs spécifiques pour chaque carte */
         .revenus-card::before { background: linear-gradient(90deg, #28a745, #20c997); }
         .depenses-card::before { background: linear-gradient(90deg, #dc3545, #fd7e14); }
-        .solde-card::before { background: linear-gradient(90deg, #009879, #17a2b8); }
+        .solde-card::before { background: linear-gradient(90deg, #087f67, #17a2b8); }
         .epargne-card::before { background: linear-gradient(90deg, #ffc107, #fd7e14); }
-        .graphiques-card::before { background: linear-gradient(90deg, #009879, #00c896); }
-        .predictions-card::before { background: linear-gradient(90deg, #007a63, #009879); }
+        .graphiques-card::before { background: linear-gradient(90deg, #087f67, #00c896); }
+        .predictions-card::before { background: linear-gradient(90deg, #007a63, #087f67); }
         .conseils-card::before { background: linear-gradient(90deg, #20c997, #28a745); }
         .transactions-card::before { background: linear-gradient(90deg, #fd7e14, #dc3545); }
         .parametres-card::before { background: linear-gradient(90deg, #6c757d, #495057); }
@@ -313,7 +313,7 @@
         }
 
         .close:hover {
-            color: #009879;
+            color: #087f67;
         }
 
         /* Responsive design */
@@ -935,7 +935,7 @@
                 </div>
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h3>🔧 Options</h3>
-                    <button onclick="exportData()" style="background: #009879; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
+                    <button onclick="exportData()" style="background: #087f67; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
                         📤 Exporter les Données
                     </button>
                     <button onclick="clearAllData()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
@@ -960,7 +960,7 @@
             
             MonJeton.renderDoughnutChart('revenus-categories-chart',
                 Object.keys(categories), Object.values(categories),
-                ['#28a745', '#20c997', '#17a2b8', '#009879', '#fd7e14'],
+                ['#28a745', '#20c997', '#17a2b8', '#087f67', '#fd7e14'],
                 { title: 'Répartition des Revenus', height: 300 });
         }
 
@@ -1001,7 +1001,7 @@
             const soldes = months.map(month => monthlyData[month].revenus - monthlyData[month].depenses);
 
             MonJeton.renderLineChart('solde-evolution-chart', months, [
-                { label: 'Solde', data: soldes, color: '#009879' }
+                { label: 'Solde', data: soldes, color: '#087f67' }
             ], { title: 'Évolution du Solde', xTitle: 'Mois', yTitle: 'Solde (FCFA)', height: 300 });
         }
 
@@ -1021,7 +1021,7 @@
             objectifsDiv.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
                     <div style="font-size: 2rem; margin-bottom: 10px;">🎯</div>
-                    <p style="font-size: 1.2rem; color: #009879; font-weight: bold;">${objectif}</p>
+                    <p style="font-size: 1.2rem; color: #087f67; font-weight: bold;">${objectif}</p>
                     <div style="background: #e9ecef; border-radius: 10px; height: 20px; margin: 20px 0;">
                         <div style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: ${tauxEpargne}%; border-radius: 10px;"></div>
                     </div>
@@ -1073,7 +1073,7 @@
                     </div>
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 1.5rem; margin-bottom: 5px;">💳</div>
-                        <div style="font-weight: bold; color: #009879;">Solde Prévu</div>
+                        <div style="font-weight: bold; color: #087f67;">Solde Prévu</div>
                         <div style="font-size: 1.2rem;">${formatAmount(avgRevenus - avgDepenses)} FCFA</div>
                     </div>
                     <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">

@@ -9,9 +9,11 @@
 
 /* ---------- 1. Tokens de design ---------- */
 :root {
-    /* Marque : vert Mon Jeton + accent orange du logo */
-    --primary-color: #00a082;
-    --primary-dark: #007a63;
+    /* Marque : vert Mon Jeton + accent orange du logo.
+       #087f67 = couleur de marque (identique au meta theme-color) et
+       contraste AA sur blanc (4.95:1), texte blanc dessus (4.95:1). */
+    --primary-color: #087f67;
+    --primary-dark: #006853;
     --primary-light: #37c4a5;
     --accent-color: #ff6b35;
     --accent-soft: #fff1eb;
@@ -19,7 +21,7 @@
     /* Sémantique */
     --success-color: #129d6f;
     --warning-color: #f5a623;
-    --danger-color: #e5484d;
+    --danger-color: #c62828;
     --info-color: #0ea5b7;
 
     /* Neutres légèrement tièdes */
@@ -299,6 +301,11 @@ input:focus, select:focus, textarea:focus {
         --border-soft: rgba(255, 255, 255, 0.10);
         --nav-bg: rgba(20, 30, 27, 0.82);
         --primary-light: #4fd6b6;
+        /* Sur fond sombre, on éclaircit la marque et le rouge pour garder un
+           contraste AA (le vert/rouge foncés du mode clair y seraient illisibles). */
+        --primary-color: #2fbf9f;
+        --primary-dark: #1fae8d;
+        --danger-color: #ff6b6b;
         --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
         --shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(0, 0, 0, 0.4);
         --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.55);

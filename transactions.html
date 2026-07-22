@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#009879">
+    <meta name="theme-color" content="#087f67">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Mon Jeton">
@@ -28,7 +28,7 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: linear-gradient(135deg, #009879 0%, #00b894 100%);
+            background: linear-gradient(135deg, #087f67 0%, #00b894 100%);
             color: white;
             border-radius: 20px;
         }
@@ -85,7 +85,7 @@
         }
 
         .btn-primary {
-            background: #009879;
+            background: #087f67;
             color: white;
         }
 
@@ -110,7 +110,7 @@
         }
 
         .transactions-table th {
-            background: #009879;
+            background: #087f67;
             color: white;
             padding: 15px;
             text-align: left;
@@ -148,11 +148,11 @@
         }
 
         .transaction-amount.revenu {
-            color: #28a745;
+            color: #1e7e34;
         }
 
         .transaction-amount.depense {
-            color: #dc3545;
+            color: #c62828;
         }
 
         .transaction-actions {
@@ -170,7 +170,7 @@
         }
 
         .action-btn.edit {
-            background: #009879;
+            background: #087f67;
             color: white;
         }
 
@@ -225,7 +225,7 @@
         .transactions-grid h2 {
             text-align: center;
             margin-bottom: 30px;
-            color: #009879;
+            color: #087f67;
             font-size: 2rem;
         }
 
@@ -252,7 +252,7 @@
         .grid-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border-color: #009879;
+            border-color: #087f67;
         }
 
         .grid-card::before {
@@ -262,7 +262,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #009879, #00d4aa);
+            background: linear-gradient(90deg, #087f67, #00d4aa);
         }
 
         .card-icon {
@@ -281,7 +281,7 @@
         .card-value {
             font-size: 1.1rem;
             font-weight: bold;
-            color: #009879;
+            color: #087f67;
             margin-bottom: 5px;
         }
 
@@ -296,7 +296,7 @@
             top: 20px;
             right: 20px;
             font-size: 1.5rem;
-            color: #009879;
+            color: #087f67;
             opacity: 0.7;
         }
 
@@ -515,7 +515,7 @@
                     <button onclick="refreshTransactions()" class="refresh-btn">
                         🔄 Actualiser la liste
                     </button>
-                    <div class="transactions-table-container">
+                    <div class="transactions-table-container" tabindex="0" role="region" aria-label="Tableau des transactions (défilement horizontal)">
                         <table id="transactions-table" class="transactions-table">
                             <thead>
                                 <tr>

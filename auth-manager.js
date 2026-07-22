@@ -196,7 +196,7 @@ class AuthManager {
         if (totalDepenses) totalDepenses.textContent = `${analytics.total_expenses.toFixed(0)} FCFA`;
         if (soldeActuel) {
             soldeActuel.textContent = `${analytics.balance.toFixed(0)} FCFA`;
-            soldeActuel.style.color = analytics.balance >= 0 ? '#28a745' : '#dc3545';
+            soldeActuel.style.color = analytics.balance >= 0 ? '#1e7e34' : '#c62828';
         }
     }
 

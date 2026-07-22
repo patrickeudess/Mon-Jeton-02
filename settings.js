@@ -185,7 +185,7 @@ class SettingsManager {
                 displayName: 'Clair',
                 icon: '☀️',
                 colors: {
-                    'primary-green': '#009879',
+                    'primary-green': '#087f67',
                     'secondary-green': '#00b894',
                     'light-green': '#00d4aa',
                     'dark-green': '#006c5a',
@@ -202,7 +202,7 @@ class SettingsManager {
                 colors: {
                     'primary-green': '#00d4aa',
                     'secondary-green': '#00b894',
-                    'light-green': '#009879',
+                    'light-green': '#087f67',
                     'dark-green': '#006c5a',
                     'white': '#1a1a1a',
                     'light-gray': '#2d2d2d',

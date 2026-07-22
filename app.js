@@ -67,7 +67,7 @@ function loadCategories() {
         { name: 'Bonus', icon: '🎁', color: '#ffc107', type: 'revenu' },
         { name: 'Freelance', icon: '💼', color: '#17a2b8', type: 'revenu' },
         { name: 'Investissement', icon: '📈', color: '#6f42c1', type: 'revenu' },
-        { name: 'Vente / Commerce', icon: '🛍️', color: '#009879', type: 'revenu' },
+        { name: 'Vente / Commerce', icon: '🛍️', color: '#087f67', type: 'revenu' },
         { name: 'Recette journalière', icon: '🧾', color: '#20c997', type: 'revenu' },
         { name: 'Agriculture', icon: '🌾', color: '#7a9e35', type: 'revenu' },
         { name: 'Mission / Contrat', icon: '🤝', color: '#3f51b5', type: 'revenu' },
@@ -113,7 +113,7 @@ function updateQuickSummary(transactionData = transactions) {
     if (depensesElement) depensesElement.textContent = `${totalDepenses.toFixed(0)} FCFA`;
     if (soldeElement) {
         soldeElement.textContent = `${solde.toFixed(0)} FCFA`;
-        soldeElement.style.color = solde >= 0 ? '#28a745' : '#dc3545';
+        soldeElement.style.color = solde >= 0 ? '#1e7e34' : '#c62828';
     }
 }
 
