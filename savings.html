@@ -434,6 +434,54 @@
             .table-container td, td { color: var(--text-strong) !important; border-bottom-color: var(--border-soft) !important; }
             .table-container tr:hover, tr:hover { background: var(--surface-muted) !important; }
         }
+
+        /* ---- Épargne restructurée : résumé (lire) / objectifs / actions (agir) ---- */
+        .mj-emoji { font-style: normal; line-height: 1; }
+        .savings-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+        .summary-metric {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--card-bg, #fff); border: 1px solid var(--border-soft, rgba(16,40,34,.10));
+            border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-xs, 0 1px 2px rgba(15,40,33,.06));
+        }
+        .summary-metric .metric-icon { font-size: 1.7rem; flex: 0 0 auto; }
+        .summary-metric > div { display: flex; flex-direction: column; min-width: 0; }
+        .metric-label { font-size: .82rem; color: var(--text-muted, #61726d); font-weight: 600; }
+        .metric-value { font-size: 1.45rem; font-weight: 800; color: var(--primary-dark, #006853); line-height: 1.15; }
+
+        .savings-block {
+            background: var(--card-bg, #fff); border: 1px solid var(--border-soft, rgba(16,40,34,.10));
+            border-radius: 18px; padding: 20px 22px; margin-bottom: 18px;
+            box-shadow: var(--shadow-xs, 0 1px 2px rgba(15,40,33,.06));
+        }
+        .block-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        .block-head h2 { margin: 0; font-size: 1.2rem; color: var(--text-strong, #16241f); }
+        .block-head .btn-primary { display: inline-flex; align-items: center; gap: 6px; }
+
+        .goal-counters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .goal-counter {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+            background: var(--surface-muted, #f4f7f6); border: 1px solid var(--border-soft, rgba(16,40,34,.10));
+            border-radius: 12px; padding: 14px 16px; cursor: pointer; font: inherit; transition: transform .18s ease, border-color .18s ease;
+        }
+        .goal-counter:hover { border-color: rgba(8,127,103,.35); transform: translateY(-2px); }
+        .goal-counter strong { font-size: 1.8rem; font-weight: 800; color: var(--primary-dark, #006853); }
+        .goal-counter span { font-size: .85rem; color: var(--text-muted, #61726d); font-weight: 600; }
+
+        .action-row {
+            display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; margin-bottom: 10px;
+            background: var(--surface-muted, #f4f7f6); border: 1px solid var(--border-soft, rgba(16,40,34,.10));
+            border-radius: 12px; padding: 14px 16px; cursor: pointer; font: inherit; transition: transform .18s ease, border-color .18s ease;
+        }
+        .action-row:last-child { margin-bottom: 0; }
+        .action-row:hover { border-color: rgba(8,127,103,.35); transform: translateY(-2px); }
+        .action-row.subtle { background: transparent; }
+        .action-row-icon { font-size: 1.5rem; flex: 0 0 auto; }
+        .action-row-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .action-row-text strong { color: var(--text-strong, #16241f); font-size: 1.02rem; }
+        .action-row-text small { color: var(--text-muted, #61726d); }
+        .action-row-arrow { color: var(--primary-color, #087f67); font-weight: 700; flex: 0 0 auto; }
+
+        @media (max-width: 640px) { .savings-summary { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -473,72 +521,51 @@
     </nav>
 
     <div class="savings-container">
-        <!-- Grille 3x3 moderne -->
-        <section class="savings-grid">
-            <div class="grid-container">
-                <div class="grid-card" onclick="showTotalSavings()">
-                    <i class="mj-emoji">🪙</i>
-                    <h3>Total Épargne</h3>
-                    <div class="value" id="total-savings">0 F CFA</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showSavingsRate()">
-                    <i class="mj-emoji">📊</i>
-                    <h3>Taux d'Épargne</h3>
-                    <div class="value" id="savings-rate">0%</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showActiveGoals()">
-                    <i class="mj-emoji">🎯</i>
-                    <h3>Objectifs Actifs</h3>
-                    <div class="value" id="active-goals">0</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showCompletedGoals()">
-                    <i class="mj-emoji">🏆</i>
-                    <h3>Objectifs Atteints</h3>
-                    <div class="value" id="completed-goals">0</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showMonthlySavings()">
-                    <i class="mj-emoji">📅</i>
-                    <h3>Épargne Mensuelle</h3>
-                    <div class="value" id="monthly-savings">0 F CFA</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showAnalyses()">
-                    <i class="mj-emoji">📊</i>
-                    <h3>Analyses</h3>
-                    <div class="action">Voir</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showNewGoal()">
-                    <i class="mj-emoji">➕</i>
-                    <h3>Nouvel Objectif</h3>
-                    <div class="action">Créer</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showRegularSavings()">
-                    <i class="mj-emoji">📄</i>
-                    <h3>Épargne Régulière</h3>
-                    <div class="action">Enregistrer</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showHistory()">
-                    <i class="mj-emoji">🕘</i>
-                    <h3>Historique</h3>
-                    <div class="action">Voir</div>
-                    <i class="mj-emoji">→</i>
-                </div>
+        <!-- Résumé : indicateurs à lire (non cliquables) -->
+        <section class="savings-summary" aria-label="Résumé de votre épargne">
+            <div class="summary-metric">
+                <span class="metric-icon"><i class="mj-emoji">🪙</i></span>
+                <div><span class="metric-label">Total épargne</span><strong class="metric-value" id="total-savings">0 F CFA</strong></div>
             </div>
+            <div class="summary-metric">
+                <span class="metric-icon"><i class="mj-emoji">📊</i></span>
+                <div><span class="metric-label">Taux d'épargne</span><strong class="metric-value" id="savings-rate">0%</strong></div>
+            </div>
+            <div class="summary-metric">
+                <span class="metric-icon"><i class="mj-emoji">📅</i></span>
+                <div><span class="metric-label">Épargne mensuelle</span><strong class="metric-value" id="monthly-savings">0 F CFA</strong></div>
+            </div>
+        </section>
+
+        <!-- Objectifs : compteurs + création (fusion des anciennes tuiles Actifs / Atteints / Nouvel Objectif) -->
+        <section class="savings-block">
+            <div class="block-head">
+                <h2><i class="mj-emoji">🎯</i> Objectifs</h2>
+                <button type="button" class="btn-primary" onclick="showNewGoal()"><i class="mj-emoji">➕</i> Nouvel objectif</button>
+            </div>
+            <div class="goal-counters">
+                <button type="button" class="goal-counter" onclick="showActiveGoals()">
+                    <strong id="active-goals">0</strong><span>Actifs</span>
+                </button>
+                <button type="button" class="goal-counter" onclick="showCompletedGoals()">
+                    <strong id="completed-goals">0</strong><span>Atteints</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Actions principales : les vrais verbes -->
+        <section class="savings-block">
+            <div class="block-head"><h2><i class="mj-emoji">💪</i> Agir</h2></div>
+            <button type="button" class="action-row" onclick="showRegularSavings()">
+                <span class="action-row-icon"><i class="mj-emoji">📄</i></span>
+                <span class="action-row-text"><strong>Enregistrer une épargne</strong><small>Ajouter un versement</small></span>
+                <span class="action-row-arrow"><i class="mj-emoji">→</i></span>
+            </button>
+            <button type="button" class="action-row subtle" onclick="showHistory()">
+                <span class="action-row-icon"><i class="mj-emoji">🕘</i></span>
+                <span class="action-row-text"><strong>Historique</strong><small>Vos versements passés</small></span>
+                <span class="action-row-arrow"><i class="mj-emoji">→</i></span>
+            </button>
         </section>
 
         <!-- Objectifs d'épargne : point d'entrée unique des projets personnels -->
