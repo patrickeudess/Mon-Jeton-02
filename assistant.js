@@ -162,7 +162,7 @@ function addMessage(content, sender) {
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
-    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+    avatar.innerHTML = sender === 'user' ? '<i class="mj-emoji">👤</i>' : '<i class="mj-emoji">🤖</i>';
     
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
@@ -316,7 +316,7 @@ function clearConversationHistory() {
         const messagesContainer = document.getElementById('chat-messages');
         messagesContainer.innerHTML = `
             <div class="welcome-message">
-                <i class="fas fa-robot"></i>
+                <i class="mj-emoji">🤖</i>
                 <h3>Bonjour ! 👋</h3>
                 <p>Je suis votre assistant IA financier. Posez-moi vos questions sur l'épargne, le budget, les investissements ou tout autre sujet financier.</p>
             </div>

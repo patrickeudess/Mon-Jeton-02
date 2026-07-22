@@ -70,7 +70,7 @@ function attachEventListeners() {
             this.reset();
             delete this.dataset.editingId;
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Créer l\'Objectif';
+            submitBtn.innerHTML = '<i class="mj-emoji">💾</i> Créer l\'Objectif';
             
             closeModal('objectif-modal');
             alert(editingId ? 'Objectif mis à jour avec succès !' : 'Objectif créé avec succès !');
@@ -198,7 +198,7 @@ function showTotalSavings() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-coins"></i> Détails du Total Épargne</h2>
+            <h2><i class="mj-emoji">🪙</i> Détails du Total Épargne</h2>
             
             <div style="margin: 20px 0;">
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -244,7 +244,7 @@ function showSavingsRate() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-percentage"></i> Détails du Taux d'Épargne</h2>
+            <h2><i class="mj-emoji">📊</i> Détails du Taux d'Épargne</h2>
             
             <div style="margin: 20px 0;">
                 <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -294,7 +294,7 @@ function showActiveGoals() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-bullseye"></i> Objectifs Actifs</h2>
+            <h2><i class="mj-emoji">🎯</i> Objectifs Actifs</h2>
             
             <div style="margin: 20px 0;">
                 <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -338,7 +338,7 @@ function showCompletedGoals() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-trophy"></i> Objectifs Atteints</h2>
+            <h2><i class="mj-emoji">🏆</i> Objectifs Atteints</h2>
             
             <div style="margin: 20px 0;">
                 <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -392,7 +392,7 @@ function showMonthlySavings() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-calendar-alt"></i> Épargne Mensuelle</h2>
+            <h2><i class="mj-emoji">📅</i> Épargne Mensuelle</h2>
             
             <div style="margin: 20px 0;">
                 <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
@@ -459,7 +459,7 @@ function showAnalyses() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-chart-pie"></i> Analyses d'Épargne</h2>
+            <h2><i class="mj-emoji">📊</i> Analyses d'Épargne</h2>
             
             <div style="margin: 20px 0;">
                 <h3>📊 Statistiques Générales</h3>
@@ -530,7 +530,7 @@ function showHistory() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <h2><i class="fas fa-history"></i> Historique des Épargnes</h2>
+            <h2><i class="mj-emoji">🕑</i> Historique des Épargnes</h2>
             
             <div style="margin: 20px 0;">
                 <h3>📋 Toutes les Épargnes</h3>
