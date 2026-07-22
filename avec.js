@@ -8,6 +8,22 @@
   const groups = () => T.loadTontines().filter(group => group.type === 'avec');
   const roles = { Président: 'Coordonne et représente le groupe.', Secrétaire: 'Enregistre les réunions et les décisions.', Trésorier: 'Contrôle la caisse et les montants.', Membre: 'Épargne, participe et rembourse ses prêts.' };
   function notify() { if (channel) channel.postMessage({ type: 'refresh' }); }
+  const currentUser = () => (window.FirebaseGroups && FirebaseGroups.getUser) ? FirebaseGroups.getUser() : null;
+  function inviteBlock(group) {
+    if (group.inviteCode) {
+      return `<div class="invite-box"><div class="invite-info"><span class="invite-label">Code d’invitation</span><strong class="invite-code">${esc(group.inviteCode)}</strong></div><button type="button" class="btn secondary" onclick="copyAvecCode('${esc(group.inviteCode)}')">📋 Copier</button></div><p class="invite-help">Donnez ce code aux membres. Dans « Rejoindre avec un code », ils le saisissent pour demander à rejoindre le groupe. Vous validez ensuite leur demande.</p>`;
+    }
+    if (currentUser()) {
+      return `<div class="invite-box pending"><span>⏳ Votre code d’invitation se prépare. Il apparaîtra ici dès la fin de la synchronisation (vérifiez votre connexion).</span></div>`;
+    }
+    return `<div class="invite-box pending"><span>🔒 Connectez-vous avec votre e-mail pour obtenir un code à partager avec les membres.</span><a class="btn secondary" href="login.html?sync=1">Se connecter</a></div>`;
+  }
+  window.copyAvecCode = value => {
+    const fallback = () => window.prompt('Copiez le code du groupe :', value);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(value).then(() => alert('Code copié : ' + value)).catch(fallback);
+    } else { fallback(); }
+  };
   function render() {
     document.getElementById('display-name').textContent = localStorage.getItem('user_name') || 'Utilisateur';
     const list = document.getElementById('avec-list'); const data = groups();
@@ -30,7 +46,8 @@
     }).join('');
     const loans = avec.loans.map(loan => { const borrower = group.members.find(item => item.id === loan.memberId); return `<div class="activity"><strong>${esc(borrower ? borrower.name : 'Membre')}</strong> : ${money(loan.amount)} · ${loan.status === 'requested' ? 'demande en attente' : '✅ crédit accordé'} ${loan.purpose ? '· ' + esc(loan.purpose) : ''}<small>${dateTime(loan.approvedAt || loan.date)}</small>${canManage && loan.status === 'requested' ? `<p><button class="btn primary" onclick="approveAvec('${group.id}','${loan.id}')">Accorder le crédit</button></p>` : ''}</div>`; }).join('') || '<p class="muted">Aucun prêt demandé.</p>';
     const addMember = canManage ? `<form onsubmit="addAvecMember(event,'${group.id}')"><div class="row"><input name="memberName" maxlength="80" required placeholder="Nom du nouveau membre"><button class="btn secondary">Ajouter un membre</button></div></form>` : '';
-    document.getElementById('modal-content').innerHTML = `<h2>🤝 ${esc(group.name)}</h2><p><strong>Votre rôle :</strong> ${T.getAvecRole(group, me.id)}</p><p><strong>Votre épargne :</strong> ${shares} part(s), soit ${money(shares * avec.shareValue)}</p><p><strong>Caisse de prêts :</strong> ${money(T.getAvecFund(group))} · prêt maximal : 3× votre épargne</p><div class="shared-notice">☁️ <strong>Journal partagé :</strong> chaque dépôt, demande et crédit accordé est synchronisé et visible par les membres connectés.</div><p><button class="btn primary" onclick="savePart('${group.id}')">Déposer 1 part dans la caisse</button></p><hr><h3>Membres et responsabilités</h3>${membersHtml}${addMember}<hr><h3>Demander un crédit</h3><form onsubmit="askLoan(event,'${group.id}')"><div class="row"><input name="amount" type="number" min="100" required placeholder="Montant"><input name="purpose" maxlength="160" placeholder="Motif"></div><p><button class="btn secondary">Envoyer la demande</button></p></form><h3>Crédits du groupe</h3>${loans}<h3>Journal partagé</h3>${T.getCommunity(group).activity.slice(0, 12).map(item => `<div class="activity">${esc(item.message)}<small>${dateTime(item.date)}</small></div>`).join('') || '<p class="muted">Aucune action.</p>'}`;
+    const inviteHtml = canManage ? inviteBlock(group) : '';
+    document.getElementById('modal-content').innerHTML = `<h2>🤝 ${esc(group.name)}</h2><p><strong>Votre rôle :</strong> ${T.getAvecRole(group, me.id)}</p><p><strong>Votre épargne :</strong> ${shares} part(s), soit ${money(shares * avec.shareValue)}</p><p><strong>Caisse de prêts :</strong> ${money(T.getAvecFund(group))} · prêt maximal : 3× votre épargne</p>${inviteHtml}<div class="shared-notice">☁️ <strong>Journal partagé :</strong> chaque dépôt, demande et crédit accordé est synchronisé et visible par les membres connectés.</div><p><button class="btn primary" onclick="savePart('${group.id}')">Déposer 1 part dans la caisse</button></p><hr><h3>Membres et responsabilités</h3>${membersHtml}${addMember}<hr><h3>Demander un crédit</h3><form onsubmit="askLoan(event,'${group.id}')"><div class="row"><input name="amount" type="number" min="100" required placeholder="Montant"><input name="purpose" maxlength="160" placeholder="Motif"></div><p><button class="btn secondary">Envoyer la demande</button></p></form><h3>Crédits du groupe</h3>${loans}<h3>Journal partagé</h3>${T.getCommunity(group).activity.slice(0, 12).map(item => `<div class="activity">${esc(item.message)}<small>${dateTime(item.date)}</small></div>`).join('') || '<p class="muted">Aucune action.</p>'}`;
     document.getElementById('modal').classList.add('active');
   }
   window.openAvec = id => show(id);
