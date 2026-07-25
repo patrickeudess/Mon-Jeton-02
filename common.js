@@ -185,7 +185,7 @@
         window.addEventListener('load', () => {
             // Une version distincte et updateViaCache évitent qu'un ancien cache
             // HTTP bloque la découverte de la mise à jour.
-            navigator.serviceWorker.register('service-worker.js?v=3.6', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('service-worker.js?v=3.8', { updateViaCache: 'none' })
                 .then((registration) => {
                     const activateUpdate = (worker) => {
                         if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
