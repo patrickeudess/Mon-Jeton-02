@@ -132,9 +132,18 @@
   async function rejectRequest(requestId) { await db().collection('joinRequests').doc(requestId).delete(); }
 
   async function signIn(email, password) { const result = await auth().signInWithEmailAndPassword(email, password); return result.user; }
-  async function register(name, email, password) {
+  async function register(name, email, password, profile = {}) {
     const result = await auth().createUserWithEmailAndPassword(email, password);
     await result.user.updateProfile({ displayName: name });
+    await db().collection('users').doc(result.user.uid).set({
+      email: result.user.email || '',
+      displayName: name,
+      occupation: clean(profile.occupation),
+      ageRange: clean(profile.ageRange),
+      phone: clean(profile.phone),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
     return result.user;
   }
   async function resetPassword(email) { return auth().sendPasswordResetEmail(email); }

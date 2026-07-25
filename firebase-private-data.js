@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  const KEYS = ['transactions', 'budgets', 'goals', 'savings', 'income_profile', 'user_settings', 'categories', 'onboarding_completed'];
+  const KEYS = ['transactions', 'budgets', 'goals', 'savings', 'income_profile', 'user_settings', 'user_profile', 'categories', 'onboarding_completed'];
   let muted = false, timer = null, unsubscribe = null, activeUid = null;
   const cacheKey = uid => 'mon_jeton_private_cache_' + uid;
   const safeRead = key => {
