@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  const state = { user: null, groupsUnsubscribe: null, requestsUnsubscribe: null, muted: false, pending: [], status: { kind: 'need-auth', message: 'Connectez-vous pour partager vos groupes.' } };
+  const state = { user: null, groupsUnsubscribe: null, requestsUnsubscribe: null, muted: false, pending: [], activeUid: null, status: { kind: 'need-auth', message: 'Connectez-vous pour partager vos groupes.' } };
   const code = () => Math.random().toString(36).slice(2, 8).toUpperCase();
   const clean = value => String(value || '').trim();
   const emit = (name, detail) => window.dispatchEvent(new CustomEvent(name, { detail }));
@@ -58,8 +58,7 @@
     const batch = db().batch();
     // Un appareil peut servir à plusieurs comptes. On ne réécrit jamais un
     // groupe appartenant à un autre compte localement resté dans le navigateur.
-    const eligible = groups.filter(group => !group.createdByUid
-      || group.createdByUid === state.user.uid
+    const eligible = groups.filter(group => group.createdByUid === state.user.uid
       || (group.memberUids || []).includes(state.user.uid)
       || (group.members || []).some(member => member.uid === state.user.uid));
     eligible.forEach(group => {
@@ -153,14 +152,16 @@
   };
   if (configured()) {
     auth().onAuthStateChanged(user => {
+      const nextUid = user ? user.uid : null;
+      // Sur un appareil partage, ne jamais laisser le groupe du compte
+      // precedent visible ou etre reimporte par le compte suivant.
+      if (state.activeUid !== nextUid) saveLocal([]);
+      state.activeUid = nextUid;
       state.user = user || null;
       if (user) {
         ensureUserRecord(user).catch(error => console.warn('Profil Firebase :', error.message));
         report(navigator.onLine ? 'syncing' : 'offline', navigator.onLine ? 'Connexion sécurisée au groupe…' : 'Vous êtes hors ligne : synchronisation en attente.');
-        let existing = [];
-        try { existing = JSON.parse(localStorage.getItem('tontines') || '[]'); } catch (_) {}
-        // Importation douce des anciens groupes locaux au premier compte.
-        persist(existing).catch(error => console.warn('Import des groupes :', error.message)).finally(subscribeGroups);
+        subscribeGroups();
       }
       else {
         if (state.groupsUnsubscribe) state.groupsUnsubscribe();

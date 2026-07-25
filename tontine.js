@@ -337,6 +337,7 @@ function generateTontineId() {
 }
 
 function createTontine(data) {
+    const signedInUser = window.FirebaseGroups && FirebaseGroups.getUser ? FirebaseGroups.getUser() : null;
     const memberNames = data.members
         .split('\n')
         .map(name => name.trim())
@@ -358,7 +359,8 @@ function createTontine(data) {
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,
-            isMe: index === 0
+            isMe: index === 0,
+            uid: index === 0 && signedInUser ? signedInUser.uid : null
         })),
         contributions: [],
         turnOrder: data.type === 'rotative' ? memberNames.map((_, index) => 'm' + index) : [],
@@ -367,7 +369,12 @@ function createTontine(data) {
             announcements: [],
             activity: [{ id: 'a_' + Date.now(), message: 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
         },
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        // Ces identifiants sont indispensables pour que Firestore puisse
+        // distinguer les espaces de chaque compte et de chaque groupe.
+        createdByUid: signedInUser ? signedInUser.uid : null,
+        createdByMemberId: 'm0',
+        memberUids: signedInUser ? [signedInUser.uid] : []
     };
 
     const tontines = loadTontines();
