@@ -16,13 +16,13 @@
       const groups = (window.TontineModule ? TontineModule.loadTontines() : []).filter(g => g.createdByUid === (user && user.uid));
       const status = statusCopy();
       const title = user ? 'Synchronisation des groupes' : 'Activez le partage entre membres';
-      const text = user ? status.message : 'Votre session actuelle reste sur cet appareil. Connectez-vous avec votre e-mail pour partager cette AVEC ou cette tontine.';
+      const text = user ? status.message : 'Votre session actuelle reste sur cet appareil. Connectez-vous avec votre identifiant pour partager cette AVEC ou cette tontine.';
       panel.innerHTML = `<div class="sync-top"><div class="sync-icon">${user ? '☁️' : '🔒'}</div><div style="flex:1"><h2>${title}</h2><p>${text}</p></div><span class="sync-state ${status.kind}">${status.kind === 'synced' ? '● À jour' : status.kind === 'syncing' ? '◌ En cours' : status.kind === 'offline' ? '● Hors ligne' : '● À activer'}</span></div><div class="sync-actions">${user ? `<button type="button" id="join-group" class="sync-primary">Rejoindre avec un code</button>${requests.length ? `<button type="button" id="view-requests" class="sync-secondary">Demandes (${requests.length})</button>` : ''}` : `<a class="sync-primary" href="login.html?sync=1">Se connecter pour synchroniser</a><a class="sync-secondary" href="login.html?sync=1">Créer un compte</a>`}</div>${user && groups.length ? `<div class="sync-code"><b>Codes à partager</b><br>${groups.map(g => '<b>' + g.name.replace(/</g, '&lt;') + '</b> : ' + (g.inviteCode || 'Préparation…')).join('<br>')}</div>` : ''}`;
       const join = document.getElementById('join-group');
       if (join) join.onclick = async () => {
         const value = prompt('Entrez le code à 6 caractères donné par le créateur :');
         if (!value) return;
-        try { const result = await FirebaseGroups.joinWithCode(value); alert(result.alreadyMember ? 'Vous êtes déjà membre de « ' + result.name + ' ».' : 'Demande envoyée au créateur de « ' + result.name + ' ».'); }
+        try { const result = await FirebaseGroups.joinWithCode(value); alert('Demande envoyée au créateur de « ' + result.name + ' ». Il doit maintenant vous accepter.'); }
         catch (error) { alert(error.message); }
       };
       const requestsButton = document.getElementById('view-requests');

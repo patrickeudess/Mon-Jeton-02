@@ -96,17 +96,15 @@
     const invite = await db().collection('invites').doc(value).get();
     if (!invite.exists) throw new Error('Code introuvable. Vérifiez les 6 caractères.');
     const inviteData = invite.data();
-    const group = await db().collection('groups').doc(inviteData.groupId).get();
-    if (!group.exists) throw new Error('Ce groupe n’est plus disponible.');
-    const data = group.data();
-    if ((data.memberUids || []).includes(state.user.uid)) return { alreadyMember: true, name: data.name };
-    const requestId = group.id + '_' + state.user.uid;
+    // Les non-membres ne peuvent pas lire le groupe. Ils peuvent néanmoins
+    // déposer une demande, validée ensuite par le créateur du groupe.
+    const requestId = inviteData.groupId + '_' + state.user.uid;
     await db().collection('joinRequests').doc(requestId).set({
-      groupId: group.id, groupName: data.name || 'Groupe', ownerUid: data.createdByUid,
+      groupId: inviteData.groupId, groupName: inviteData.groupName || 'Groupe', ownerUid: inviteData.ownerUid,
       uid: state.user.uid, displayName: displayName(state.user), inviteCode: value,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    return { requested: true, name: data.name };
+    return { requested: true, name: inviteData.groupName || 'Groupe' };
   }
   async function approveRequest(requestId) {
     if (!state.user) throw new Error('Connexion requise.');
@@ -177,7 +175,7 @@
         if (state.groupsUnsubscribe) state.groupsUnsubscribe();
         if (state.requestsUnsubscribe) state.requestsUnsubscribe();
         state.groupsUnsubscribe = state.requestsUnsubscribe = null; state.pending = [];
-        report('need-auth', 'Connectez-vous avec votre e-mail et mot de passe pour synchroniser les groupes.');
+        report('need-auth', 'Connectez-vous avec votre identifiant et votre mot de passe pour synchroniser les groupes.');
       }
       emit('mon-jeton-auth-ready', { user: state.user });
     });
