@@ -363,7 +363,7 @@
                 <div class="form-group">
                     <label for="login-email">📧 E-mail ou 📱 numéro :</label>
                     <input type="text" id="login-email" required autocomplete="username"
-                           placeholder="votre@email.com ou +225 07 00 00 00">
+                           placeholder="nom@exemple.com ou +225 07 00 00 00">
                 </div>
                 <div class="form-group">
                     <label for="login-password">🔒 Mot de passe :</label>
@@ -513,8 +513,7 @@
                 const digits = normalizePhoneDigits(value, defaultCode);
                 return { authEmail: phoneToAuthEmail(digits), email: '', phone: '+' + digits };
             }
-            // Repli : traité comme identifiant e-mail brut
-            return { authEmail: value, email: value, phone: '' };
+            return null;
         }
 
         // Aller à l'inscription et se placer sur le champ numéro
@@ -579,6 +578,10 @@
 
             // Accepte un e-mail OU un numéro de téléphone
             const id = resolveIdentifier(rawIdentifier);
+            if (!id) {
+                showError('login-error', 'Entrez une adresse e-mail complète (ex. nom@exemple.com) ou un numéro de téléphone (ex. 07 00 00 00 00).');
+                return;
+            }
 
             if (window.FirebaseGroups && FirebaseGroups.configured()) {
                 try {
@@ -693,6 +696,9 @@
 
         // Fonctions utilitaires
         function showError(elementId, message) {
+            const successId = elementId.replace('-error', '-success');
+            const successElement = document.getElementById(successId);
+            if (successElement) successElement.style.display = 'none';
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = message;
             errorElement.style.display = 'block';
