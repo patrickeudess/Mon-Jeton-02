@@ -138,6 +138,7 @@
     await db().collection('users').doc(result.user.uid).set({
       email: result.user.email || '',
       displayName: name,
+      identifier: clean(profile.identifier),
       occupation: clean(profile.occupation),
       ageRange: clean(profile.ageRange),
       phone: clean(profile.phone),
