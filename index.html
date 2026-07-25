@@ -81,6 +81,25 @@
             .dashboard-home .action-buttons { grid-template-columns:repeat(2,1fr); }
             .dashboard-home .action-btn.primary { grid-column:1 / -1; flex-direction:row; min-height:52px; }
         }
+        /* Finition visuelle : accueil plus calme, lisible et proche d'une application bancaire. */
+        .dashboard-home { background: #f5faf8; color: #17352f; }
+        .dashboard-home .top-nav { background: rgba(255,255,255,.94); box-shadow: 0 1px 0 #dce9e5; backdrop-filter: blur(12px); }
+        .dashboard-home .nav-title { color: #17352f; font-size: 1.05rem; letter-spacing: -.02em; }
+        .dashboard-home .nav-logo { padding: 0; border-radius: 10px; box-shadow: 0 4px 12px rgba(8,127,103,.18); }
+        .dashboard-home .logout-btn { background: transparent; color: #58716b; border: 1px solid #d8e6e1; padding: .42rem .7rem; }
+        .dashboard-home .logout-btn:hover { background: #fff3f1; color: #b23b2c; transform: none; }
+        .dashboard-home .main-container { max-width: 1040px; padding: 18px 16px 32px; }
+        .dashboard-home .welcome-header { border: 1px solid #dce9e5; box-shadow: none; border-radius: 20px; }
+        .dashboard-home .welcome-content h1 { color: #17352f; letter-spacing: -.035em; }
+        .dashboard-home .pilot-balance .stat-item { background: #e9f7f2; border: 1px solid #cce9df; }
+        .dashboard-home .inclusive-finance { background: linear-gradient(135deg,#064e44,#087f67); box-shadow: 0 12px 26px rgba(6,78,68,.17); }
+        .dashboard-home .quick-actions, .dashboard-home .grid-container, .dashboard-home .recent-transactions { border: 1px solid #dce9e5; box-shadow: none; border-radius: 20px; }
+        .dashboard-home .action-btn { border-radius: 14px; border: 1px solid #d8e7e2; background: #fff; }
+        .dashboard-home .action-btn.secondary:hover { border-color: #087f67; background: #effbf7; transform: none; }
+        .dashboard-home .action-btn.primary { background: #087f67; box-shadow: none; }
+        .dashboard-home .grid-item { border: 1px solid #dce9e5; border-radius: 16px; padding: 16px; }
+        .dashboard-home .grid-item:hover { border-color: #84cdb9; box-shadow: 0 8px 20px rgba(20,83,71,.08); transform: translateY(-2px); }
+        .dashboard-home .recent-transactions h2, .dashboard-home .grid-title { color: #17352f; }
     </style>
 </head>
 <body class="dashboard-home">
@@ -104,15 +123,15 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <img src="icon-192.png" alt="Logo" class="nav-logo">
-                <span class="nav-title">💰 Mon Jeton</span>
+                <span class="nav-title">Mon Jeton</span>
             </div>
             <div class="nav-user">
                 <div id="connection-status" class="connection-status">
                     <span class="status-indicator offline">🔴 Hors ligne</span>
                 </div>
                 <div id="user-info" class="user-info">
-                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
-                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                    <span id="user-name" class="user-name"><span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">Déconnexion</button>
                 </div>
             </div>
         </div>
@@ -123,8 +142,8 @@
         <!-- En-tête avec résumé rapide -->
         <header class="welcome-header">
             <div class="welcome-content">
-                <h1>Bonjour, <span id="user-greeting">Utilisateur</span> ! 👋</h1>
-                <p class="welcome-subtitle">Gérez vos jetons intelligemment</p>
+                <h1>Bonjour, <span id="user-greeting">Utilisateur</span></h1>
+                <p class="welcome-subtitle">Votre aperçu financier du jour</p>
             </div>
             <div class="pilot-balance" aria-label="Résumé de votre argent">
                 <div class="stat-item">
@@ -167,7 +186,7 @@
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
                     <span class="action-icon">➕</span>
-                    <span class="action-text">Ajouter</span>
+                    <span class="action-text">Ajouter une opération</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
                     <span class="action-icon">👁️</span>
@@ -243,7 +262,7 @@
 
         <!-- Dernières transactions -->
         <section class="recent-transactions">
-            <h2>🕒 Dernières Transactions</h2>
+            <h2>Dernières opérations</h2>
             <div id="recent-transactions-list" class="recent-list">
                 <div class="empty-state">
                     <div class="empty-icon">📋</div>
