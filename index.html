@@ -342,6 +342,18 @@
             document.getElementById('user-greeting').textContent = userName;
         }
 
+        function updateConnectionStatus(syncStatus) {
+            const container = document.getElementById('connection-status');
+            if (!container) return;
+            const status = syncStatus || (window.FirebaseGroups && FirebaseGroups.getStatus ? FirebaseGroups.getStatus() : null);
+            let label = 'Connecté', kind = 'online';
+            if (!navigator.onLine || (status && status.kind === 'offline')) { label = 'Hors ligne'; kind = 'offline'; }
+            else if (status && status.kind === 'error') { label = 'Connexion à vérifier'; kind = 'offline'; }
+            else if (status && status.kind === 'syncing') { label = 'Synchronisation…'; }
+            else if (status && status.kind === 'synced') { label = 'Synchronisé'; }
+            container.innerHTML = `<span class="status-indicator ${kind}">● ${label}</span>`;
+        }
+
         // Gérer la déconnexion
         document.getElementById('logout-btn').addEventListener('click', async function() {
             if (window.FirebaseGroups) {
@@ -563,6 +575,7 @@
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             displayUserInfo();
+            updateConnectionStatus();
             loadSummaryData();
             loadRecentTransactions();
 
@@ -574,6 +587,9 @@
                 }, 1000);
             }
         });
+        window.addEventListener('online', () => updateConnectionStatus());
+        window.addEventListener('offline', () => updateConnectionStatus());
+        window.addEventListener('mon-jeton-sync-status', event => updateConnectionStatus(event.detail));
     </script>
     <script src="bottom-nav.js" defer></script>
 </body>
