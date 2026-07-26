@@ -187,14 +187,12 @@
             </div>
         </header>
 
-        <section class="wallet-overview" aria-labelledby="wallet-title">
+        <section id="wallet-overview" class="wallet-overview" aria-labelledby="wallet-title" hidden>
             <div class="wallet-overview-head">
                 <h2 id="wallet-title">Mes poches d'argent</h2>
                 <a href="transactions.html">Gérer</a>
             </div>
-            <div id="home-wallet-list" class="home-wallet-list">
-                <div class="home-wallet-empty"><span>Créez votre première poche en ajoutant une opération.</span><button class="wallet-empty-action" type="button" onclick="quickAddTransaction()">Ajouter une opération</button></div>
-            </div>
+            <div id="home-wallet-list" class="home-wallet-list"></div>
         </section>
 
         <section class="inclusive-finance" aria-labelledby="inclusive-title">
@@ -437,6 +435,7 @@
 
         function renderHomeWallets(transactions) {
             const container = document.getElementById('home-wallet-list');
+            const overview = document.getElementById('wallet-overview');
             const totals = {};
             transactions.forEach(transaction => {
                 if (!transaction.paymentMethod) return;
@@ -445,9 +444,11 @@
             });
             const entries = Object.entries(totals);
             if (!entries.length) {
-                container.innerHTML = '<div class="home-wallet-empty"><span>Créez votre première poche en ajoutant une opération.</span><button class="wallet-empty-action" type="button" onclick="quickAddTransaction()">Ajouter une opération</button></div>';
+                overview.hidden = true;
+                container.innerHTML = '';
                 return;
             }
+            overview.hidden = false;
             container.innerHTML = entries.map(([method, amount]) =>
                 '<div class="home-wallet"><span>' + getHomeWalletLabel(method) + '</span><strong>' + formatAmount(amount) + ' FCFA</strong></div>'
             ).join('');
