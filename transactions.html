@@ -214,6 +214,8 @@
         .form-group select,.form-group input,.form-group textarea{width:100%;min-width:0;box-sizing:border-box}
         .form-actions{justify-content:flex-start;gap:8px}.form-actions button{min-height:46px;padding:10px 16px}
         @media(max-width:820px){.transactions-container{padding:12px}.transaction-form-section{padding:18px;border-radius:16px}.form-grid{grid-template-columns:1fr;gap:16px}.page-header{padding:16px;margin-bottom:16px}.page-header h1{font-size:1.45rem}.form-actions{display:grid;grid-template-columns:1fr}.form-actions button{width:100%}}
+        .transaction-content,.main-container{min-width:0}.transaction-form-section h2{margin:0;font-size:1.3rem;line-height:1.2}.history-subtitle{margin:5px 0 12px;color:#61716d;font-size:.88rem}.transactions-table-container{width:100%;margin-top:12px}.refresh-btn{min-height:44px;margin:0 0 10px}
+        @media(max-width:820px){.transaction-form-section:has(.transactions-table){padding:16px 12px}.transaction-form-section h2{font-size:1.2rem}.refresh-btn{width:100%}.transactions-table{width:100%;min-width:0!important;table-layout:fixed;font-size:.76rem}.transactions-table th,.transactions-table td{padding:8px 5px;word-break:break-word}.transactions-table th:nth-child(2),.transactions-table td:nth-child(2),.transactions-table th:nth-child(3),.transactions-table td:nth-child(3),.transactions-table th:nth-child(5),.transactions-table td:nth-child(5),.transactions-table th:nth-child(6),.transactions-table td:nth-child(6){display:none}.transaction-actions{display:grid;gap:4px}.transaction-actions .action-btn{padding:5px;font-size:.68rem}}
 
         .empty-state {
             text-align: center;
@@ -519,7 +521,8 @@
                 </section>
 
                 <section class="transaction-form-section">
-                    <h2>📋 Historique des Transactions</h2>
+                    <h2>📋 Historique</h2>
+                    <p class="history-subtitle">Vos opérations enregistrées</p>
                     <button onclick="refreshTransactions()" class="refresh-btn">
                         🔄 Actualiser la liste
                     </button>
