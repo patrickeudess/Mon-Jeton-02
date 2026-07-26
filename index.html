@@ -65,21 +65,22 @@
         .dashboard-home .inclusive-note { margin-top: 10px; font-size: .83rem; }
         .dashboard-home .finance-details { margin-top: 5px; }
         .dashboard-home .finance-details summary { padding: 6px 0; }
-        .dashboard-home .quick-actions { padding: 16px 18px; margin-bottom: 12px; }
-        .dashboard-home .quick-actions h2 { margin-bottom: 12px; font-size: 1.2rem; }
-        .dashboard-home .action-buttons { display:grid; grid-template-columns: 1.25fr 1fr 1fr; gap:10px; }
-        .dashboard-home .action-btn { min-width:0; min-height:62px; padding:10px 12px; flex:none; flex-direction:column; gap:4px; }
-        .dashboard-home .action-icon { font-size:1.25rem; line-height:1; }
-        .dashboard-home .action-text { font-size:.82rem; }
+        .dashboard-home .quick-actions { padding:14px 16px; margin-bottom:12px; }
+        .dashboard-home .quick-actions h2 { margin-bottom:10px; font-size:1.15rem; }
+        .dashboard-home .action-buttons { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+        .dashboard-home .action-btn { min-width:0; min-height:52px; padding:9px 12px; flex:none; flex-direction:row; justify-content:center; gap:8px; }
+        .dashboard-home .action-btn.primary { grid-column:1 / -1; min-height:56px; }
+        .dashboard-home .action-icon { display:grid;place-items:center;width:22px;height:22px;font-family:Arial,sans-serif;font-size:1.35rem;line-height:1;font-weight:400; }
+        .dashboard-home .action-text { font-size:.88rem; }
         @media(max-width:720px){
             .dashboard-home .welcome-header { flex-direction:row; text-align:left; align-items:center; padding:14px 16px; gap:12px; }
             .dashboard-home .welcome-subtitle { display:none; }
             .dashboard-home .pilot-balance .stat-item { min-width:120px; padding:8px 10px; }
             .dashboard-home .pilot-balance .stat-label { font-size:.68rem; }
             .dashboard-home .inclusive-head{align-items:flex-start;flex-direction:column}.dashboard-home .inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr}
-            .dashboard-home .quick-actions { padding:15px; }
-            .dashboard-home .action-buttons { grid-template-columns:repeat(2,1fr); }
-            .dashboard-home .action-btn.primary { grid-column:1 / -1; flex-direction:row; min-height:52px; }
+            .dashboard-home .quick-actions { padding:13px; }
+            .dashboard-home .action-btn { min-height:50px; padding:8px 10px; }
+            .dashboard-home .action-btn.primary { min-height:54px; }
         }
         /* Finition visuelle : accueil plus calme, lisible et proche d'une application bancaire. */
         .dashboard-home { background: #f5faf8; color: #17352f; }
@@ -200,16 +201,16 @@
             <h2>Actions rapides</h2>
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
-                    <span class="action-icon">➕</span>
+                    <span class="action-icon" aria-hidden="true">＋</span>
                     <span class="action-text">Ajouter une opération</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
-                    <span class="action-icon">👁️</span>
-                    <span class="action-text">Mon argent</span>
+                    <span class="action-icon" aria-hidden="true">◉</span>
+                    <span class="action-text">Voir mon argent</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickSavings()">
-                    <span class="action-icon">🏦</span>
-                    <span class="action-text">Préparer</span>
+                    <span class="action-icon" aria-hidden="true">⌂</span>
+                    <span class="action-text">Préparer un projet</span>
                 </button>
 
             </div>
