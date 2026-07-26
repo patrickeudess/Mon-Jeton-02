@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Mon Jeton">
-    <title>Dashboard - Mon Jeton</title>
+    <title>Analyse - Mon Jeton</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
@@ -55,13 +55,14 @@
     </nav>
 
     <nav class="breadcrumb">
-        <a href="index.html">🏠 Accueil</a> > <span>📊 Dashboard</span>
+        <a href="index.html">🏠 Accueil</a> > <span>📊 Analyse</span>
     </nav>
 
     <div class="dashboard-container">
-        <!-- Grille d'icônes 3x3 -->
+        <!-- Les quatre informations utiles au quotidien -->
         <section class="dashboard-grid">
-            <h2>📊 Tableau de Bord</h2>
+            <h2>📊 Comprendre mon argent</h2>
+            <p class="dashboard-intro">Les montants se calculent à partir des opérations de ce mois.</p>
             <div class="grid-container">
                 <!-- Carte 1: Revenus -->
                 <div class="grid-card revenus-card" onclick="showRevenusDetails()">
@@ -96,18 +97,7 @@
                     <div class="card-arrow">→</div>
                 </div>
 
-                <!-- Carte 4: Épargne -->
-                <div class="grid-card epargne-card" onclick="showEpargneDetails()">
-                    <div class="card-icon">📈</div>
-                    <div class="card-content">
-                        <h3>Épargne</h3>
-                        <div class="card-value" id="taux-epargne">0%</div>
-                        <div class="card-subtitle">Taux d'épargne</div>
-                    </div>
-                    <div class="card-arrow">→</div>
-                </div>
-
-                <!-- Carte 5: Graphiques -->
+                <!-- Carte 4: Graphiques -->
                 <div class="grid-card graphiques-card" onclick="showGraphiques()">
                     <div class="card-icon">📊</div>
                     <div class="card-content">
@@ -118,49 +108,6 @@
                     <div class="card-arrow">→</div>
                 </div>
 
-                <!-- Carte 6: Prédictions -->
-                <div class="grid-card predictions-card" onclick="showPredictions()">
-                    <div class="card-icon">🔮</div>
-                    <div class="card-content">
-                        <h3>Prédictions</h3>
-                        <div class="card-value">IA</div>
-                        <div class="card-subtitle">Analyses prédictives</div>
-                    </div>
-                    <div class="card-arrow">→</div>
-                </div>
-
-                <!-- Carte 7: Conseils -->
-                <div class="grid-card conseils-card" onclick="showConseils()">
-                    <div class="card-icon">💡</div>
-                    <div class="card-content">
-                        <h3>Conseils</h3>
-                        <div class="card-value">Personnalisés</div>
-                        <div class="card-subtitle">Recommandations</div>
-                    </div>
-                    <div class="card-arrow">→</div>
-                </div>
-
-                <!-- Carte 8: Transactions -->
-                <div class="grid-card transactions-card" onclick="goToTransactions()">
-                    <div class="card-icon">📋</div>
-                    <div class="card-content">
-                        <h3>Transactions</h3>
-                        <div class="card-value">Gérer</div>
-                        <div class="card-subtitle">Ajouter/Modifier</div>
-                    </div>
-                    <div class="card-arrow">→</div>
-                </div>
-
-                <!-- Carte 9: Paramètres -->
-                <div class="grid-card parametres-card" onclick="showParametres()">
-                    <div class="card-icon">⚙️</div>
-                    <div class="card-content">
-                        <h3>Paramètres</h3>
-                        <div class="card-value">Config</div>
-                        <div class="card-subtitle">Préférences</div>
-                    </div>
-                    <div class="card-arrow">→</div>
-                </div>
             </div>
         </section>
 
@@ -174,7 +121,7 @@
     </div>
 
     <style>
-        /* Styles pour la grille d'icônes 3x3 */
+        /* Grille courte et lisible */
         .dashboard-grid {
             padding: 20px;
         }
@@ -185,10 +132,11 @@
             color: #009879;
             font-size: 2rem;
         }
+        .dashboard-intro { max-width: 560px; margin: -14px auto 24px; text-align: center; color: #61726d; line-height: 1.45; }
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 20px;
             max-width: 900px;
             margin: 0 auto;
@@ -405,13 +353,10 @@
                 .reduce((sum, t) => sum + t.amount, 0);
             
             const solde = totalRevenus - totalDepenses;
-            const tauxEpargne = totalRevenus > 0 ? Math.round((solde / totalRevenus) * 100) : 0;
-            
             // Mettre à jour l'affichage
             document.getElementById('total-revenus').textContent = formatAmount(totalRevenus) + ' FCFA';
             document.getElementById('total-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
             document.getElementById('solde-actuel').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
-            document.getElementById('taux-epargne').textContent = tauxEpargne + '%';
             
             // Les graphiques seront générés dans les modals si nécessaire
         }
@@ -836,29 +781,6 @@
             createSoldeEvolutionChart();
         }
 
-        function showEpargneDetails() {
-            const modal = document.getElementById('details-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            modalContent.innerHTML = `
-                <h2>📈 Détails de l'Épargne</h2>
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="font-size: 3rem; margin-bottom: 10px;">📈</div>
-                    <div style="font-size: 2rem; font-weight: bold; color: #ffc107; margin-bottom: 10px;">
-                        ${document.getElementById('taux-epargne').textContent}
-                    </div>
-                    <p style="color: #666;">Taux d'épargne du mois en cours</p>
-                </div>
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <h3>🎯 Objectifs d'Épargne</h3>
-                    <div id="epargne-objectifs"></div>
-                </div>
-            `;
-            
-            modal.style.display = 'block';
-            createEpargneObjectifs();
-        }
-
         function showGraphiques() {
             const modal = document.getElementById('details-modal');
             const modalContent = document.getElementById('modal-content');
@@ -1003,31 +925,6 @@
             MonJeton.renderLineChart('solde-evolution-chart', months, [
                 { label: 'Solde', data: soldes, color: '#009879' }
             ], { title: 'Évolution du Solde', xTitle: 'Mois', yTitle: 'Solde (FCFA)', height: 300 });
-        }
-
-        function createEpargneObjectifs() {
-            const objectifsDiv = document.getElementById('epargne-objectifs');
-            const tauxEpargne = parseInt(document.getElementById('taux-epargne').textContent);
-            
-            let objectif = '';
-            if (tauxEpargne < 10) {
-                objectif = 'Objectif: Augmenter le taux d\'épargne à 20%';
-            } else if (tauxEpargne < 30) {
-                objectif = 'Objectif: Maintenir un taux d\'épargne de 30%';
-            } else {
-                objectif = 'Excellent! Maintenez ce taux d\'épargne';
-            }
-            
-            objectifsDiv.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">🎯</div>
-                    <p style="font-size: 1.2rem; color: #009879; font-weight: bold;">${objectif}</p>
-                    <div style="background: #e9ecef; border-radius: 10px; height: 20px; margin: 20px 0;">
-                        <div style="background: linear-gradient(90deg, #28a745, #20c997); height: 100%; width: ${tauxEpargne}%; border-radius: 10px;"></div>
-                    </div>
-                    <p style="color: #666;">Progression: ${tauxEpargne}%</p>
-                </div>
-            `;
         }
 
         function createModalCharts() {
