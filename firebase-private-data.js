@@ -84,6 +84,9 @@
       if (!muted && KEYS.includes(key) && auth.currentUser && auth.currentUser.uid === activeUid) schedule(auth.currentUser);
     };
     auth.onAuthStateChanged(activate);
+    window.addEventListener('online', () => {
+      if (auth.currentUser && auth.currentUser.uid === activeUid) writeRemote(auth.currentUser);
+    });
   }
   boot();
 })();

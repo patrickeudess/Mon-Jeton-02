@@ -5,7 +5,7 @@
 //    reçoivent toujours la dernière version du code quand ils sont en ligne,
 //    et la version en cache hors ligne.
 //  - Autres ressources (images, polices…) : cache d'abord, réseau en secours.
-const CACHE_NAME = 'mon-jeton-v3.8';
+const CACHE_NAME = 'mon-jeton-v3.9';
 
 // Chemins relatifs : l'application peut être hébergée à la racine d'un
 // domaine ou dans un sous-dossier (ex. GitHub Pages).
@@ -19,9 +19,13 @@ const PRECACHE_URLS = [
     './tontine.html',
     './tontine.js',
     './firebase-config.js',
+    './firebase-config.js?v=2',
     './firebase-groups.js',
+    './firebase-groups.js?v=4',
     './firebase-private-data.js',
+    './firebase-private-data.js?v=2',
     './group-sync-ui.js',
+    './group-sync-ui.js?v=3',
     './avec.html',
     './avec.js',
     './login.html',
@@ -42,11 +46,24 @@ const PRECACHE_URLS = [
     './icon-512.png'
 ];
 
+// Firebase est chargé depuis Google. Après une première ouverture en ligne,
+// on le conserve aussi pour permettre un démarrage ultérieur sans réseau.
+const EXTERNAL_RUNTIME_URLS = [
+    'https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js'
+];
+
 // Installation : pré-cacher les ressources essentielles
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(PRECACHE_URLS))
+            .then(async (cache) => {
+                await cache.addAll(PRECACHE_URLS);
+                await Promise.all(EXTERNAL_RUNTIME_URLS.map(async (url) => {
+                    try { await cache.put(url, await fetch(url, { mode: 'no-cors' })); } catch (_) { /* prochaine ouverture en ligne */ }
+                }));
+            })
             .then(() => self.skipWaiting())
             .catch((error) => {
                 console.error('Erreur lors de l\'installation du cache:', error);
@@ -109,8 +126,13 @@ async function cacheFirst(request) {
 
 // Interception des requêtes
 self.addEventListener('fetch', (event) => {
-    // Ignorer les requêtes non-GET et les domaines externes (ex. appels API)
+    // Ignorer les requêtes non-GET et les domaines externes, sauf les
+    // bibliothèques Firebase nécessaires au démarrage hors ligne.
     if (event.request.method !== 'GET') {
+        return;
+    }
+    if (EXTERNAL_RUNTIME_URLS.includes(event.request.url)) {
+        event.respondWith(networkFirst(event.request));
         return;
     }
     if (!event.request.url.startsWith(self.location.origin)) {

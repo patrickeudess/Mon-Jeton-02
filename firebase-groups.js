@@ -52,9 +52,23 @@
     state.muted = false;
     emit('mon-jeton-groups-updated', { groups });
   }
+  const pendingKey = uid => 'mon_jeton_pending_groups_' + uid;
+  function savePending(groups) {
+    if (!state.user) return;
+    try { localStorage.setItem(pendingKey(state.user.uid), JSON.stringify(groups)); } catch (_) {}
+  }
+  function readPending() {
+    if (!state.user) return [];
+    try { return JSON.parse(localStorage.getItem(pendingKey(state.user.uid)) || '[]'); } catch (_) { return []; }
+  }
+  function clearPending() { if (state.user) localStorage.removeItem(pendingKey(state.user.uid)); }
   async function persist(groups) {
     if (!state.user || !db() || state.muted) return;
-    if (!navigator.onLine) { report('offline', 'Vous êtes hors ligne : les changements restent sur cet appareil pour le moment.'); return; }
+    if (!navigator.onLine) {
+      savePending(groups);
+      report('offline', 'Vous êtes hors ligne : les changements seront synchronisés au retour du réseau.');
+      return;
+    }
     const batch = db().batch();
     // Un appareil peut servir à plusieurs comptes. On ne réécrit jamais un
     // groupe appartenant à un autre compte localement resté dans le navigateur.
@@ -70,8 +84,13 @@
     });
     if (eligible.length) {
       await batch.commit();
+      clearPending();
       report('syncing', 'Mise à jour du groupe en cours…');
     }
+  }
+  async function flushPending() {
+    const pending = readPending();
+    if (pending.length) await persist(pending);
   }
   function subscribeGroups() {
     if (!state.user || !db()) return;
@@ -180,6 +199,10 @@
       emit('mon-jeton-auth-ready', { user: state.user });
     });
   }
-  window.addEventListener('online', () => { if (state.user) { report('syncing', 'Connexion retrouvée : mise à jour des groupes…'); subscribeGroups(); } });
+  window.addEventListener('online', () => {
+    if (!state.user) return;
+    report('syncing', 'Connexion retrouvée : synchronisation des changements en attente…');
+    flushPending().catch(error => console.warn('Synchronisation différée :', error.message)).finally(subscribeGroups);
+  });
   window.addEventListener('offline', () => report('offline', 'Vous êtes hors ligne : les changements restent sur cet appareil pour le moment.'));
 })();
