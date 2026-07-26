@@ -115,7 +115,7 @@ class ApplicationOptimizer {
         const validPages = [
             'index.html', 'login.html', 'transactions.html', 'budgets.html',
             'dashboard.html', 'goals.html', 'tips.html', 'savings.html',
-            'tontine.html', 'security.html', 'badges.html'
+            'tontine.html', 'security.html'
         ];
         
         links.forEach(link => {
@@ -379,4 +379,4 @@ if (typeof window !== 'undefined') {
         
         console.log('💡 Tapez "testApp()" dans la console pour analyser l\'application');
     });
-} 
+}

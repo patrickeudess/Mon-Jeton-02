@@ -421,6 +421,15 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="register-sex">👤 Sexe :</label>
+                    <select id="register-sex" required>
+                        <option value="" selected disabled>Choisissez une option</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Préfère ne pas préciser">Préfère ne pas préciser</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="register-phone">📱 Numéro de téléphone :</label>
                     <div class="phone-input-group">
                         <select class="country-code" id="register-country-code" aria-label="Indicatif pays">
@@ -637,6 +646,7 @@
             const occupationOther = document.getElementById('register-occupation-other').value.trim();
             const occupation = occupationChoice === 'Autre' ? occupationOther : occupationChoice;
             const ageRange = document.getElementById('register-age-range').value;
+            const sex = document.getElementById('register-sex').value;
             const rawPhone = document.getElementById('register-phone').value.trim();
             const countryCode = document.getElementById('register-country-code').value;
             const password = document.getElementById('register-password').value;
@@ -650,8 +660,8 @@
                 showError('register-error', 'Choisissez un identifiant de 3 à 30 caractères : lettres, chiffres, point, tiret ou _.');
                 return;
             }
-            if (!occupation || !ageRange) {
-                showError('register-error', 'Choisissez votre fonction ou activité et votre tranche d’âge.');
+            if (!occupation || !ageRange || !sex) {
+                showError('register-error', 'Choisissez votre fonction ou activité, votre tranche d’âge et votre sexe.');
                 return;
             }
             if (password !== confirmPassword) {
@@ -670,12 +680,12 @@
 
             if (window.FirebaseGroups && FirebaseGroups.configured()) {
                 try {
-                    const user = await FirebaseGroups.register(name, authEmail, password, { identifier, occupation, ageRange, phone: phoneDisplay });
+                    const user = await FirebaseGroups.register(name, authEmail, password, { identifier, occupation, ageRange, sex, phone: phoneDisplay });
                     createFirebaseSession(user);
                     localStorage.setItem('user_name', name);
                     localStorage.setItem('user_identifier', identifier);
                     if (phoneDisplay) localStorage.setItem('user_phone', phoneDisplay);
-                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange }));
+                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
                     showSuccess('register-success', 'Compte créé. Vos groupes peuvent maintenant être synchronisés.');
                     setTimeout(() => { window.location.href = 'index.html'; }, 800);
                 } catch (error) {
@@ -693,7 +703,7 @@
                     localStorage.setItem('user_name', name);
                     localStorage.setItem('user_identifier', identifier);
                     if (phoneDisplay) localStorage.setItem('user_phone', phoneDisplay);
-                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange }));
+                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
                     localStorage.setItem('login_provider', 'API');
                     showSuccess('register-success', 'Compte créé avec succès !');
                     setTimeout(() => { window.location.href = 'index.html'; }, 800);
@@ -706,7 +716,7 @@
             // Aucun backend configuré : mode hors ligne assumé
             showSuccess('register-success', 'Mode hors ligne : compte local créé');
             createLocalSession(name, identifier, phoneDisplay);
-            localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange }));
+            localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
             setTimeout(() => { window.location.href = 'index.html'; }, 800);
         });
 

@@ -28,7 +28,7 @@
     var ITEMS = [
         {
             label: 'Accueil', href: 'index.html',
-            match: ['index.html', 'dashboard.html', 'budgets.html', 'badges.html', 'security.html'],
+            match: ['index.html', 'dashboard.html', 'budgets.html', 'security.html'],
             icon: '<path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/>'
         },
         {

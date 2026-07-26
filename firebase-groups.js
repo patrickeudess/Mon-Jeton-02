@@ -158,6 +158,7 @@
       identifier: clean(profile.identifier),
       occupation: clean(profile.occupation),
       ageRange: clean(profile.ageRange),
+      sex: clean(profile.sex),
       phone: clean(profile.phone),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
