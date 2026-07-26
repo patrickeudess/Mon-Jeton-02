@@ -144,6 +144,7 @@ function ensureAvec(group) {
     group.avec.socialFundValue = Math.max(0, Number(group.avec.socialFundValue) || 0);
     group.avec.serviceRate = Math.max(0, Math.min(100, Number(group.avec.serviceRate) || 0));
     group.avec.loanMonths = Math.max(1, Math.min(3, Number(group.avec.loanMonths) || 3));
+    if (!group.avec.institution || typeof group.avec.institution !== 'object') group.avec.institution = {};
     if (!Array.isArray(group.avec.shares)) group.avec.shares = [];
     if (!Array.isArray(group.avec.socialFund)) group.avec.socialFund = [];
     if (!Array.isArray(group.avec.loans)) group.avec.loans = [];
@@ -159,10 +160,20 @@ function getAvecRole(group, memberId) {
     return avec && avec.roles[memberId] ? avec.roles[memberId] : 'Membre';
 }
 
+function canManageAvec(group, action) {
+    const me = getMyMember(group);
+    if (!me) return false;
+    const role = getAvecRole(group, me.id);
+    if (action === 'roles') return role === 'Président';
+    if (action === 'members') return role === 'Président' || role === 'Secrétaire';
+    if (action === 'loans' || action === 'repayments') return role === 'Président' || role === 'Trésorier';
+    return false;
+}
+
 function setAvecRole(groupId, memberId, role) {
     const allowed = ['Président', 'Secrétaire', 'Trésorier', 'Membre'];
     const groups = loadTontines(); const group = groups.find(item => item.id === groupId);
-    if (!group || !isAvec(group) || !canManageMembers(group) || !allowed.includes(role)) return null;
+    if (!group || !isAvec(group) || !canManageAvec(group, 'roles') || !allowed.includes(role)) return null;
     const avec = ensureAvec(group); const member = group.members.find(item => item.id === memberId);
     if (!member) return null;
     avec.roles[memberId] = role;
@@ -184,11 +195,23 @@ function getAvecFund(group) {
     return Math.max(0, savings + repaid - lent);
 }
 
+function getLoanDue(loan) {
+    return Math.round((Number(loan.amount) || 0) * (1 + ((Number(loan.rate) || 0) / 100) * (Number(loan.months) || 1)));
+}
+
+function getLoanRepaid(loan) {
+    return (loan.repayments || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+}
+
+function getLoanOutstanding(loan) {
+    return Math.max(0, getLoanDue(loan) - getLoanRepaid(loan));
+}
+
 function addAvecShare(groupId, memberId, units = 1) {
     const groups = loadTontines();
     const group = groups.find(item => item.id === groupId);
     const avec = ensureAvec(group);
-    const count = Math.max(1, Math.min(5, Number(units) || 1));
+    const count = Math.max(1, Math.min(20, Number(units) || 1));
     const member = group && group.members.find(item => item.id === memberId);
     if (!avec || !member) return null;
     avec.shares.push({ id: 's_' + Date.now(), memberId, units: count, date: new Date().toISOString() });
@@ -218,13 +241,29 @@ function requestAvecLoan(groupId, memberId, amount, purpose) {
 function approveAvecLoan(groupId, loanId) {
     const groups = loadTontines(); const group = groups.find(item => item.id === groupId); const avec = ensureAvec(group);
     const loan = avec && avec.loans.find(item => item.id === loanId);
-    if (!loan || !canManageMembers(group) || loan.status !== 'requested' || loan.amount > getAvecFund(group)) return null;
+    if (!loan || !canManageAvec(group, 'loans') || loan.status !== 'requested' || loan.amount > getAvecFund(group)) return null;
     loan.status = 'approved'; loan.approvedAt = new Date().toISOString();
+    const dueDate = new Date(loan.approvedAt); dueDate.setMonth(dueDate.getMonth() + Number(loan.months || 0));
+    loan.dueDate = dueDate.toISOString(); loan.totalDue = getLoanDue(loan);
     const borrower = group.members.find(item => item.id === loan.memberId);
     const manager = getMyMember(group);
     loan.approvedBy = manager ? manager.name : 'Responsable';
     addCommunityActivity(group, 'Crédit de ' + loan.amount.toLocaleString('fr-FR') + ' FCFA accordé à ' + (borrower ? borrower.name : 'un membre') + ' par ' + loan.approvedBy + '.');
     saveTontines(groups); return group;
+}
+
+function recordAvecRepayment(groupId, loanId, amount, recorderMemberId) {
+    const groups = loadTontines(); const group = groups.find(item => item.id === groupId); const avec = ensureAvec(group);
+    const loan = avec && avec.loans.find(item => item.id === loanId); const recorder = getMyMember(group);
+    if (!loan || !recorder || loan.status !== 'approved') return { error: 'Ce crédit ne peut pas être remboursé.' };
+    if (loan.memberId !== recorderMemberId && !canManageAvec(group, 'repayments')) return { error: 'Seul le trésorier ou le président peut enregistrer ce remboursement.' };
+    const remaining = getLoanOutstanding(loan); const value = Math.min(remaining, Math.max(0, Number(amount) || 0));
+    if (!value) return { error: 'Indiquez un montant valable.' };
+    loan.repayments.push({ id: 'r_' + Date.now(), amount: value, date: new Date().toISOString(), recordedBy: recorder.name });
+    const balance = getLoanOutstanding(loan); const borrower = group.members.find(item => item.id === loan.memberId);
+    if (balance <= 0) { loan.status = 'repaid'; loan.repaidAt = new Date().toISOString(); }
+    addCommunityActivity(group, (borrower ? borrower.name : 'Un membre') + ' a remboursé ' + value.toLocaleString('fr-FR') + ' FCFA' + (balance <= 0 ? '. Crédit soldé.' : '. Reste à payer : ' + balance.toLocaleString('fr-FR') + ' FCFA.'));
+    saveTontines(groups); return { group, loan };
 }
 
 // --- Calculs de cycles ---
@@ -355,7 +394,7 @@ function createTontine(data) {
         frequency: data.frequency,
         startDate: data.startDate,
         target: data.type === 'collective' && data.target ? Number(data.target) : null,
-        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' } } : null,
+        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, institution: { name: String(data.institutionName || '').trim().slice(0, 100), project: String(data.projectName || '').trim().slice(0, 100), reference: String(data.projectReference || '').trim().slice(0, 60) }, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' } } : null,
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,
@@ -666,11 +705,16 @@ if (typeof window !== 'undefined') {
         ensureAvec,
         getMemberShares,
         getAvecRole,
+        canManageAvec,
         setAvecRole,
         getAvecFund,
+        getLoanDue,
+        getLoanRepaid,
+        getLoanOutstanding,
         addAvecShare,
         requestAvecLoan,
         approveAvecLoan,
+        recordAvecRepayment,
         addAnnouncement,
         getPendingContributionReminders,
         toApiPayload,
