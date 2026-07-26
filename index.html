@@ -105,6 +105,9 @@
         #onboarding-modal .onboarding-slide h2 { font-size: clamp(1.35rem, 6vw, 1.75rem); }
         #onboarding-modal .onboarding-slide p { font-size: 1rem; margin-bottom: 22px; }
         #onboarding-modal .onboarding-icon { font-size: 3rem; margin-bottom: 14px; }
+        #onboarding-modal .onboarding-step { color:#61716d; font-size:.85rem; font-weight:700; margin:0 0 12px; }
+        #onboarding-modal .onboarding-actions { display:grid; gap:10px; }
+        #onboarding-modal .onboarding-skip { border:0; background:transparent; color:#61716d; font:inherit; padding:6px; cursor:pointer; }
     </style>
 </head>
 <body class="dashboard-home">
@@ -300,33 +303,37 @@
         <div class="modal-content onboarding-content">
             <div class="onboarding-slide active" id="slide-1">
                 <div class="onboarding-icon">💰</div>
-                <h2>Bienvenue sur Mon Jeton !</h2>
-                <p>Gérez vos finances intelligemment avec des outils adaptés à votre contexte local.</p>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <p class="onboarding-step">Étape 1 sur 4</p>
+                <h2>Bienvenue !</h2>
+                <p>Mon Jeton vous aide à savoir où va votre argent, simplement.</p>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">Continuer</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-2">
-                <div class="onboarding-icon">📱</div>
-                <h2>Import Mobile Money</h2>
-                <p>Importez automatiquement vos transactions Orange Money, MTN MoMo et Wave depuis vos SMS.</p>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <div class="onboarding-icon">➕</div>
+                <p class="onboarding-step">Étape 2 sur 4</p>
+                <h2>Commencez par une opération</h2>
+                <p>Quand vous gagnez ou dépensez de l’argent, ajoutez-le. Votre solde sera plus juste.</p>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">J’ai compris</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-3">
                 <div class="onboarding-icon">📈</div>
+                <p class="onboarding-step">Étape 3 sur 4</p>
                 <h2>Comment recevez-vous votre argent ?</h2>
-                <p>Mon Jeton adaptera les budgets et conseils à votre réalité.</p>
+                <p>Choisissez la réponse la plus proche de votre situation. Vous pourrez la modifier plus tard.</p>
                 <div class="profile-options">
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="fixe"> Salaire ou revenu fixe</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="variable" checked> Paiements irréguliers</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="journalier"> Recettes journalières</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="saisonnier"> Revenus saisonniers</label>
                 </div>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">Continuer</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-4">
-                <div class="onboarding-icon">👥</div>
-                <h2>Épargne & Objectifs</h2>
-                <p>Gérez vos objectifs d'épargne et placements pour atteindre vos objectifs financiers.</p>
-                <button onclick="finishOnboarding()" class="btn-primary">Commencer</button>
+                <div class="onboarding-icon">✅</div>
+                <p class="onboarding-step">Étape 4 sur 4</p>
+                <h2>Vous êtes prêt</h2>
+                <p>Ajoutez votre première opération. Le reste de l’application vous guidera au fur et à mesure.</p>
+                <button onclick="finishOnboarding(true)" class="btn-primary">Ajouter une opération</button>
             </div>
         </div>
     </div>
@@ -561,7 +568,7 @@
             document.getElementById(`slide-${currentSlide}`).classList.add('active');
         }
 
-        function finishOnboarding() {
+        function finishOnboarding(openTransaction) {
             const selected = document.querySelector('input[name="onboarding-profile"]:checked');
             const profile = IncomeProfile.loadProfile();
             profile.type = selected ? selected.value : 'variable';
@@ -570,6 +577,11 @@
             localStorage.setItem('onboarding_completed', 'true');
             document.getElementById('onboarding-modal').classList.remove('active');
             renderInclusiveSummary();
+            if (openTransaction) location.href = 'transactions.html';
+        }
+
+        function skipOnboarding() {
+            finishOnboarding();
         }
 
         // Initialisation
