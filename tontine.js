@@ -177,6 +177,8 @@ function setAvecRole(groupId, memberId, role) {
     const avec = ensureAvec(group); const member = group.members.find(item => item.id === memberId);
     if (!member) return null;
     avec.roles[memberId] = role;
+    if (!avec.roleUids || typeof avec.roleUids !== 'object') avec.roleUids = {};
+    if (member.uid) avec.roleUids[member.uid] = role;
     addCommunityActivity(group, member.name + ' est désormais ' + role + '.');
     saveTontines(groups); return group;
 }
@@ -394,7 +396,7 @@ function createTontine(data) {
         frequency: data.frequency,
         startDate: data.startDate,
         target: data.type === 'collective' && data.target ? Number(data.target) : null,
-        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, institution: { name: String(data.institutionName || '').trim().slice(0, 100), project: String(data.projectName || '').trim().slice(0, 100), reference: String(data.projectReference || '').trim().slice(0, 60) }, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' } } : null,
+        avec: data.type === 'avec' ? { shareValue: Number(data.amount), socialFundValue: Number(data.socialFund) || 0, serviceRate: Number(data.serviceRate) || 0, loanMonths: Number(data.loanMonths) || 3, institution: { name: String(data.institutionName || '').trim().slice(0, 100), project: String(data.projectName || '').trim().slice(0, 100), reference: String(data.projectReference || '').trim().slice(0, 60) }, shares: [], socialFund: [], loans: [], roles: { m0: 'Président' }, roleUids: signedInUser ? { [signedInUser.uid]: 'Président' } : {} } : null,
         members: memberNames.map((name, index) => ({
             id: 'm' + index,
             name: name,

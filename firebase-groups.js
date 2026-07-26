@@ -43,6 +43,17 @@
     }));
     copy.memberUids = [...new Set(copy.members.map(member => member.uid).filter(Boolean))];
     if (!copy.memberUids.includes(ownerUid)) copy.memberUids.unshift(ownerUid);
+    // Les rôles sont également liés aux UID Firebase. Cette carte est la
+    // référence utilisée par les règles serveur, pas seulement par l'écran.
+    if (copy.avec && user.uid === ownerUid) {
+      copy.avec.roleUids = copy.avec.roleUids || {};
+      copy.members.forEach(member => {
+        if (member.uid && copy.avec.roles && copy.avec.roles[member.id] && !copy.avec.roleUids[member.uid]) {
+          copy.avec.roleUids[member.uid] = copy.avec.roles[member.id];
+        }
+      });
+      copy.avec.roleUids[ownerUid] = copy.avec.roleUids[ownerUid] || 'Président';
+    }
     copy.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     return copy;
   }
@@ -142,7 +153,8 @@
       const pendingMember = members.find(member => !member.uid && clean(member.name).toLocaleLowerCase('fr-FR') === clean(data.displayName).toLocaleLowerCase('fr-FR'));
       if (pendingMember) pendingMember.uid = data.uid;
       else members.push({ id: 'm_' + Date.now().toString(36), name: data.displayName, uid: data.uid, isMe: false });
-      tx.update(groupRef, { members, memberUids, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      const roleUids = { ...((group.avec && group.avec.roleUids) || {}), [data.uid]: 'Membre' };
+      tx.update(groupRef, { members, memberUids, ...(group.avec ? { avec: { ...group.avec, roleUids } } : {}), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
       tx.delete(requestRef);
     });
   }
