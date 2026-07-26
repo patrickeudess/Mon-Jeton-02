@@ -29,7 +29,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -473,69 +473,35 @@
     </nav>
 
     <div class="savings-container">
-        <!-- Grille 3x3 moderne -->
+        <p class="muted" style="margin:0 0 18px;">Créez un projet, puis notez chaque somme mise de côté.</p>
+        <!-- Les quatre actions utiles au démarrage -->
         <section class="savings-grid">
             <div class="grid-container">
                 <div class="grid-card" onclick="showTotalSavings()">
                     <i class="mj-emoji">🪙</i>
-                    <h3>Total Épargne</h3>
+                    <h3>Mon épargne</h3>
                     <div class="value" id="total-savings">0 F CFA</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showSavingsRate()">
-                    <i class="mj-emoji">📊</i>
-                    <h3>Taux d'Épargne</h3>
-                    <div class="value" id="savings-rate">0%</div>
                     <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showActiveGoals()">
                     <i class="mj-emoji">🎯</i>
-                    <h3>Objectifs Actifs</h3>
+                    <h3>Mes projets</h3>
                     <div class="value" id="active-goals">0</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showCompletedGoals()">
-                    <i class="mj-emoji">🏆</i>
-                    <h3>Objectifs Atteints</h3>
-                    <div class="value" id="completed-goals">0</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showMonthlySavings()">
-                    <i class="mj-emoji">📅</i>
-                    <h3>Épargne Mensuelle</h3>
-                    <div class="value" id="monthly-savings">0 F CFA</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showAnalyses()">
-                    <i class="mj-emoji">📊</i>
-                    <h3>Analyses</h3>
-                    <div class="action">Voir</div>
                     <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showNewGoal()">
                     <i class="mj-emoji">➕</i>
-                    <h3>Nouvel Objectif</h3>
+                    <h3>Nouveau projet</h3>
                     <div class="action">Créer</div>
                     <i class="mj-emoji">→</i>
                 </div>
                 
                 <div class="grid-card" onclick="showRegularSavings()">
                     <i class="mj-emoji">📄</i>
-                    <h3>Épargne Régulière</h3>
+                    <h3>Ajouter une épargne</h3>
                     <div class="action">Enregistrer</div>
-                    <i class="mj-emoji">→</i>
-                </div>
-                
-                <div class="grid-card" onclick="showHistory()">
-                    <i class="mj-emoji">🕘</i>
-                    <h3>Historique</h3>
-                    <div class="action">Voir</div>
                     <i class="mj-emoji">→</i>
                 </div>
             </div>
@@ -751,11 +717,15 @@
             const completedGoals = objectifs.filter(obj => new Date(obj.dateLimite) < new Date()).length;
             
             // Mettre à jour l'affichage
-            document.getElementById('total-savings').textContent = formatCurrency(totalSavings);
-            document.getElementById('savings-rate').textContent = savingsRate + '%';
-            document.getElementById('active-goals').textContent = activeGoals;
-            document.getElementById('completed-goals').textContent = completedGoals;
-            document.getElementById('monthly-savings').textContent = formatCurrency(monthlySavings);
+            const setText = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            };
+            setText('total-savings', formatCurrency(totalSavings));
+            setText('savings-rate', savingsRate + '%');
+            setText('active-goals', activeGoals);
+            setText('completed-goals', completedGoals);
+            setText('monthly-savings', formatCurrency(monthlySavings));
             
             // Afficher les tableaux
             displayObjectifs();
