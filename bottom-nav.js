@@ -63,7 +63,7 @@
         if (document.getElementById('mj-bottomnav-style')) return;
         var css = [
             ':root{--mj-bottomnav-h:64px;}',
-            'body{padding-bottom:calc(var(--mj-bottomnav-h) + env(safe-area-inset-bottom, 0px) + 8px) !important;}',
+            'body{padding-bottom:calc(var(--mj-bottomnav-h) + env(safe-area-inset-bottom, 0px) + 16px) !important;}',
             '.mj-bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:1200;display:flex;',
             'justify-content:space-around;align-items:stretch;gap:2px;',
             'padding:6px 6px calc(6px + env(safe-area-inset-bottom, 0px));',

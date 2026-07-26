@@ -89,7 +89,7 @@
         .dashboard-home .nav-logo { padding: 0; border-radius: 10px; box-shadow: 0 4px 12px rgba(8,127,103,.18); }
         .dashboard-home .logout-btn { background: transparent; color: #58716b; border: 1px solid #d8e6e1; padding: .42rem .7rem; }
         .dashboard-home .logout-btn:hover { background: #fff3f1; color: #b23b2c; transform: none; }
-        .dashboard-home .main-container { max-width: 1040px; padding: 18px 16px 32px; }
+        .dashboard-home .main-container { max-width: 1040px; padding: 18px 16px calc(32px + var(--mj-bottomnav-h, 64px)); }
         .dashboard-home .welcome-header { border: 1px solid #dce9e5; box-shadow: none; border-radius: 20px; }
         .dashboard-home .welcome-content h1 { color: #17352f; letter-spacing: -.035em; }
         .dashboard-home .pilot-balance .stat-item { background: #e9f7f2; border: 1px solid #cce9df; }
@@ -111,7 +111,9 @@
         .home-wallet { min-width:125px; padding:10px 11px; border:1px solid #dce9e5; border-radius:12px; background:#f8fcfa; }
         .home-wallet span { display:block; color:#60736d; font-size:.76rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .home-wallet strong { display:block; margin-top:3px; color:#17352f; font-size:.92rem; white-space:nowrap; }
-        .home-wallet-empty { color:#61716d; font-size:.86rem; padding:4px 0; }
+        .home-wallet-empty { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; color:#61716d; font-size:.86rem; padding:3px 0; }
+        .wallet-empty-action { flex:0 0 auto; border:0; border-radius:10px; background:#087f67; color:#fff; font:inherit; font-size:.8rem; font-weight:800; padding:9px 11px; cursor:pointer; }
+        .wallet-empty-action:active { transform:scale(.97); }
         .dashboard-home .recent-transactions h2, .dashboard-home .grid-title { color: #17352f; }
         #onboarding-modal .modal-content { width: min(92vw, 440px); max-width: 440px; margin: 16px; box-sizing: border-box; }
         #onboarding-modal .onboarding-slide { padding: 28px 18px; }
@@ -128,7 +130,7 @@
         .dashboard-home .grid-item h3 { font-size:.95rem; }
         .dashboard-home .grid-item p { margin:3px 0 0; line-height:1.3; }
         @media(max-width:720px){ .dashboard-home .grid-item{min-height:72px;padding:10px 12px}.dashboard-home .grid-item .grid-icon{width:42px;height:42px} }
-        @media(max-width:720px){.wallet-overview{padding:13px;border-radius:16px}.home-wallet{min-width:118px}.dashboard-home .welcome-header{border-radius:16px}}
+        @media(max-width:720px){.wallet-overview{padding:13px;border-radius:16px}.home-wallet{min-width:118px}.dashboard-home .welcome-header{border-radius:16px}.dashboard-home .inclusive-finance{margin:10px 0;padding:15px;border-radius:15px}.dashboard-home .inclusive-head{gap:7px;margin-bottom:9px}.dashboard-home .inclusive-head h2{font-size:1.18rem}.dashboard-home .inclusive-grid{gap:8px}.dashboard-home .inclusive-metric{padding:10px 11px}.dashboard-home .inclusive-metric strong{margin-top:3px;font-size:1rem}.dashboard-home .inclusive-note{margin-top:8px;font-size:.77rem;line-height:1.35}.dashboard-home .finance-details summary{font-size:.88rem}.home-wallet-empty{align-items:flex-start;flex-direction:column;gap:8px}.wallet-empty-action{width:100%}}
     </style>
 </head>
 <body class="dashboard-home">
@@ -191,7 +193,7 @@
                 <a href="transactions.html">Gérer</a>
             </div>
             <div id="home-wallet-list" class="home-wallet-list">
-                <span class="home-wallet-empty">Ajoutez une opération avec une poche pour la voir ici.</span>
+                <div class="home-wallet-empty"><span>Créez votre première poche en ajoutant une opération.</span><button class="wallet-empty-action" type="button" onclick="quickAddTransaction()">Ajouter une opération</button></div>
             </div>
         </section>
 
@@ -443,7 +445,7 @@
             });
             const entries = Object.entries(totals);
             if (!entries.length) {
-                container.innerHTML = '<span class="home-wallet-empty">Ajoutez une opération avec une poche pour la voir ici.</span>';
+                container.innerHTML = '<div class="home-wallet-empty"><span>Créez votre première poche en ajoutant une opération.</span><button class="wallet-empty-action" type="button" onclick="quickAddTransaction()">Ajouter une opération</button></div>';
                 return;
             }
             container.innerHTML = entries.map(([method, amount]) =>
