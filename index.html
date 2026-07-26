@@ -346,11 +346,11 @@
             const container = document.getElementById('connection-status');
             if (!container) return;
             const status = syncStatus || (window.FirebaseGroups && FirebaseGroups.getStatus ? FirebaseGroups.getStatus() : null);
-            let label = 'Connecté', kind = 'online';
+            let label = 'À jour', kind = 'online';
             if (!navigator.onLine || (status && status.kind === 'offline')) { label = 'Hors ligne'; kind = 'offline'; }
             else if (status && status.kind === 'error') { label = 'Connexion à vérifier'; kind = 'offline'; }
             else if (status && status.kind === 'syncing') { label = 'Synchronisation…'; }
-            else if (status && status.kind === 'synced') { label = 'Synchronisé'; }
+            else if (status && status.kind === 'synced') { label = 'À jour'; }
             container.innerHTML = `<span class="status-indicator ${kind}">● ${label}</span>`;
         }
 
