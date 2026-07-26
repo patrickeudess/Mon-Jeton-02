@@ -215,7 +215,9 @@
         .form-actions{justify-content:flex-start;gap:8px}.form-actions button{min-height:46px;padding:10px 16px}
         @media(max-width:820px){.transactions-container{padding:12px}.transaction-form-section{padding:18px;border-radius:16px}.form-grid{grid-template-columns:1fr;gap:16px}.page-header{padding:16px;margin-bottom:16px}.page-header h1{font-size:1.45rem}.form-actions{display:grid;grid-template-columns:1fr}.form-actions button{width:100%}}
         .transaction-content,.main-container{min-width:0}.transaction-form-section h2{margin:0;font-size:1.3rem;line-height:1.2}.history-subtitle{margin:5px 0 12px;color:#61716d;font-size:.88rem}.transactions-table-container{width:100%;margin-top:12px}.refresh-btn{min-height:44px;margin:0 0 10px}
+        .wallet-summary{margin:0 0 16px;padding:14px;border:1px solid #dbe8e4;border-radius:14px;background:#f6fbf9}.wallet-summary h2{font-size:1rem!important;margin:0 0 8px!important}.wallet-list{display:flex;flex-wrap:wrap;gap:8px}.wallet-chip{padding:8px 10px;border-radius:10px;background:#fff;color:#1d3932;font-size:.83rem}.wallet-chip strong{display:block;margin-top:2px}.history-actions{display:flex;gap:8px;flex-wrap:wrap}.history-actions .refresh-btn{margin:0}.history-actions .btn-secondary{min-height:44px}
         @media(max-width:820px){.transaction-form-section:has(.transactions-table){padding:16px 12px}.transaction-form-section h2{font-size:1.2rem}.refresh-btn{width:100%}.transactions-table-container{overflow:visible}.transactions-table,.transactions-table tbody,.transactions-table tr,.transactions-table td{display:block;width:100%;box-sizing:border-box}.transactions-table thead{display:none}.transactions-table{background:transparent;font-size:.88rem}.transactions-table tr{margin:0 0 12px;padding:12px;border:1px solid #dbe8e4;border-radius:12px;background:#fff;box-shadow:0 2px 8px rgba(12,73,61,.05)}.transactions-table td{display:grid;grid-template-columns:105px 1fr;gap:8px;padding:7px 0;border:0;word-break:break-word;text-align:right}.transactions-table td::before{content:attr(data-label);font-weight:700;color:#536d65;text-align:left}.transactions-table td:last-child{display:block;padding-top:10px;border-top:1px solid #eef3f1;text-align:left}.transactions-table td:last-child::before{display:none}.transaction-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.transaction-actions .action-btn{padding:8px 5px;font-size:.74rem}}
+        @media(max-width:820px){.history-actions{display:grid;grid-template-columns:1fr}.history-actions .btn-secondary{width:100%}.wallet-list{display:grid;grid-template-columns:1fr 1fr}.wallet-chip{min-width:0}}
 
         .empty-state {
             text-align: center;
@@ -478,6 +480,10 @@
                                     <option value="">Choisissez d'abord le type</option>
                                 </select>
                             </div>
+                            <div class="form-group" id="custom-category-group" hidden>
+                                <label for="custom-category">Votre catégorie</label>
+                                <input type="text" id="custom-category" maxlength="50" placeholder="Ex. Réparation moto">
+                            </div>
                             
                             <div class="form-group">
                                 <label for="transaction-amount">3. Combien ? (FCFA)</label>
@@ -494,15 +500,25 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="payment-method">💳 Méthode de paiement <span class="field-optional">(optionnel)</span></label>
+                                <label for="payment-method">💳 Poche d'argent <span class="field-optional">(optionnel)</span></label>
                                 <select id="payment-method" name="payment-method">
                                     <option value="">Non précisée</option>
                                     <option value="especes">💵 Espèces</option>
-                                    <option value="carte">💳 Carte bancaire</option>
-                                    <option value="mobile_money">📱 Mobile Money</option>
-                                    <option value="virement">🏦 Virement</option>
-                                    <option value="cheque">📄 Chèque</option>
+                                    <option value="orange_money">🟠 Orange Money</option>
+                                    <option value="mtn_momo">🟡 MTN MoMo</option>
+                                    <option value="wave">🌊 Wave</option>
+                                    <option value="moov_money">🟢 Moov Money</option>
+                                    <option value="banque">🏦 Banque / carte</option>
+                                    <option value="epargne">🎯 Épargne</option>
                                     <option value="autre">📋 Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-recurrence">🔁 Répéter <span class="field-optional">(optionnel)</span></label>
+                                <select id="transaction-recurrence" name="transaction-recurrence">
+                                    <option value="">Une seule fois</option>
+                                    <option value="weekly">Chaque semaine</option>
+                                    <option value="monthly">Chaque mois</option>
                                 </select>
                             </div>
                             
@@ -523,9 +539,11 @@
                 <section class="transaction-form-section">
                     <h2>📋 Historique</h2>
                     <p class="history-subtitle">Vos opérations enregistrées</p>
-                    <button onclick="refreshTransactions()" class="refresh-btn">
-                        🔄 Actualiser la liste
-                    </button>
+                    <div id="wallet-summary" class="wallet-summary" hidden></div>
+                    <div class="history-actions">
+                        <button onclick="refreshTransactions()" class="refresh-btn">🔄 Actualiser la liste</button>
+                        <button type="button" onclick="exportTransactions()" class="btn-secondary">⬇️ Exporter CSV</button>
+                    </div>
                     <div class="transactions-table-container">
                         <table id="transactions-table" class="transactions-table">
                             <thead>
@@ -618,7 +636,21 @@
                     categorySelect.appendChild(option);
                 });
             }
+            document.getElementById('custom-category-group').hidden = true;
+            document.getElementById('custom-category').value = '';
         });
+
+        document.getElementById('transaction-category').addEventListener('change', function() {
+            const isCustom = this.value === 'Autre revenu' || this.value === 'Autre dépense';
+            document.getElementById('custom-category-group').hidden = !isCustom;
+            document.getElementById('custom-category').required = isCustom;
+        });
+
+        function selectedCategory() {
+            const category = document.getElementById('transaction-category').value;
+            const custom = document.getElementById('custom-category').value.trim();
+            return (category === 'Autre revenu' || category === 'Autre dépense') && custom ? custom : category;
+        }
 
         let toastTimer;
         function showToast(message, type = 'success') {
@@ -656,14 +688,15 @@
             
             // Récupérer les valeurs directement des éléments
             const type = document.getElementById('transaction-type').value;
-            const category = document.getElementById('transaction-category').value;
+            const category = selectedCategory();
             const amount = document.getElementById('transaction-amount').value;
             const date = document.getElementById('transaction-date').value;
             const description = document.getElementById('transaction-description').value;
             const paymentMethod = document.getElementById('payment-method').value;
+            const recurrence = document.getElementById('transaction-recurrence').value;
             
             console.log('Valeurs récupérées:', {
-                type, category, amount, date, description, paymentMethod
+                type, category, amount, date, description, paymentMethod, recurrence
             });
             
             // Validation
@@ -680,6 +713,7 @@
                 date: date,
                 description: description,
                 paymentMethod: paymentMethod,
+                recurrence: recurrence,
                 createdAt: new Date().toISOString()
             };
             
@@ -709,9 +743,13 @@
         function loadTransactions() {
             console.log('=== CHARGEMENT DES TRANSACTIONS ===');
             const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            if (processRecurringTransactions(transactions)) {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+            }
             console.log('Transactions trouvées dans localStorage:', transactions);
             console.log('Nombre de transactions:', transactions.length);
             displayTransactions(transactions);
+            renderWalletSummary(transactions);
         }
 
         // Actualiser les transactions
@@ -771,7 +809,7 @@
                         ${amountPrefix}${formatAmount(transaction.amount)} FCFA
                     </td>
                     <td data-label="Methode">${getPaymentMethodText(transaction.paymentMethod)}</td>
-                    <td data-label="Description">${transaction.description || '-'}</td>
+                    <td data-label="Description">${transaction.description || '-'}${transaction.recurrence ? ' · ' + getRecurrenceText(transaction.recurrence) : ''}${transaction.recurrenceRootId ? ' · automatique' : ''}</td>
                     <td data-label="Actions">
                         <div class="transaction-actions">
                             <button class="action-btn edit" onclick="editTransaction('${transaction.id}')">
@@ -805,6 +843,7 @@
                 document.getElementById('transaction-amount').value = transaction.amount;
                 document.getElementById('transaction-date').value = transaction.date;
                 document.getElementById('payment-method').value = transaction.paymentMethod;
+                document.getElementById('transaction-recurrence').value = transaction.recurrence || '';
                 document.getElementById('transaction-description').value = transaction.description || '';
                 
                 // Modifier le bouton pour sauvegarder les modifications
@@ -829,10 +868,11 @@
                 id: transactionId,
                 type: formData.get('transaction-type'),
                 amount: parseFloat(formData.get('transaction-amount')),
-                category: formData.get('transaction-category'),
+                category: selectedCategory(),
                 date: formData.get('transaction-date'),
                 description: formData.get('transaction-description'),
                 paymentMethod: formData.get('payment-method'),
+                recurrence: formData.get('transaction-recurrence'),
                 createdAt: new Date().toISOString()
             };
 
@@ -882,6 +922,12 @@
         function getPaymentMethodText(method) {
             const methods = {
                 'especes': '💵 Espèces',
+                'orange_money': '🟠 Orange Money',
+                'mtn_momo': '🟡 MTN MoMo',
+                'wave': '🌊 Wave',
+                'moov_money': '🟢 Moov Money',
+                'banque': '🏦 Banque / carte',
+                'epargne': '🎯 Épargne',
                 'carte': '💳 Carte bancaire',
                 'mobile_money': '📱 Mobile Money',
                 'virement': '🏦 Virement',
@@ -889,6 +935,47 @@
                 'autre': '📋 Autre'
             };
             return methods[method] || 'Non renseigné';
+        }
+
+        function getRecurrenceText(recurrence) {
+            return recurrence === 'weekly' ? 'Chaque semaine' : recurrence === 'monthly' ? 'Chaque mois' : '';
+        }
+
+        function addPeriod(date, recurrence) {
+            const next = new Date(date + 'T12:00:00');
+            if (recurrence === 'weekly') next.setDate(next.getDate() + 7);
+            if (recurrence === 'monthly') next.setMonth(next.getMonth() + 1);
+            return next.toISOString().slice(0, 10);
+        }
+
+        function processRecurringTransactions(transactions) {
+            const today = new Date().toISOString().slice(0, 10);
+            let changed = false;
+            transactions.filter(t => t.recurrence && !t.recurrenceRootId).forEach(root => {
+                const family = transactions.filter(t => t.id === root.id || t.recurrenceRootId === root.id);
+                let latest = family.sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+                let nextDate = addPeriod(latest.date, root.recurrence);
+                while (nextDate <= today) {
+                    transactions.push({ ...root, id: root.id + '-' + nextDate, date: nextDate, recurrence: '', recurrenceRootId: root.id, createdAt: new Date().toISOString() });
+                    latest = transactions[transactions.length - 1];
+                    nextDate = addPeriod(latest.date, root.recurrence);
+                    changed = true;
+                }
+            });
+            return changed;
+        }
+
+        function renderWalletSummary(transactions) {
+            const summary = document.getElementById('wallet-summary');
+            const totals = {};
+            transactions.forEach(t => {
+                if (!t.paymentMethod) return;
+                totals[t.paymentMethod] = (totals[t.paymentMethod] || 0) + (t.type === 'revenu' ? Number(t.amount) : -Number(t.amount));
+            });
+            const entries = Object.entries(totals);
+            if (!entries.length) { summary.hidden = true; return; }
+            summary.hidden = false;
+            summary.innerHTML = '<h2>Mes poches d’argent</h2><div class="wallet-list">' + entries.map(([method, amount]) => '<div class="wallet-chip">' + getPaymentMethodText(method) + '<strong>' + formatAmount(amount) + ' FCFA</strong></div>').join('') + '</div>';
         }
 
         // Fonctions pour les interactions de la grille
@@ -915,8 +1002,18 @@
         }
 
         function exportTransactions() {
-            // Exporter les transactions
-            console.log('Export des transactions');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            if (!transactions.length) { showToast('Aucune opération à exporter.', 'error'); return; }
+            const quote = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+            const rows = [['Date', 'Type', 'Catégorie', 'Montant FCFA', 'Poche', 'Description', 'Répétition']]
+                .concat(transactions.map(t => [t.date, t.type, t.category, t.amount, getPaymentMethodText(t.paymentMethod), t.description || '', getRecurrenceText(t.recurrence)]));
+            const blob = new Blob([rows.map(row => row.map(quote).join(';')).join('\n')], { type: 'text/csv;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'mes_transactions_mon_jeton.csv';
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast('Export CSV préparé.');
         }
 
         function showFilters() {
