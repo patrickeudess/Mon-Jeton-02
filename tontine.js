@@ -408,7 +408,7 @@ function createTontine(data) {
         payouts: [],
         community: {
             announcements: [],
-            activity: [{ id: 'a_' + Date.now(), message: 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
+            activity: [{ id: 'a_' + Date.now(), message: data.type === 'avec' ? 'AVEC créée. Les membres peuvent suivre les actions ici.' : 'Tontine créée. Les membres peuvent suivre les actions ici.', date: new Date().toISOString() }]
         },
         createdAt: new Date().toISOString(),
         // Ces identifiants sont indispensables pour que Firestore puisse
