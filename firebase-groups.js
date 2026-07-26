@@ -188,7 +188,7 @@
 
   window.FirebaseGroups = {
     configured, persist, joinWithCode, approveRequest, rejectRequest,
-    getUser: () => state.user, getRequests: () => state.pending.slice(), getStatus: () => ({ ...state.status }), signIn, register, resetPassword, signOut
+    getUser: () => state.user, getRequests: () => state.pending.slice(), getStatus: () => ({ ...state.status }), hasPendingChanges: () => readPending().length > 0, signIn, register, resetPassword, signOut
   };
   if (configured()) {
     auth().onAuthStateChanged(user => {
