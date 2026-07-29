@@ -79,7 +79,11 @@
 
 ### **Stockage**
 - localStorage pour les données client
-- Synchronisation cloud (optionnelle)
+- **Espace par utilisateur** : chaque compte connecté a ses propres données
+  (transactions, budgets, objectifs, tontines, épargne, badges…), cloisonnées
+  des autres comptes utilisés sur le même appareil (`storage.js`)
+- Synchronisation cloud (optionnelle) — côté backend, les données sont déjà
+  isolées par `user_id`
 - Export/import JSON
 
 ## 📦 **Installation et Démarrage**
