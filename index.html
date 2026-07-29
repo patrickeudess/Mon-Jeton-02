@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
     <link rel="stylesheet" href="theme.css">
+    <script src="storage.js"></script>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -22,8 +23,8 @@
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js?v=2"></script>
-    <script src="firebase-groups.js?v=2"></script>
-    <script src="firebase-private-data.js?v=1"></script>
+    <script src="firebase-groups.js?v=4"></script>
+    <script src="firebase-private-data.js?v=2"></script>
     <script src="optimize_application.js"></script>
     <style>
         .inclusive-finance { margin: 20px 0; padding: 22px; border-radius: 18px; background: linear-gradient(135deg,#073b35,#087f67); color:#fff; box-shadow:0 14px 32px rgba(8,127,103,.2); }
@@ -65,22 +66,72 @@
         .dashboard-home .inclusive-note { margin-top: 10px; font-size: .83rem; }
         .dashboard-home .finance-details { margin-top: 5px; }
         .dashboard-home .finance-details summary { padding: 6px 0; }
-        .dashboard-home .quick-actions { padding: 16px 18px; margin-bottom: 12px; }
-        .dashboard-home .quick-actions h2 { margin-bottom: 12px; font-size: 1.2rem; }
-        .dashboard-home .action-buttons { display:grid; grid-template-columns: 1.25fr 1fr 1fr; gap:10px; }
-        .dashboard-home .action-btn { min-width:0; min-height:62px; padding:10px 12px; flex:none; flex-direction:column; gap:4px; }
-        .dashboard-home .action-icon { font-size:1.25rem; line-height:1; }
-        .dashboard-home .action-text { font-size:.82rem; }
+        .dashboard-home .quick-actions { padding:14px 16px; margin-bottom:12px; }
+        .dashboard-home .quick-actions h2 { margin-bottom:10px; font-size:1.15rem; }
+        .dashboard-home .action-buttons { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+        .dashboard-home .action-btn { min-width:0; min-height:52px; padding:9px 12px; flex:none; flex-direction:row; justify-content:center; gap:8px; }
+        .dashboard-home .action-btn.primary { grid-column:1 / -1; min-height:56px; }
+        .dashboard-home .action-icon { display:grid;place-items:center;width:22px;height:22px;font-family:Arial,sans-serif;font-size:1.35rem;line-height:1;font-weight:400; }
+        .dashboard-home .action-text { font-size:.88rem; }
         @media(max-width:720px){
             .dashboard-home .welcome-header { flex-direction:row; text-align:left; align-items:center; padding:14px 16px; gap:12px; }
             .dashboard-home .welcome-subtitle { display:none; }
             .dashboard-home .pilot-balance .stat-item { min-width:120px; padding:8px 10px; }
             .dashboard-home .pilot-balance .stat-label { font-size:.68rem; }
             .dashboard-home .inclusive-head{align-items:flex-start;flex-direction:column}.dashboard-home .inclusive-grid{grid-template-columns:repeat(2,1fr)}.profile-options{grid-template-columns:1fr}
-            .dashboard-home .quick-actions { padding:15px; }
-            .dashboard-home .action-buttons { grid-template-columns:repeat(2,1fr); }
-            .dashboard-home .action-btn.primary { grid-column:1 / -1; flex-direction:row; min-height:52px; }
+            .dashboard-home .quick-actions { padding:13px; }
+            .dashboard-home .action-btn { min-height:50px; padding:8px 10px; }
+            .dashboard-home .action-btn.primary { min-height:54px; }
         }
+        /* Finition visuelle : accueil plus calme, lisible et proche d'une application bancaire. */
+        .dashboard-home { background: #f5faf8; color: #17352f; }
+        .dashboard-home .top-nav { background: rgba(255,255,255,.94); box-shadow: 0 1px 0 #dce9e5; backdrop-filter: blur(12px); }
+        .dashboard-home .nav-title { color: #17352f; font-size: 1.05rem; letter-spacing: -.02em; }
+        .dashboard-home .nav-logo { padding: 0; border-radius: 10px; box-shadow: 0 4px 12px rgba(8,127,103,.18); }
+        .dashboard-home .logout-btn { background: transparent; color: #58716b; border: 1px solid #d8e6e1; padding: .42rem .7rem; }
+        .dashboard-home .logout-btn:hover { background: #fff3f1; color: #b23b2c; transform: none; }
+        .dashboard-home .main-container { max-width: 1040px; padding: 18px 16px calc(32px + var(--mj-bottomnav-h, 64px)); }
+        .dashboard-home .welcome-header { border: 1px solid #dce9e5; box-shadow: none; border-radius: 20px; }
+        .dashboard-home .welcome-content h1 { color: #17352f; letter-spacing: -.035em; }
+        .dashboard-home .pilot-balance .stat-item { background: #e9f7f2; border: 1px solid #cce9df; }
+        .dashboard-home .inclusive-finance { background: linear-gradient(135deg,#064e44,#087f67); box-shadow: 0 12px 26px rgba(6,78,68,.17); }
+        .dashboard-home .quick-actions, .dashboard-home .grid-container, .dashboard-home .recent-transactions { border: 1px solid #dce9e5; box-shadow: none; border-radius: 20px; }
+        .dashboard-home .action-btn { border-radius: 14px; border: 1px solid #d8e7e2; background: #fff; }
+        .dashboard-home .action-btn.secondary:hover { border-color: #087f67; background: #effbf7; transform: none; }
+        .dashboard-home .action-btn.primary { background: #087f67; box-shadow: none; }
+        .dashboard-home .grid-item { border: 1px solid #dce9e5; border-radius: 16px; padding: 16px; }
+        .dashboard-home .grid-item:hover { border-color: #84cdb9; box-shadow: 0 8px 20px rgba(20,83,71,.08); transform: translateY(-2px); }
+        /* Résumé inspiré des applications de budget : peu d'éléments, lecture immédiate. */
+        .dashboard-home .welcome-header { background:linear-gradient(135deg,#fff 0%,#f1fbf7 100%); align-items:center; }
+        .dashboard-home .welcome-subtitle { color:#61716d; }
+        .wallet-overview { margin:0 0 12px; padding:15px 16px; background:#fff; border:1px solid #dce9e5; border-radius:18px; }
+        .wallet-overview-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+        .wallet-overview h2 { margin:0; color:#17352f; font-size:1.05rem; }
+        .wallet-overview a { color:#087f67; font-size:.84rem; font-weight:700; text-decoration:none; }
+        .home-wallet-list { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin; }
+        .home-wallet { min-width:125px; padding:10px 11px; border:1px solid #dce9e5; border-radius:12px; background:#f8fcfa; }
+        .home-wallet span { display:block; color:#60736d; font-size:.76rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .home-wallet strong { display:block; margin-top:3px; color:#17352f; font-size:.92rem; white-space:nowrap; }
+        .home-wallet-empty { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; color:#61716d; font-size:.86rem; padding:3px 0; }
+        .wallet-empty-action { flex:0 0 auto; border:0; border-radius:10px; background:#087f67; color:#fff; font:inherit; font-size:.8rem; font-weight:800; padding:9px 11px; cursor:pointer; }
+        .wallet-empty-action:active { transform:scale(.97); }
+        .dashboard-home .recent-transactions h2, .dashboard-home .grid-title { color: #17352f; }
+        #onboarding-modal .modal-content { width: min(92vw, 440px); max-width: 440px; margin: 16px; box-sizing: border-box; }
+        #onboarding-modal .onboarding-slide { padding: 28px 18px; }
+        #onboarding-modal .onboarding-slide h2 { font-size: clamp(1.35rem, 6vw, 1.75rem); }
+        #onboarding-modal .onboarding-slide p { font-size: 1rem; margin-bottom: 22px; }
+        #onboarding-modal .onboarding-icon { font-size: 3rem; margin-bottom: 14px; }
+        #onboarding-modal .onboarding-step { color:#61716d; font-size:.85rem; font-weight:700; margin:0 0 12px; }
+        #onboarding-modal .onboarding-actions { display:grid; gap:10px; }
+        #onboarding-modal .onboarding-skip { border:0; background:transparent; color:#61716d; font:inherit; padding:6px; cursor:pointer; }
+        /* Cartes compactes : garder la lisibilité sans multiplier le défilement. */
+        .dashboard-home .grid-container { padding:16px; }
+        .dashboard-home .grid-item { min-height:0; padding:12px; }
+        .dashboard-home .grid-item .grid-icon { width:44px; height:44px; font-size:1.3rem; }
+        .dashboard-home .grid-item h3 { font-size:.95rem; }
+        .dashboard-home .grid-item p { margin:3px 0 0; line-height:1.3; }
+        @media(max-width:720px){ .dashboard-home .grid-item{min-height:72px;padding:10px 12px}.dashboard-home .grid-item .grid-icon{width:42px;height:42px} }
+        @media(max-width:720px){.wallet-overview{padding:13px;border-radius:16px}.home-wallet{min-width:118px}.dashboard-home .welcome-header{border-radius:16px}.dashboard-home .inclusive-finance{margin:10px 0;padding:15px;border-radius:15px}.dashboard-home .inclusive-head{gap:7px;margin-bottom:9px}.dashboard-home .inclusive-head h2{font-size:1.18rem}.dashboard-home .inclusive-grid{gap:8px}.dashboard-home .inclusive-metric{padding:10px 11px}.dashboard-home .inclusive-metric strong{margin-top:3px;font-size:1rem}.dashboard-home .inclusive-note{margin-top:8px;font-size:.77rem;line-height:1.35}.dashboard-home .finance-details summary{font-size:.88rem}.home-wallet-empty{align-items:flex-start;flex-direction:column;gap:8px}.wallet-empty-action{width:100%}}
     </style>
 </head>
 <body class="dashboard-home">
@@ -104,15 +155,15 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <img src="icon-192.png" alt="Logo" class="nav-logo">
-                <span class="nav-title">💰 Mon Jeton</span>
+                <span class="nav-title">Mon Jeton</span>
             </div>
             <div class="nav-user">
                 <div id="connection-status" class="connection-status">
                     <span class="status-indicator offline">🔴 Hors ligne</span>
                 </div>
                 <div id="user-info" class="user-info">
-                    <span id="user-name" class="user-name">👤 <span id="display-name">Utilisateur</span></span>
-                    <button id="logout-btn" class="logout-btn">🚪 Déconnexion</button>
+                    <span id="user-name" class="user-name"><span id="display-name">Utilisateur</span></span>
+                    <button id="logout-btn" class="logout-btn">Déconnexion</button>
                 </div>
             </div>
         </div>
@@ -123,8 +174,8 @@
         <!-- En-tête avec résumé rapide -->
         <header class="welcome-header">
             <div class="welcome-content">
-                <h1>Bonjour, <span id="user-greeting">Utilisateur</span> ! 👋</h1>
-                <p class="welcome-subtitle">Gérez vos jetons intelligemment</p>
+                <h1>Bonjour, <span id="user-greeting">Utilisateur</span></h1>
+                <p class="welcome-subtitle">Votre aperçu financier du jour</p>
             </div>
             <div class="pilot-balance" aria-label="Résumé de votre argent">
                 <div class="stat-item">
@@ -137,6 +188,14 @@
             </div>
         </header>
 
+        <section id="wallet-overview" class="wallet-overview" aria-labelledby="wallet-title" hidden>
+            <div class="wallet-overview-head">
+                <h2 id="wallet-title">Mes poches d'argent</h2>
+                <a href="transactions.html">Gérer</a>
+            </div>
+            <div id="home-wallet-list" class="home-wallet-list"></div>
+        </section>
+
         <section class="inclusive-finance" aria-labelledby="inclusive-title">
             <div class="inclusive-head">
                 <div><h2 id="inclusive-title">Préparer votre semaine</h2><small id="income-profile-label">Choisissez votre type de revenu</small></div>
@@ -148,7 +207,7 @@
                 </select>
             </div>
             <div class="inclusive-grid">
-                <div class="inclusive-metric"><span>Disponible aujourd’hui</span><strong id="cash-available">0 FCFA</strong></div>
+                <div class="inclusive-metric"><span>Disponible</span><strong id="cash-available">0 FCFA</strong></div>
                 <div class="inclusive-metric"><span>Budget du cycle</span><strong id="cycle-budget">0 FCFA</strong></div>
             </div>
             <p id="inclusive-note" class="inclusive-note"></p>
@@ -166,16 +225,16 @@
             <h2>Actions rapides</h2>
             <div class="action-buttons">
                 <button class="action-btn primary" onclick="quickAddTransaction()">
-                    <span class="action-icon">➕</span>
-                    <span class="action-text">Ajouter</span>
+                    <span class="action-icon" aria-hidden="true">＋</span>
+                    <span class="action-text">Ajouter une opération</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickViewBalance()">
-                    <span class="action-icon">👁️</span>
-                    <span class="action-text">Mon argent</span>
+                    <span class="action-icon" aria-hidden="true">◉</span>
+                    <span class="action-text">Voir mon argent</span>
                 </button>
                 <button class="action-btn secondary" onclick="quickSavings()">
-                    <span class="action-icon">🏦</span>
-                    <span class="action-text">Préparer</span>
+                    <span class="action-icon" aria-hidden="true">⌂</span>
+                    <span class="action-text">Préparer un projet</span>
                 </button>
 
             </div>
@@ -183,7 +242,7 @@
 
         <!-- Outils essentiels, avec les options avancées rangées plus bas -->
         <section class="grid-container">
-            <h2 class="grid-title">Mes groupes</h2>
+            <h2 class="grid-title">Mes outils essentiels</h2>
             
             <div class="icon-grid">
                 <a href="tontine.html" class="grid-item tontine-item">
@@ -210,6 +269,12 @@
                     <p>Obtenir une réponse simple</p>
                 </a>
 
+                <a href="savings.html" class="grid-item savings-item">
+                    <div class="grid-icon">🏦</div>
+                    <h3>Épargne & projets</h3>
+                    <p>Préparer un projet et suivre votre épargne</p>
+                </a>
+
                 <!-- Analyse : l'accueil reste l'espace d'action, cette page sert aux détails -->
                 <a href="dashboard.html" class="grid-item dashboard-item">
                     <div class="grid-icon">📊</div>
@@ -231,19 +296,13 @@
                     <p>Verrouillage PIN et paramètres de sécurité</p>
                 </a>
 
-                <!-- Badges -->
-                <a href="badges.html" class="grid-item badges-item">
-                    <div class="grid-icon">🏅</div>
-                    <h3>Badges</h3>
-                    <p>Défis et récompenses pour motiver l'épargne</p>
-                </a>
                 </div>
             </details>
         </section>
 
         <!-- Dernières transactions -->
         <section class="recent-transactions">
-            <h2>🕒 Dernières Transactions</h2>
+            <h2>Dernières opérations</h2>
             <div id="recent-transactions-list" class="recent-list">
                 <div class="empty-state">
                     <div class="empty-icon">📋</div>
@@ -276,33 +335,37 @@
         <div class="modal-content onboarding-content">
             <div class="onboarding-slide active" id="slide-1">
                 <div class="onboarding-icon">💰</div>
-                <h2>Bienvenue sur Mon Jeton !</h2>
-                <p>Gérez vos finances intelligemment avec des outils adaptés à votre contexte local.</p>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <p class="onboarding-step">Étape 1 sur 4</p>
+                <h2>Bienvenue !</h2>
+                <p>Mon Jeton vous aide à savoir où va votre argent, simplement.</p>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">Continuer</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-2">
-                <div class="onboarding-icon">📱</div>
-                <h2>Import Mobile Money</h2>
-                <p>Importez automatiquement vos transactions Orange Money, MTN MoMo et Wave depuis vos SMS.</p>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <div class="onboarding-icon">➕</div>
+                <p class="onboarding-step">Étape 2 sur 4</p>
+                <h2>Commencez par une opération</h2>
+                <p>Quand vous gagnez ou dépensez de l’argent, ajoutez-le. Votre solde sera plus juste.</p>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">J’ai compris</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-3">
                 <div class="onboarding-icon">📈</div>
+                <p class="onboarding-step">Étape 3 sur 4</p>
                 <h2>Comment recevez-vous votre argent ?</h2>
-                <p>Mon Jeton adaptera les budgets et conseils à votre réalité.</p>
+                <p>Choisissez la réponse la plus proche de votre situation. Vous pourrez la modifier plus tard.</p>
                 <div class="profile-options">
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="fixe"> Salaire ou revenu fixe</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="variable" checked> Paiements irréguliers</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="journalier"> Recettes journalières</label>
                     <label class="profile-option"><input type="radio" name="onboarding-profile" value="saisonnier"> Revenus saisonniers</label>
                 </div>
-                <button onclick="nextSlide()" class="btn-primary">Suivant</button>
+                <div class="onboarding-actions"><button onclick="nextSlide()" class="btn-primary">Continuer</button><button onclick="skipOnboarding()" class="onboarding-skip">Passer pour le moment</button></div>
             </div>
             <div class="onboarding-slide" id="slide-4">
-                <div class="onboarding-icon">👥</div>
-                <h2>Épargne & Objectifs</h2>
-                <p>Gérez vos objectifs d'épargne et placements pour atteindre vos objectifs financiers.</p>
-                <button onclick="finishOnboarding()" class="btn-primary">Commencer</button>
+                <div class="onboarding-icon">✅</div>
+                <p class="onboarding-step">Étape 4 sur 4</p>
+                <h2>Vous êtes prêt</h2>
+                <p>Ajoutez votre première opération. Le reste de l’application vous guidera au fur et à mesure.</p>
+                <button onclick="finishOnboarding(true)" class="btn-primary">Ajouter une opération</button>
             </div>
         </div>
     </div>
@@ -316,6 +379,18 @@
                 : (localStorage.getItem('user_name') || 'Utilisateur');
             document.getElementById('display-name').textContent = userName;
             document.getElementById('user-greeting').textContent = userName;
+        }
+
+        function updateConnectionStatus(syncStatus) {
+            const container = document.getElementById('connection-status');
+            if (!container) return;
+            const status = syncStatus || (window.FirebaseGroups && FirebaseGroups.getStatus ? FirebaseGroups.getStatus() : null);
+            let label = 'À jour', kind = 'online';
+            if (!navigator.onLine || (status && status.kind === 'offline')) { label = 'Hors ligne'; kind = 'offline'; }
+            else if (status && status.kind === 'error') { label = 'Connexion à vérifier'; kind = 'offline'; }
+            else if (status && status.kind === 'syncing') { label = 'Synchronisation…'; }
+            else if (status && status.kind === 'synced') { label = 'À jour'; }
+            container.innerHTML = `<span class="status-indicator ${kind}">● ${label}</span>`;
         }
 
         // Gérer la déconnexion
@@ -347,6 +422,37 @@
             document.getElementById('total-depenses').textContent = formatAmount(totalDepenses) + ' FCFA';
             document.getElementById('solde-actuel').textContent = formatAmount(Math.abs(solde)) + ' FCFA';
             renderInclusiveSummary(transactions);
+            renderHomeWallets(transactions);
+        }
+
+        function getHomeWalletLabel(method) {
+            const labels = {
+                especes: '💵 Espèces', orange_money: '🟠 Orange Money', mtn_momo: '🟡 MTN MoMo',
+                wave: '🌊 Wave', moov_money: '🟢 Moov Money', banque: '🏦 Banque', epargne: '🎯 Épargne',
+                carte: '💳 Carte', mobile_money: '📱 Mobile Money', virement: '🏦 Virement', cheque: '📄 Chèque', autre: '📋 Autre'
+            };
+            return labels[method] || 'Autre poche';
+        }
+
+        function renderHomeWallets(transactions) {
+            const container = document.getElementById('home-wallet-list');
+            const overview = document.getElementById('wallet-overview');
+            const totals = {};
+            transactions.forEach(transaction => {
+                if (!transaction.paymentMethod) return;
+                totals[transaction.paymentMethod] = (totals[transaction.paymentMethod] || 0)
+                    + (transaction.type === 'revenu' ? Number(transaction.amount) : -Number(transaction.amount));
+            });
+            const entries = Object.entries(totals);
+            if (!entries.length) {
+                overview.hidden = true;
+                container.innerHTML = '';
+                return;
+            }
+            overview.hidden = false;
+            container.innerHTML = entries.map(([method, amount]) =>
+                '<div class="home-wallet"><span>' + getHomeWalletLabel(method) + '</span><strong>' + formatAmount(amount) + ' FCFA</strong></div>'
+            ).join('');
         }
 
         function renderInclusiveSummary(sourceTransactions = null) {
@@ -525,7 +631,7 @@
             document.getElementById(`slide-${currentSlide}`).classList.add('active');
         }
 
-        function finishOnboarding() {
+        function finishOnboarding(openTransaction) {
             const selected = document.querySelector('input[name="onboarding-profile"]:checked');
             const profile = IncomeProfile.loadProfile();
             profile.type = selected ? selected.value : 'variable';
@@ -534,11 +640,17 @@
             localStorage.setItem('onboarding_completed', 'true');
             document.getElementById('onboarding-modal').classList.remove('active');
             renderInclusiveSummary();
+            if (openTransaction) location.href = 'transactions.html';
+        }
+
+        function skipOnboarding() {
+            finishOnboarding();
         }
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             displayUserInfo();
+            updateConnectionStatus();
             loadSummaryData();
             loadRecentTransactions();
 
@@ -550,6 +662,9 @@
                 }, 1000);
             }
         });
+        window.addEventListener('online', () => updateConnectionStatus());
+        window.addEventListener('offline', () => updateConnectionStatus());
+        window.addEventListener('mon-jeton-sync-status', event => updateConnectionStatus(event.detail));
     </script>
     <script src="bottom-nav.js" defer></script>
 </body>

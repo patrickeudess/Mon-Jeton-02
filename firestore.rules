@@ -4,6 +4,24 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function member() { return signedIn() && request.auth.uid in resource.data.memberUids; }
     function owner() { return signedIn() && request.auth.uid == resource.data.createdByUid; }
+    // Un membre ne peut jamais s'attribuer un rôle, modifier les règles de
+    // crédit ou rattacher un autre projet/institution. Ces changements sont
+    // réservés au créateur du groupe (ou à une future fonction serveur).
+    function protectedGroupSettingsUnchanged() {
+      return request.resource.data.createdByUid == resource.data.createdByUid
+        && request.resource.data.memberUids == resource.data.memberUids
+        && request.resource.data.members == resource.data.members
+        && request.resource.data.inviteCode == resource.data.inviteCode
+        && (resource.data.avec == null || (
+          request.resource.data.avec.roles == resource.data.avec.roles
+          && request.resource.data.avec.roleUids == resource.data.avec.roleUids
+          && request.resource.data.avec.shareValue == resource.data.avec.shareValue
+          && request.resource.data.avec.socialFundValue == resource.data.avec.socialFundValue
+          && request.resource.data.avec.serviceRate == resource.data.avec.serviceRate
+          && request.resource.data.avec.loanMonths == resource.data.avec.loanMonths
+          && request.resource.data.avec.institution == resource.data.avec.institution
+        ));
+    }
 
     match /groups/{groupId} {
       allow create: if signedIn()
@@ -11,9 +29,7 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.memberUids;
       allow read: if member();
       allow update, delete: if owner()
-        || (member()
-          && request.resource.data.createdByUid == resource.data.createdByUid
-          && request.resource.data.memberUids == resource.data.memberUids);
+        || (member() && protectedGroupSettingsUnchanged());
     }
 
     match /users/{userId} {

@@ -110,6 +110,9 @@ body {
     color: var(--danger-color);
 }
 
+/* L'état réseau est signalé seulement près d'une action en attente. */
+.connection-status { display: none !important; }
+
 .user-info {
     display: flex;
     align-items: center;

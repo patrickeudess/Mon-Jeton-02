@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="modern-components.css">
     <link rel="stylesheet" href="theme.css">
+    <script src="storage.js"></script>
     <style>
         .auth-container {
             min-height: 100vh;
@@ -91,8 +92,9 @@
             font-weight: 600;
             color: #333;
         }
+        .field-help { display:block; margin-top:6px; color:#718781; font-size:.78rem; line-height:1.35; }
 
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 15px;
             border: 2px solid #e0e0e0;
@@ -102,7 +104,7 @@
             box-sizing: border-box;
         }
 
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #009879;
         }
@@ -325,13 +327,13 @@
         .auth-tab.active { background: #fff; color: #087f67; box-shadow: 0 3px 8px rgba(13, 71, 59, .12); }
         .form-group { margin-bottom: 17px; }
         .form-group label { color: #264840; font-size: .9rem; }
-        .form-group input, .country-code {
+        .form-group input, .form-group select, .country-code {
             border: 1.5px solid #d3e3de;
             background: #fbfefd;
             border-radius: 12px;
             padding: 14px;
         }
-        .form-group input:focus { box-shadow: 0 0 0 4px rgba(0, 152, 121, .12); }
+        .form-group input:focus, .form-group select:focus { box-shadow: 0 0 0 4px rgba(0, 152, 121, .12); }
         .btn-primary { border-radius: 12px; box-shadow: 0 10px 18px rgba(0, 127, 103, .2); margin-top: 4px; }
         .social-login { border-top: 1px solid #e2ece9; margin-top: 26px; padding-top: 4px; }
         .social-login-title { font-size: .85rem; color: #718781; }
@@ -361,9 +363,9 @@
             <!-- Formulaire de connexion -->
             <form id="login-form" class="auth-form active">
                 <div class="form-group">
-                    <label for="login-email">📧 E-mail ou 📱 numéro :</label>
-                    <input type="text" id="login-email" required autocomplete="username"
-                           placeholder="votre@email.com ou +225 07 00 00 00">
+                    <label for="login-identifier">🪪 Identifiant (ID) :</label>
+                    <input type="text" id="login-identifier" required autocomplete="username"
+                           placeholder="Ex. awa.kouassi">
                 </div>
                 <div class="form-group">
                     <label for="login-password">🔒 Mot de passe :</label>
@@ -384,6 +386,51 @@
                     <input type="text" id="register-name" required placeholder="Votre nom">
                 </div>
                 <div class="form-group">
+                    <label for="register-identifier">🪪 Choisissez votre identifiant (ID) :</label>
+                    <input type="text" id="register-identifier" required autocomplete="username"
+                           placeholder="Ex. awa.kouassi" maxlength="30">
+                    <small class="field-help">3 à 30 caractères : lettres, chiffres, point, tiret ou _</small>
+                </div>
+                <div class="form-group">
+                    <label for="register-occupation">💼 Fonction ou activité :</label>
+                    <select id="register-occupation" required>
+                        <option value="" selected disabled>Choisissez votre activité</option>
+                        <option>Commerçant(e)</option>
+                        <option>Artisan(e)</option>
+                        <option>Agriculteur(trice)</option>
+                        <option>Employé(e)</option>
+                        <option>Fonctionnaire</option>
+                        <option>Entrepreneur(e)</option>
+                        <option>Élève / Étudiant(e)</option>
+                        <option>Sans emploi</option>
+                        <option>Retraité(e)</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                    <input type="text" id="register-occupation-other" placeholder="Précisez votre activité" style="display:none; margin-top:10px;">
+                </div>
+                <div class="form-group">
+                    <label for="register-age-range">🎂 Tranche d’âge :</label>
+                    <select id="register-age-range" required>
+                        <option value="" selected disabled>Choisissez votre tranche d’âge</option>
+                        <option value="moins de 18 ans">Moins de 18 ans</option>
+                        <option value="18-24 ans">18 – 24 ans</option>
+                        <option value="25-34 ans">25 – 34 ans</option>
+                        <option value="35-44 ans">35 – 44 ans</option>
+                        <option value="45-54 ans">45 – 54 ans</option>
+                        <option value="55-64 ans">55 – 64 ans</option>
+                        <option value="65 ans et plus">65 ans et plus</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="register-sex">👤 Sexe :</label>
+                    <select id="register-sex" required>
+                        <option value="" selected disabled>Choisissez une option</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Préfère ne pas préciser">Préfère ne pas préciser</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="register-phone">📱 Numéro de téléphone :</label>
                     <div class="phone-input-group">
                         <select class="country-code" id="register-country-code" aria-label="Indicatif pays">
@@ -402,10 +449,6 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="register-email">📧 E-mail <span style="color:#8aa39c;font-weight:400">(facultatif)</span> :</label>
-                    <input type="email" id="register-email" placeholder="Laissez vide si vous n'en avez pas">
-                </div>
-                <div class="form-group">
                     <label for="register-password">🔒 Mot de passe :</label>
                     <input type="password" id="register-password" required placeholder="Créez un mot de passe (6 caractères min.)">
                 </div>
@@ -421,25 +464,6 @@
                 <div class="success-message" id="register-success"></div>
             </form>
 
-            <!-- Pas d'e-mail ? Créer un compte avec son numéro -->
-            <section class="phone-primary-card" aria-labelledby="phone-login-title">
-                <h2 id="phone-login-title">📱 Pas d'e-mail ? Utilisez votre numéro</h2>
-                <p>Créez votre compte avec votre <strong>numéro de téléphone</strong> et un mot de passe. Aucune adresse e-mail nécessaire.</p>
-                <button type="button" class="btn-primary" onclick="goToPhoneRegister()">Créer un compte avec mon numéro</button>
-            </section>
-
-            <!-- Connexion alternative -->
-            <div class="social-login">
-                <div class="social-login-title">Autres options</div>
-                <div class="social-buttons">
-                    <button type="button" class="btn-social btn-google" disabled title="Disponible prochainement">
-                        <span class="social-icon">🔍</span>
-                        <span>Continuer avec Google, bientôt disponible</span>
-                    </button>
-                </div>
-                <p class="service-note">Vous pouvez vous connecter avec votre e-mail <em>ou</em> votre numéro de téléphone.</p>
-            </div>
-
             <div class="forgot-password">
                 <a href="#" onclick="showForgotPassword()">Mot de passe oublié ?</a>
             </div>
@@ -450,8 +474,8 @@
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js?v=2"></script>
-    <script src="firebase-groups.js?v=2"></script>
-    <script src="firebase-private-data.js?v=1"></script>
+    <script src="firebase-groups.js?v=4"></script>
+    <script src="firebase-private-data.js?v=2"></script>
     <script src="api-client.js?v=2.5"></script>
     <script src="auth-manager.js"></script>
     <script src="optimize_application.js"></script>
@@ -472,18 +496,10 @@
             });
         }
 
-        // --- Identifiant : e-mail OU numéro de téléphone ---
-        // On permet de créer un compte et de se connecter avec un numéro, sans
-        // e-mail. En interne, le numéro est transformé en identifiant technique
-        // (<numéro>@phone.monjeton.app) pour l'authentification par mot de passe.
-        const PHONE_EMAIL_DOMAIN = 'phone.monjeton.app';
-
-        function looksLikeEmail(value) {
-            return /\S+@\S+\.\S+/.test(value);
-        }
-        function looksLikePhone(value) {
-            return !value.includes('@') && /\d/.test(value) && /^[+\d][\d\s().-]{4,}$/.test(value);
-        }
+        // --- Identifiant : un ID choisi par l'utilisateur ---
+        // Firebase utilise un e-mail technique en interne, mais l'application
+        // n'affiche ni ne demande d'adresse e-mail aux utilisateurs.
+        const ID_EMAIL_DOMAIN = 'id.monjeton.app';
         // Indicatifs reconnus (mêmes que le sélecteur d'inscription).
         const KNOWN_CC = ['225', '221', '237', '234', '226', '223', '228', '229', '33'];
 
@@ -500,21 +516,18 @@
             if (s.charAt(0) === '0') s = s.slice(1);                 // 0 national (tronc)
             return cc + s;
         }
-        function phoneToAuthEmail(digits) {
-            return digits + '@' + PHONE_EMAIL_DOMAIN;
+        function normalizeAppId(raw) {
+            return String(raw || '').trim().toLowerCase().replace(/\s+/g, '');
         }
-        // Depuis un champ de connexion : renvoie l'identifiant technique + infos affichage
-        function resolveIdentifier(input, defaultCode) {
-            const value = String(input || '').trim();
-            if (looksLikeEmail(value)) {
-                return { authEmail: value, email: value, phone: '' };
-            }
-            if (looksLikePhone(value)) {
-                const digits = normalizePhoneDigits(value, defaultCode);
-                return { authEmail: phoneToAuthEmail(digits), email: '', phone: '+' + digits };
-            }
-            // Repli : traité comme identifiant e-mail brut
-            return { authEmail: value, email: value, phone: '' };
+        function isValidAppId(id) {
+            return /^[a-z0-9][a-z0-9._-]{2,29}$/.test(id);
+        }
+        function idToAuthEmail(id) {
+            return id + '@' + ID_EMAIL_DOMAIN;
+        }
+        function resolveIdentifier(input) {
+            const id = normalizeAppId(input);
+            return isValidAppId(id) ? { authEmail: idToAuthEmail(id), id } : null;
         }
 
         // Aller à l'inscription et se placer sur le champ numéro
@@ -524,8 +537,8 @@
             const tabs = document.querySelectorAll('.auth-tab');
             if (tabs[1]) tabs[1].classList.add('active');
             document.getElementById('register-form').classList.add('active');
-            const phone = document.getElementById('register-phone');
-            if (phone) { phone.focus(); phone.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+            const identifier = document.getElementById('register-identifier');
+            if (identifier) { identifier.focus(); identifier.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
         }
 
         // Gérer la connexion sociale
@@ -550,10 +563,10 @@
         }
 
         // Session locale sans backend : les données restent dans localStorage.
-        function createLocalSession(name, email, phone) {
+        function createLocalSession(name, identifier, phone) {
             localStorage.setItem('auth_token', 'local_' + Date.now());
-            localStorage.setItem('user_name', name || (email ? email.split('@')[0] : (phone || 'Utilisateur')));
-            localStorage.setItem('user_email', email || '');
+            localStorage.setItem('user_name', name || identifier || phone || 'Utilisateur');
+            localStorage.setItem('user_identifier', identifier || '');
             localStorage.setItem('user_phone', phone || '');
             localStorage.setItem('login_provider', 'Local');
         }
@@ -561,7 +574,6 @@
         function createFirebaseSession(user) {
             localStorage.setItem('auth_token', 'firebase_' + user.uid);
             localStorage.setItem('user_name', user.displayName || (user.email || '').split('@')[0] || 'Utilisateur');
-            localStorage.setItem('user_email', user.email || '');
             localStorage.setItem('login_provider', 'Firebase');
         }
 
@@ -569,23 +581,26 @@
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const rawIdentifier = document.getElementById('login-email').value.trim();
+            const rawIdentifier = document.getElementById('login-identifier').value.trim();
             const password = document.getElementById('login-password').value;
 
             if (!rawIdentifier || !password) {
-                showError('login-error', 'Entrez votre e-mail ou numéro, et votre mot de passe');
+                showError('login-error', 'Entrez votre identifiant et votre mot de passe.');
                 return;
             }
 
-            // Accepte un e-mail OU un numéro de téléphone
             const id = resolveIdentifier(rawIdentifier);
+            if (!id) {
+                showError('login-error', 'Votre identifiant doit contenir 3 à 30 caractères : lettres, chiffres, point, tiret ou _.');
+                return;
+            }
 
             if (window.FirebaseGroups && FirebaseGroups.configured()) {
                 try {
                     showSuccess('login-success', 'Connexion sécurisée en cours…');
                     const user = await FirebaseGroups.signIn(id.authEmail, password);
                     createFirebaseSession(user);
-                    if (id.phone) localStorage.setItem('user_phone', id.phone);
+                    localStorage.setItem('user_identifier', id.id);
                     window.location.href = 'index.html';
                 } catch (error) {
                     showError('login-error', 'Connexion impossible : ' + (error.message || 'vérifiez vos informations.'));
@@ -600,8 +615,7 @@
                     await api.login(id.authEmail, password);
                     const user = await api.getCurrentUser();
                     localStorage.setItem('user_name', user.full_name || user.username);
-                    localStorage.setItem('user_email', user.email || id.email);
-                    if (id.phone) localStorage.setItem('user_phone', id.phone);
+                    localStorage.setItem('user_identifier', id.id);
                     localStorage.setItem('login_provider', 'API');
                     window.location.href = 'index.html';
                 } catch (error) {
@@ -612,31 +626,45 @@
 
             // Aucun backend configuré : mode hors ligne assumé
             showSuccess('login-success', 'Mode hors ligne : session locale créée');
-            createLocalSession(id.email ? id.email.split('@')[0] : id.phone, id.email, id.phone);
+            createLocalSession(id.id, id.id, '');
             setTimeout(() => { window.location.href = 'index.html'; }, 800);
         });
 
         // Gestion du formulaire d'inscription
+        document.getElementById('register-occupation').addEventListener('change', function () {
+            const other = document.getElementById('register-occupation-other');
+            const isOther = this.value === 'Autre';
+            other.style.display = isOther ? 'block' : 'none';
+            other.required = isOther;
+            if (!isOther) other.value = '';
+        });
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const name = document.getElementById('register-name').value.trim();
-            const email = document.getElementById('register-email').value.trim();
+            const identifier = normalizeAppId(document.getElementById('register-identifier').value);
+            const occupationChoice = document.getElementById('register-occupation').value;
+            const occupationOther = document.getElementById('register-occupation-other').value.trim();
+            const occupation = occupationChoice === 'Autre' ? occupationOther : occupationChoice;
+            const ageRange = document.getElementById('register-age-range').value;
+            const sex = document.getElementById('register-sex').value;
             const rawPhone = document.getElementById('register-phone').value.trim();
             const countryCode = document.getElementById('register-country-code').value;
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('register-confirm-password').value;
 
-            // Il faut au moins un numéro OU un e-mail
-            if (!rawPhone && !email) {
-                showError('register-error', 'Entrez votre numéro de téléphone (ou un e-mail).');
+            if (!rawPhone) {
+                showError('register-error', 'Entrez votre numéro de téléphone.');
                 return;
             }
-            if (email && !looksLikeEmail(email)) {
-                showError('register-error', 'Cet e-mail ne semble pas valide. Laissez-le vide si vous n\'en avez pas.');
+            if (!isValidAppId(identifier)) {
+                showError('register-error', 'Choisissez un identifiant de 3 à 30 caractères : lettres, chiffres, point, tiret ou _.');
                 return;
             }
-
+            if (!occupation || !ageRange || !sex) {
+                showError('register-error', 'Choisissez votre fonction ou activité, votre tranche d’âge et votre sexe.');
+                return;
+            }
             if (password !== confirmPassword) {
                 showError('register-error', 'Les mots de passe ne correspondent pas');
                 return;
@@ -647,18 +675,18 @@
                 return;
             }
 
-            // Identifiant : e-mail si fourni, sinon numéro transformé en identifiant technique
             const phoneDigits = rawPhone ? normalizePhoneDigits(rawPhone, countryCode) : '';
             const phoneDisplay = phoneDigits ? '+' + phoneDigits : '';
-            const authEmail = email || phoneToAuthEmail(phoneDigits);
+            const authEmail = idToAuthEmail(identifier);
 
             if (window.FirebaseGroups && FirebaseGroups.configured()) {
                 try {
-                    const user = await FirebaseGroups.register(name, authEmail, password);
+                    const user = await FirebaseGroups.register(name, authEmail, password, { identifier, occupation, ageRange, sex, phone: phoneDisplay });
                     createFirebaseSession(user);
                     localStorage.setItem('user_name', name);
-                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('user_identifier', identifier);
                     if (phoneDisplay) localStorage.setItem('user_phone', phoneDisplay);
+                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
                     showSuccess('register-success', 'Compte créé. Vos groupes peuvent maintenant être synchronisés.');
                     setTimeout(() => { window.location.href = 'index.html'; }, 800);
                 } catch (error) {
@@ -671,11 +699,12 @@
                 // Inscription réelle via l'API, puis connexion automatique.
                 // L'identifiant (e-mail ou numéro technique) sert de username côté API.
                 try {
-                    await api.register({ email: authEmail, username: authEmail, full_name: name, password: password });
+                    await api.register({ email: authEmail, username: identifier, full_name: name, password: password });
                     await api.login(authEmail, password);
                     localStorage.setItem('user_name', name);
-                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('user_identifier', identifier);
                     if (phoneDisplay) localStorage.setItem('user_phone', phoneDisplay);
+                    localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
                     localStorage.setItem('login_provider', 'API');
                     showSuccess('register-success', 'Compte créé avec succès !');
                     setTimeout(() => { window.location.href = 'index.html'; }, 800);
@@ -687,12 +716,16 @@
 
             // Aucun backend configuré : mode hors ligne assumé
             showSuccess('register-success', 'Mode hors ligne : compte local créé');
-            createLocalSession(name, email, phoneDisplay);
+            createLocalSession(name, identifier, phoneDisplay);
+            localStorage.setItem('user_profile', JSON.stringify({ occupation, ageRange, sex }));
             setTimeout(() => { window.location.href = 'index.html'; }, 800);
         });
 
         // Fonctions utilitaires
         function showError(elementId, message) {
+            const successId = elementId.replace('-error', '-success');
+            const successElement = document.getElementById(successId);
+            if (successElement) successElement.style.display = 'none';
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = message;
             errorElement.style.display = 'block';
@@ -737,16 +770,7 @@
         }
 
         function showForgotPassword() {
-            const email = prompt('Entrez votre adresse email pour réinitialiser le mot de passe :');
-            if (email) {
-                if (window.FirebaseGroups && FirebaseGroups.configured()) {
-                    FirebaseGroups.resetPassword(email)
-                        .then(() => showNotification('Email de réinitialisation envoyé !', 'success'))
-                        .catch(error => showNotification(error.message || 'Envoi impossible.', 'error'));
-                } else {
-                    showNotification('Email de réinitialisation envoyé !', 'success');
-                }
-            }
+            showNotification('Pour réinitialiser votre mot de passe, contactez le support avec votre identifiant et votre numéro.', 'info');
         }
 
         // Initialisation

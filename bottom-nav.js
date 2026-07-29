@@ -28,7 +28,7 @@
     var ITEMS = [
         {
             label: 'Accueil', href: 'index.html',
-            match: ['index.html', 'dashboard.html', 'budgets.html', 'badges.html', 'security.html'],
+            match: ['index.html', 'dashboard.html', 'budgets.html', 'security.html'],
             icon: '<path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/>'
         },
         {
@@ -43,7 +43,7 @@
         },
         {
             label: 'Tontines', href: 'tontine.html',
-            match: ['tontine.html'],
+            match: ['tontine.html', 'avec.html'],
             icon: '<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.2a3 3 0 0 1 0 5.6"/><path d="M17.5 19a5.5 5.5 0 0 0-3-4.9"/>'
         },
         {
@@ -63,7 +63,7 @@
         if (document.getElementById('mj-bottomnav-style')) return;
         var css = [
             ':root{--mj-bottomnav-h:64px;}',
-            'body{padding-bottom:calc(var(--mj-bottomnav-h) + env(safe-area-inset-bottom, 0px) + 8px) !important;}',
+            'body{padding-bottom:calc(var(--mj-bottomnav-h) + env(safe-area-inset-bottom, 0px) + 16px) !important;}',
             '.mj-bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:1200;display:flex;',
             'justify-content:space-around;align-items:stretch;gap:2px;',
             'padding:6px 6px calc(6px + env(safe-area-inset-bottom, 0px));',
@@ -96,7 +96,7 @@
             /* Sur grand écran (ordinateur), la barre mobile n\'a pas sa place :
                on la masque et on retire le décalage du contenu. La navigation
                passe alors par le haut de page et la grille d\'accueil. */
-            '@media (min-width:900px){.mj-bottomnav{display:none;}body{padding-bottom:0 !important;}}',
+            '@media (min-width:900px){.mj-bottomnav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,calc(100% - 32px));border:1px solid var(--border-soft,rgba(0,0,0,.08));border-bottom:0;border-radius:18px 18px 0 0;}}',
             '@media (prefers-reduced-motion:reduce){.mj-nav-item,.mj-nav-item .mj-nav-icon{transition:none;}}',
             '@media print{.mj-bottomnav{display:none;}}'
         ].join('');
